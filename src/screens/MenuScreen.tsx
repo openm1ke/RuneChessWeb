@@ -49,10 +49,13 @@ export function MenuScreen({
             background: 'linear-gradient(to bottom, transparent, #000)',
           }}
         />
-        <div style={{ position: 'absolute', top: 354, left: 78, right: 78, height: 104 }}>
+        <div style={{ position: 'absolute', top: 126, left: 0, right: 0 }}>
+          <MenuBrand orbSize={124} />
+        </div>
+        <div style={{ position: 'absolute', top: 388, left: 78, right: 78, height: 104 }}>
           <MenuActionButton label="ИГРАТЬ" onClick={onPlay} prominent />
         </div>
-        <div style={{ position: 'absolute', top: 474, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 508, left: 92, right: 92, height: 72 }}>
           <MenuActionButton label="УРОВНИ" onClick={onLevels} />
         </div>
         <div style={{ position: 'absolute', top: 24, right: 24 }}>
@@ -100,6 +103,8 @@ function LandscapeMenuScene({
   // once the window is much wider than the source art's own proportions).
   const panelLeft = (width - panelWidth) / 2;
   const panelTop = height * 0.39;
+  const brandOrbSize = Math.min(138, Math.max(96, height * 0.16));
+  const brandHeight = brandOrbSize * 1.48 * (660 / 560);
 
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -116,13 +121,23 @@ function LandscapeMenuScene({
           background: 'radial-gradient(circle at 45% 45%, rgba(0,0,0,0.07), rgba(0,0,0,0.52))',
         }}
       />
-      <div style={{ position: 'absolute', top: panelTop, left: panelLeft, width: panelWidth, height: 82 }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: Math.max(24, panelTop - brandHeight - 16),
+          left: 0,
+          right: 0,
+        }}
+      >
+        <MenuBrand orbSize={brandOrbSize} />
+      </div>
+      <div style={{ position: 'absolute', top: panelTop + 42, left: panelLeft, width: panelWidth, height: 82 }}>
         <MenuActionButton label="ИГРАТЬ" onClick={onPlay} prominent />
       </div>
       <div
         style={{
           position: 'absolute',
-          top: panelTop + 94,
+          top: panelTop + 136,
           left: panelLeft + panelWidth * 0.08,
           width: panelWidth * 0.84,
           height: 62,
@@ -149,6 +164,30 @@ function LandscapeMenuScene({
         версия 1.0.0
       </div>
     </div>
+  );
+}
+
+/**
+ * The mark intentionally reuses the game's existing queen-orb artwork.
+ * Its circular crop lets the orb sit directly on the scene rather than
+ * carrying the original icon's square background into the menu.
+ */
+function MenuBrand({ orbSize }: { orbSize: number }) {
+  const height = orbSize * 1.48 * (660 / 560);
+  const width = height * (1200 / 660);
+  return (
+    <img
+      src={asset('assets/branding/runechess-logo.png')}
+      alt="RuneChess"
+      style={{
+        display: 'block',
+        width,
+        height,
+        margin: '0 auto',
+        pointerEvents: 'none',
+      }}
+      draggable={false}
+    />
   );
 }
 
