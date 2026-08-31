@@ -3,7 +3,7 @@ import { DozorEngine, FIRST_SCORED_LEVEL_INDEX } from './game/dozorEngine';
 import { campaignLevels } from './data/campaignLevels';
 import { ProgressRepository } from './services/progressRepository';
 import { MusicService } from './services/musicService';
-import { AnalyticsService } from './services/analyticsService';
+import { AnalyticsService, type LevelEntrySource } from './services/analyticsService';
 import { ConsentBanner } from './components/shared/ConsentBanner';
 import { MenuScreen } from './screens/MenuScreen';
 import { LevelSelectScreen } from './screens/LevelSelectScreen';
@@ -61,7 +61,7 @@ export default function App() {
     if (snapshot.musicEnabled) void musicService.startMenu();
 
     engine.onLevelSolved = (levelIndex: number, result: LevelAttemptResult) => {
-      analyticsService.levelCompleted(levelIndex, result);
+      analyticsService.levelCompleted(levelIndex, result, levelEntrySourceRef.current);
       if (result.stars == null) return;
       setLevelStars((prev) => {
         const merged = mergeBestStars(prev.get(levelIndex), result.stars!);
@@ -86,6 +86,7 @@ export default function App() {
   const unlockedLevelsRef = useRef(unlockedLevels);
   const seenOnboardingRef = useRef(seenOnboardingLevels);
   const tutorialCompleteRef = useRef(tutorialComplete);
+  const levelEntrySourceRef = useRef<LevelEntrySource>('menu_play');
   useEffect(() => {
     unlockedLevelsRef.current = unlockedLevels;
   }, [unlockedLevels]);
@@ -96,6 +97,14 @@ export default function App() {
     tutorialCompleteRef.current = tutorialComplete;
   }, [tutorialComplete]);
 
+  useEffect(() => {
+    if (analyticsConsent && screen === 'levels') analyticsService.levelSelectOpened();
+  }, [analyticsConsent, analyticsService, screen]);
+
+  useEffect(() => {
+    if (analyticsConsent && screen === 'settings') analyticsService.settingsOpened();
+  }, [analyticsConsent, analyticsService, screen]);
+
   const persist = (overrides: Partial<{ unlockedLevels: Set<number>; seenOnboardingLevels: Set<number>; tutorialComplete: boolean; levelStars: Map<number, number> }>) => {
     progressRepository.save({
       unlockedLevels: overrides.unlockedLevels ?? unlockedLevelsRef.current,
@@ -105,12 +114,15 @@ export default function App() {
     });
   };
 
-  const goToGame = (levelIndex?: number) => {
+  const goToGame = (levelIndex?: number, entrySource: LevelEntrySource = 'menu_play') => {
     setLevelSelectAddress(false);
     void musicService.stopMenu();
     const requested = levelIndex ?? highestLevel;
     engine.goToLevel(!tutorialComplete && requested >= 5 ? 4 : requested);
-    analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX);
+    levelEntrySourceRef.current = entrySource;
+    const isTutorial = engine.levelIndex < FIRST_SCORED_LEVEL_INDEX;
+    if (entrySource === 'level_select') analyticsService.levelSelected(engine.levelIndex, isTutorial);
+    analyticsService.levelStarted(engine.levelIndex, isTutorial, entrySource);
     setScreen('game');
     void musicService.startGame();
   };
@@ -136,7 +148,8 @@ export default function App() {
     const before = engine.levelIndex;
     engine.nextLevel();
     if (engine.levelIndex > before) {
-      analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX);
+      levelEntrySourceRef.current = 'next_level';
+      analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX, 'next_level');
       const nextUnlocked = new Set(unlockedLevels);
       nextUnlocked.add(engine.levelIndex);
       setUnlockedLevels(nextUnlocked);
@@ -169,7 +182,8 @@ export default function App() {
       return;
     }
     engine.nextLevel();
-    analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX);
+    levelEntrySourceRef.current = 'skip_level';
+    analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX, 'skip_level');
     const nextUnlocked = new Set(unlockedLevels);
     nextUnlocked.add(engine.levelIndex);
     setUnlockedLevels(nextUnlocked);
@@ -195,6 +209,8 @@ export default function App() {
     setMusicEnabled(enabled);
     musicService.enabled = enabled;
     progressRepository.saveMusicSettings({ musicEnabled: enabled, musicVolume });
+    if (enabled) analyticsService.musicEnabled();
+    else analyticsService.musicDisabled();
     if (!enabled) {
       void musicService.stopMenu();
       void musicService.stopGame();
@@ -218,6 +234,7 @@ export default function App() {
   };
 
   const resetProgress = () => {
+    analyticsService.progressResetConfirmed();
     progressRepository.resetProgress();
     const initialUnlocked = new Set([0]);
     const initialSeen = new Set<number>();
@@ -296,7 +313,7 @@ export default function App() {
           tutorialComplete={tutorialComplete}
           levelStars={levelStars}
           onBack={closeLevelSelect}
-          onLevelChosen={goToGame}
+          onLevelChosen={(levelIndex) => goToGame(levelIndex, 'level_select')}
         />
       );
     case 'game':

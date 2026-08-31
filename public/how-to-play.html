@@ -51,5 +51,27 @@
       <section class="panel" id="levels" aria-labelledby="levels-title"><h2 id="levels-title">Уровни и прогресс</h2><p>В RuneChess 112 задач: 5 обучающих и 107 уровней кампании.</p><div class="tracks"><article class="track"><span class="badge">УРОВНИ 1–5</span><h3>Обучение</h3><p>Освойте поле, фигуры и линии атак.</p></article><article class="track"><span class="badge">УРОВНИ 6–112</span><h3>Кампания</h3><p>Решайте всё более сложные шахматные задачи.</p></article></div><div class="stars"><article class="star"><b>★★★</b><h3>Точно</h3><p>Быстро, без лишних ходов и подсказок.</p></article><article class="star"><b>★★☆</b><h3>Хорошо</h3><p>Решение без подсказок.</p></article><article class="star"><b>★☆☆</b><h3>Решено</h3><p>Подсказка помогает пройти уровень.</p></article></div><a class="play" href="./#levels">ОТКРЫТЬ УРОВНИ В ИГРЕ</a></section>
       <footer><a href="./privacy.html">Политика конфиденциальности</a></footer>
     </main>
+    <script>
+      (() => {
+        const counterId = 112107479;
+        try {
+          if (JSON.parse(localStorage.getItem('runechess.analytics_consent_v1')) !== true) return;
+        } catch {
+          return;
+        }
+        const queuedYm = window.ym || function (...args) {
+          queuedYm.a = queuedYm.a || [];
+          queuedYm.a.push(args);
+        };
+        queuedYm.l = queuedYm.l || Date.now();
+        window.ym = queuedYm;
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://mc.yandex.ru/metrika/tag.js?id=${counterId}`;
+        document.head.appendChild(script);
+        queuedYm(counterId, 'init', { ssr: true, accurateTrackBounce: true, trackLinks: true });
+        queuedYm(counterId, 'reachGoal', 'rules_opened');
+      })();
+    </script>
   </body>
 </html>
