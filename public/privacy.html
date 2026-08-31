@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#05091a" />
+    <title>Политика конфиденциальности — RuneChess</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: #edf3ff;
+        background: radial-gradient(circle at 50% -20%, #203e80, #07122c 42%, #03050d 80%);
+        font-family: "Nunito", system-ui, sans-serif;
+        line-height: 1.6;
+      }
+      main { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 44px 0 60px; }
+      h1, h2 { color: #ffdc82; font-family: "Russo One", system-ui, sans-serif; letter-spacing: .04em; }
+      h1 { font-size: clamp(25px, 5vw, 36px); line-height: 1.2; }
+      h2 { margin-top: 32px; font-size: 17px; }
+      p, li { color: #d3ddf4; }
+      a { color: #8edcff; }
+      .card { padding: 22px; border: 1px solid rgba(236,178,48,.65); border-radius: 18px; background: rgba(7, 18, 48, .85); box-shadow: 0 16px 48px rgba(0,0,0,.35); }
+      .muted { color: #aebbd9; font-size: 14px; }
+      button { border: 1px solid #ffd86e; border-radius: 10px; padding: 11px 14px; color: #10234c; background: linear-gradient(#ffe39a, #e9ae35); font: inherit; font-weight: 800; cursor: pointer; }
+      .result { min-height: 1.5em; margin-top: 10px; color: #c5f3df; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p><a href="./">← Вернуться в RuneChess</a></p>
+      <div class="card">
+        <h1>Политика конфиденциальности RuneChess Web</h1>
+        <p class="muted">Дата обновления: 31 августа 2026 года</p>
+
+        <h2>1. Оператор и контакты</h2>
+        <p>
+          Оператором данных является владелец проекта RuneChess Web. По вопросам обработки данных и реализации прав
+          пользователя напишите: <a href="mailto:muxauji_sh@mail.ru">muxauji_sh@mail.ru</a>.
+        </p>
+
+        <h2>2. Какие данные используются</h2>
+        <p>Игра не требует регистрации и не запрашивает имя, email, телефон или платёжные данные.</p>
+        <ul>
+          <li><strong>Необходимое локальное хранилище браузера:</strong> пройденные уровни, лучшие звёзды, обучение и настройки музыки. Эти данные остаются на устройстве пользователя.</li>
+          <li><strong>Необязательная аналитика Яндекс Метрики:</strong> обезличенные данные о посещении, устройстве и действиях в игре, включая номер уровня, время решения, число ходов, подсказок, сбросов и звёзд.</li>
+        </ul>
+
+        <h2>3. Зачем это нужно</h2>
+        <p>Локальное хранилище необходимо, чтобы игра могла сохранять прогресс. Аналитика используется только для оценки прохождения уровней и улучшения игрового опыта.</p>
+
+        <h2>4. Согласие и отказ</h2>
+        <p>
+          При первом посещении можно согласиться на аналитику или выбрать вариант «Только необходимые». Отказ не ограничивает игру и сохранение прогресса.
+          Яндекс Метрика загружается только после согласия.
+        </p>
+        <button type="button" id="withdraw-consent">Отозвать согласие на аналитику</button>
+        <div class="result" id="withdraw-result" role="status"></div>
+
+        <h2>5. Передача данных третьим лицам</h2>
+        <p>
+          При согласии на аналитику данные передаются ООО «ЯНДЕКС» для работы сервиса Яндекс Метрика. Условия и политика Яндекса доступны на страницах
+          <a href="https://yandex.ru/legal/metrica_termsofuse/ru/" target="_blank" rel="noreferrer">условий Метрики</a> и
+          <a href="https://yandex.ru/legal/confidential/ru/" target="_blank" rel="noreferrer">политики конфиденциальности Яндекса</a>.
+        </p>
+
+        <h2>6. Срок хранения и удаление</h2>
+        <p>
+          Локальные данные хранятся, пока пользователь не удалит данные сайта в настройках браузера. Отказ от аналитики сохраняется в браузере и применяется при следующей загрузке игры.
+          По вопросам удаления или уточнения данных можно обратиться по указанному выше email.
+        </p>
+
+        <h2>7. Изменения политики</h2>
+        <p>При существенном изменении способов обработки данных будет обновлена дата этой страницы и, при необходимости, повторно запрошено согласие.</p>
+      </div>
+    </main>
+    <script>
+      document.getElementById('withdraw-consent').addEventListener('click', function () {
+        localStorage.setItem('runechess.analytics_consent_v1', JSON.stringify(false));
+        document.getElementById('withdraw-result').textContent = 'Согласие отозвано. При следующей загрузке игры аналитика не будет включаться.';
+      });
+    </script>
+  </body>
+</html>

@@ -42,12 +42,10 @@ export function ConsentBanner({
           Только необходимые
         </button>
         <a
-          href="https://yandex.ru/legal/metrica_termsofuse/ru/"
-          target="_blank"
-          rel="noreferrer"
+          href="./privacy.html"
           style={{ marginLeft: 'auto', color: '#b9ccf5', fontSize: 12 }}
         >
-          Подробнее
+          Политика конфиденциальности
         </a>
       </div>
     </section>
