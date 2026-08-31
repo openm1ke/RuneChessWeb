@@ -4,6 +4,7 @@ import { campaignLevels } from './data/campaignLevels';
 import { ProgressRepository } from './services/progressRepository';
 import { MusicService } from './services/musicService';
 import { AnalyticsService } from './services/analyticsService';
+import { ConsentBanner } from './components/shared/ConsentBanner';
 import { MenuScreen } from './screens/MenuScreen';
 import { LevelSelectScreen } from './screens/LevelSelectScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -31,6 +32,7 @@ export default function App() {
   const [highestLevel, setHighestLevel] = useState(0);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [musicVolume, setMusicVolume] = useState(0.6);
+  const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(null);
 
   useEffect(() => {
     musicService.init();
@@ -42,6 +44,8 @@ export default function App() {
     setLevelStars(snapshot.levelStars);
     setMusicEnabled(snapshot.musicEnabled);
     setMusicVolume(snapshot.musicVolume);
+    setAnalyticsConsent(snapshot.analyticsConsent);
+    if (snapshot.analyticsConsent) analyticsService.enable();
     musicService.enabled = snapshot.musicEnabled;
     musicService.volume = snapshot.musicVolume;
     if (snapshot.musicEnabled) void musicService.startMenu();
@@ -198,9 +202,27 @@ export default function App() {
     musicService.applyVolume();
   };
 
+  const setAnalyticsConsentAndSave = (consent: boolean) => {
+    setAnalyticsConsent(consent);
+    progressRepository.saveAnalyticsConsent(consent);
+    if (consent) analyticsService.enable();
+  };
+
+  const withConsent = (content: React.ReactNode) => (
+    <>
+      {content}
+      {analyticsConsent == null && (
+        <ConsentBanner
+          onAcceptAnalytics={() => setAnalyticsConsentAndSave(true)}
+          onDeclineAnalytics={() => setAnalyticsConsentAndSave(false)}
+        />
+      )}
+    </>
+  );
+
   switch (screen) {
     case 'campaignComplete':
-      return (
+      return withConsent(
         <CampaignCompleteScreen
           onLevels={() => {
             void musicService.stopGame(true);
@@ -214,7 +236,7 @@ export default function App() {
         />
       );
     case 'tutorialComplete':
-      return (
+      return withConsent(
         <TutorialCompleteScreen
           onContinue={() => setScreen('game')}
           onLevels={() => {
@@ -224,7 +246,7 @@ export default function App() {
         />
       );
     case 'settings':
-      return (
+      return withConsent(
         <SettingsScreen
           musicEnabled={musicEnabled}
           musicVolume={musicVolume}
@@ -234,7 +256,7 @@ export default function App() {
         />
       );
     case 'levels':
-      return (
+      return withConsent(
         <LevelSelectScreen
           unlockedLevels={unlockedLevels}
           highestUnlocked={highestLevel}
@@ -245,7 +267,7 @@ export default function App() {
         />
       );
     case 'game':
-      return (
+      return withConsent(
         <GameScreen
           engine={engine}
           onBack={goToMenu}
@@ -257,6 +279,6 @@ export default function App() {
       );
     case 'menu':
     default:
-      return <MenuScreen onPlay={() => goToGame()} onLevels={openLevelSelect} onSettings={() => setScreen('settings')} />;
+      return withConsent(<MenuScreen onPlay={() => goToGame()} onLevels={openLevelSelect} onSettings={() => setScreen('settings')} />);
   }
 }

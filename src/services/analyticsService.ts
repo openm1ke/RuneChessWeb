@@ -14,6 +14,34 @@ declare global {
  * board position, or other personal data is collected.
  */
 export class AnalyticsService {
+  private enabled = false;
+
+  enable(): void {
+    if (this.enabled || import.meta.env.DEV || typeof window === 'undefined') return;
+    this.enabled = true;
+
+    if (typeof window.ym !== 'function') {
+      const queuedYm = ((...args: unknown[]) => {
+        queuedYm.a = queuedYm.a ?? [];
+        queuedYm.a.push(args);
+      }) as ((...args: unknown[]) => void) & { a?: unknown[][]; l?: number };
+      queuedYm.l = Date.now();
+      window.ym = queuedYm;
+
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://mc.yandex.ru/metrika/tag.js?id=${COUNTER_ID}`;
+      document.head.appendChild(script);
+    }
+
+    window.ym(COUNTER_ID, 'init', {
+      ssr: true,
+      clickmap: true,
+      accurateTrackBounce: true,
+      trackLinks: true,
+    });
+  }
+
   levelStarted(levelIndex: number, isTutorial: boolean): void {
     this.goal('level_started', {
       level: levelIndex + 1,
@@ -52,7 +80,7 @@ export class AnalyticsService {
     // Do not pollute the production analytics counter while running the local
     // Vite development server. Failure of the counter or an ad blocker must
     // never affect play.
-    if (import.meta.env.DEV || typeof window.ym !== 'function') return;
+    if (!this.enabled || typeof window.ym !== 'function') return;
     window.ym(COUNTER_ID, 'reachGoal', name, params);
   }
 }

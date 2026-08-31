@@ -9,6 +9,7 @@ export interface ProgressSnapshot {
   levelStars: Map<number, number>;
   musicEnabled: boolean;
   musicVolume: number;
+  analyticsConsent: boolean | null;
 }
 
 const KEYS = {
@@ -18,6 +19,7 @@ const KEYS = {
   musicEnabled: 'dozor.music_enabled',
   musicVolume: 'dozor.music_volume',
   levelStars: 'dozor.level_stars_v1',
+  analyticsConsent: 'runechess.analytics_consent_v1',
 } as const;
 
 function readJson<T>(key: string): T | null {
@@ -65,6 +67,8 @@ export class ProgressRepository {
     const musicEnabled = readJson<boolean>(KEYS.musicEnabled) ?? true;
     const storedMusicVolume = readJson<number>(KEYS.musicVolume) ?? 0.6;
     const musicVolume = Math.min(1, Math.max(0, storedMusicVolume));
+    const storedAnalyticsConsent = readJson<unknown>(KEYS.analyticsConsent);
+    const analyticsConsent = typeof storedAnalyticsConsent === 'boolean' ? storedAnalyticsConsent : null;
 
     const levelStars = new Map<number, number>();
     const rawStars = readJson<Record<string, unknown>>(KEYS.levelStars);
@@ -102,6 +106,7 @@ export class ProgressRepository {
       levelStars,
       musicEnabled,
       musicVolume,
+      analyticsConsent,
     };
   }
 
@@ -128,5 +133,9 @@ export class ProgressRepository {
   saveMusicSettings(args: { musicEnabled: boolean; musicVolume: number }): void {
     writeJson(KEYS.musicEnabled, args.musicEnabled);
     writeJson(KEYS.musicVolume, args.musicVolume);
+  }
+
+  saveAnalyticsConsent(consent: boolean): void {
+    writeJson(KEYS.analyticsConsent, consent);
   }
 }
