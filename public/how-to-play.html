@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#05091a" />
+    <meta name="description" content="Как играть в RuneChess: правила расстановки шахматных фигур, активация монет-рун, подсказки и звёзды." />
+    <link rel="icon" type="image/png" href="./assets/branding/favicon-32.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Russo+One&display=swap" rel="stylesheet" />
+    <title>Как играть — RuneChess</title>
+    <style>
+      :root { color-scheme: dark; } * { box-sizing: border-box; } html { background: #05091a; }
+      body { min-width: 320px; margin: 0; color: #e8efff; font-family: Nunito, system-ui, sans-serif; background: linear-gradient(180deg, rgba(3,7,18,.3), #05091a 72%), url('./assets/images/menu-castle-bg-web-wide.webp') top center / max(1120px, 100%) auto no-repeat, #05091a; }
+      .page { width: min(1040px, calc(100% - 64px)); margin: 0 auto; padding: 26px 0 52px; }
+      .nav, footer { display: flex; align-items: center; justify-content: center; gap: 16px; } .brand { display: block; width: clamp(170px,26vw,240px); height: auto; }
+      .back-control { position:fixed; z-index:2; top:22px; left:20px; display:flex; align-items:center; justify-content:center; width:44px; height:44px; border:2px solid rgba(224,168,63,.8); border-radius:15px; color:#ffd77a; background:linear-gradient(to bottom,rgba(58,84,156,.92),rgba(14,25,60,.92)); box-shadow:0 5px 16px rgba(0,0,0,.5); font-size:28px; line-height:1; text-decoration:none; } .back-control:hover,.back-control:focus-visible { filter:brightness(1.14); transform:translateY(-1px); }
+      a { color: inherit; } .text-link { color: #d6e4ff; font-size: 13px; font-weight: 900; letter-spacing: 1px; text-decoration: none; } .text-link:hover, .text-link:focus-visible, footer a:hover { color: #ffe2a4; }
+      .hero { max-width: 760px; padding: clamp(58px,10vw,112px) 0 52px; } .eyebrow { margin: 0 0 14px; color: #ffd77a; font: 15px 'Russo One',sans-serif; letter-spacing: .12em; }
+      h1,h2,h3 { font-family: 'Russo One',sans-serif; } h1 { margin: 0; color: #ffe2a4; font-size: clamp(36px,6vw,62px); line-height: 1.1; text-shadow: 0 4px 18px rgba(0,0,0,.72); } .hero p { max-width: 680px; margin: 21px 0 0; color:#d4e0f8; font-size:clamp(17px,2vw,20px); font-weight:700; line-height:1.55; }
+      .panel { margin-top: 22px; padding: clamp(24px,4vw,40px); border:1px solid rgba(215,164,55,.55); border-radius:24px; background:linear-gradient(145deg,rgba(27,48,102,.92),rgba(8,18,48,.94)); box-shadow:0 22px 60px rgba(0,0,0,.28); } h2 { margin:0; color:#ffe2a4; font-size:clamp(23px,3vw,31px); letter-spacing:.04em; } .panel>p { margin:15px 0 0; color:#d4e0f8; font-size:17px; font-weight:700; line-height:1.58; }
+      .sequence { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-top:24px; } .sequence article { padding:17px; border:1px solid rgba(203,155,52,.44); border-radius:16px; background:rgba(4,13,39,.45); } .sequence b { color:#ffd77a; font:20px 'Russo One',sans-serif; } .sequence h3 { margin:10px 0 7px; color:#eff4ff; font-size:16px; } .sequence p { margin:0; color:#c5d4f0; font-size:14px; font-weight:700; line-height:1.46; }
+      .pieces { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:25px; } .piece { display:grid; grid-template-columns:62px 1fr; gap:13px; align-items:center; min-height:112px; padding:15px; border:1px solid rgba(203,155,52,.44); border-radius:17px; background:rgba(4,13,39,.45); } .piece img { width:56px; max-height:78px; object-fit:contain; justify-self:center; } .piece h3 { margin:0 0 5px; color:#ffe2a4; font-size:17px; } .piece p { margin:0; color:#c5d4f0; font-size:14px; font-weight:700; line-height:1.4; }
+      .callout { margin-top:24px; padding:19px 21px; border-left:3px solid #5ce1d3; border-radius:14px; background:rgba(5,16,44,.58); color:#d7e7fc; font-size:16px; font-weight:700; line-height:1.55; } .tracks { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:24px; } .track { padding:22px; border:1px solid rgba(203,155,52,.44); border-radius:17px; background:rgba(4,13,39,.45); } .badge { display:inline-flex; align-items:center; min-height:28px; padding:0 11px; border:1px solid rgba(255,215,122,.64); border-radius:999px; color:#ffd77a; font-size:11px; font-weight:900; letter-spacing:.08em; } .track h3 { margin:15px 0 8px; color:#ffe2a4; font-size:21px; } .track p { margin:0; color:#c5d4f0; font-size:15px; font-weight:700; line-height:1.5; } .track ul { margin:14px 0 0; padding-left:18px; color:#c5d4f0; font-size:14px; font-weight:700; line-height:1.55; } .stars { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:24px; } .star { padding:20px; border:1px solid rgba(203,155,52,.44); border-radius:17px; background:rgba(4,13,39,.45); } .star b { color:#ffd77a; font:23px 'Russo One',sans-serif; } .star h3 { margin:10px 0 7px; color:#eff4ff; font-size:16px; } .star p { margin:0; color:#c5d4f0; font-size:14px; font-weight:700; line-height:1.48; } .play { display:inline-flex; align-items:center; justify-content:center; min-height:52px; margin-top:26px; padding:0 28px; border:1px solid #f6d782; border-radius:14px; color:#162350; background:linear-gradient(135deg,#ffe7a9,#e3ad3a); box-shadow:0 10px 30px rgba(0,0,0,.4),inset 0 1px rgba(255,255,255,.65); font:17px 'Russo One',sans-serif; letter-spacing:.08em; text-decoration:none; } .play:hover,.play:focus-visible { transform:translateY(-1px); filter:brightness(1.06); } footer { flex-wrap:wrap; justify-content:center; margin-top:30px; color:#acbad8; font-size:14px; font-weight:700; } footer a { color:#cbdafa; text-decoration:none; }
+      @media (max-width:760px) { body { background-size:auto 690px; } .page { width:min(100% - 40px,620px); padding-top:18px; } .sequence { grid-template-columns:repeat(2,1fr); } .pieces,.tracks,.stars { grid-template-columns:1fr; } .nav { align-items:flex-start; } }
+      @media (max-width:420px) { .sequence { grid-template-columns:1fr; } }
+    </style>
+  </head>
+  <body>
+    <a class="back-control" href="./" aria-label="Назад в меню">‹</a>
+    <main class="page">
+      <nav class="nav" aria-label="Основная навигация"><a href="./" aria-label="RuneChess — главная"><img class="brand" src="./assets/branding/runechess-logo.png" alt="RuneChess" /></a></nav>
+      <section class="hero" aria-labelledby="page-title"><h1 id="page-title">Как играть</h1><p>Расставьте фигуры: каждая руна должна получить нужное число атак.</p></section>
+      <section class="panel" aria-labelledby="start-title"><h2 id="start-title">Четыре шага к решению</h2><div class="sequence"><article><b>1</b><h3>Прочтите руну</h3><p>Число показывает нужное количество атак.</p></article><article><b>2</b><h3>Выберите фигуру</h3><p>Берите фигуры из доступного набора.</p></article><article><b>3</b><h3>Поставьте её</h3><p>Проверьте линии атаки на поле.</p></article><article><b>4</b><h3>Завершите уровень</h3><p>Все руны точны — задача решена.</p></article></div></section>
+      <section class="panel" aria-labelledby="pieces-title"><h2 id="pieces-title">Как атакуют фигуры</h2><p>Фигуры действуют по привычным шахматным правилам. Линия атаки останавливается на первой фигуре, встретившейся на пути.</p><div class="pieces">
+        <article class="piece"><img src="./assets/images/p-rook-android.webp" alt="Ладья" /><div><h3>Ладья</h3><p>Атакует по горизонтали и вертикали.</p></div></article>
+        <article class="piece"><img src="./assets/images/p-bishop-android.webp" alt="Слон" /><div><h3>Слон</h3><p>Атакует по диагонали.</p></div></article>
+        <article class="piece"><img src="./assets/images/p-knight-android.webp" alt="Конь" /><div><h3>Конь</h3><p>Прыгает буквой «Г» и не зависит от преград.</p></div></article>
+        <article class="piece"><img src="./assets/images/p-king-android.webp" alt="Король" /><div><h3>Король</h3><p>Атакует одну соседнюю клетку в любом направлении.</p></div></article>
+        <article class="piece"><img src="./assets/images/p-queen-android.webp" alt="Ферзь" /><div><h3>Ферзь</h3><p>Объединяет силу ладьи и слона.</p></div></article>
+        <article class="piece"><img src="./assets/images/p-pawn-android.webp" alt="Пешка" /><div><h3>Пешка</h3><p>Атакует по диагонали вперёд.</p></div></article>
+      </div><div class="callout">Подсказка показывает следующий ход. С ней можно получить только одну звезду.</div></section>
+      <section class="panel" id="levels" aria-labelledby="levels-title"><h2 id="levels-title">Уровни и прогресс</h2><p>В RuneChess 112 задач: 5 обучающих и 107 уровней кампании.</p><div class="tracks"><article class="track"><span class="badge">УРОВНИ 1–5</span><h3>Обучение</h3><p>Освойте поле, фигуры и линии атак.</p></article><article class="track"><span class="badge">УРОВНИ 6–112</span><h3>Кампания</h3><p>Решайте всё более сложные шахматные задачи.</p></article></div><div class="stars"><article class="star"><b>★★★</b><h3>Точно</h3><p>Быстро, без лишних ходов и подсказок.</p></article><article class="star"><b>★★☆</b><h3>Хорошо</h3><p>Решение без подсказок.</p></article><article class="star"><b>★☆☆</b><h3>Решено</h3><p>Подсказка помогает пройти уровень.</p></article></div><a class="play" href="./#levels">ОТКРЫТЬ УРОВНИ В ИГРЕ</a></section>
+      <footer><a href="./privacy.html">Политика конфиденциальности</a></footer>
+    </main>
+  </body>
+</html>

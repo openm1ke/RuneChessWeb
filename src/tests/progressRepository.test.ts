@@ -72,4 +72,27 @@ describe('ProgressRepository', () => {
     expect(snapshot.musicEnabled).toBe(false);
     expect(snapshot.musicVolume).toBeCloseTo(0.25);
   });
+
+  it('resets only game progress and keeps music and analytics choices', () => {
+    const repo = new ProgressRepository();
+    repo.save({
+      unlockedLevels: new Set([0, 1, 6]),
+      seenOnboardingLevels: new Set([0, 1]),
+      tutorialComplete: true,
+      levelStars: new Map([[6, 3]]),
+    });
+    repo.saveMusicSettings({ musicEnabled: false, musicVolume: 0.25 });
+    repo.saveAnalyticsConsent(true);
+
+    repo.resetProgress();
+
+    const snapshot = repo.load();
+    expect([...snapshot.unlockedLevels]).toEqual([0]);
+    expect(snapshot.seenOnboardingLevels.size).toBe(0);
+    expect(snapshot.tutorialComplete).toBe(false);
+    expect(snapshot.levelStars.size).toBe(0);
+    expect(snapshot.musicEnabled).toBe(false);
+    expect(snapshot.musicVolume).toBeCloseTo(0.25);
+    expect(snapshot.analyticsConsent).toBe(true);
+  });
 });

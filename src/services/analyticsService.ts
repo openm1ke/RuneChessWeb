@@ -76,6 +76,14 @@ export class AnalyticsService {
     });
   }
 
+  tutorialCompleted(): void {
+    this.goal('tutorial_completed', {});
+  }
+
+  campaignCompleted(): void {
+    this.goal('campaign_completed', {});
+  }
+
   private goal(name: string, params: Record<string, number | boolean>): void {
     // Do not pollute the production analytics counter while running the local
     // Vite development server. Failure of the counter or an ad blocker must

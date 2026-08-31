@@ -58,6 +58,12 @@ export function MenuScreen({
         <div style={{ position: 'absolute', top: 508, left: 92, right: 92, height: 72 }}>
           <MenuActionButton label="УРОВНИ" onClick={onLevels} />
         </div>
+        <div style={{ position: 'absolute', top: 594, left: 92, right: 92, height: 72 }}>
+          <MenuInfoButton label="ПРАВИЛА" href="how-to-play.html" />
+        </div>
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 36, textAlign: 'center' }}>
+          <MenuFooterLinks />
+        </div>
         <div style={{ position: 'absolute', top: 24, right: 24 }}>
           <MenuSettingsButton onClick={onSettings} />
         </div>
@@ -66,7 +72,7 @@ export function MenuScreen({
             position: 'absolute',
             left: 0,
             right: 0,
-            bottom: 26,
+            bottom: 12,
             textAlign: 'center',
             fontSize: 10,
             fontWeight: 700,
@@ -145,15 +151,21 @@ function LandscapeMenuScene({
       >
         <MenuActionButton label="УРОВНИ" onClick={onLevels} />
       </div>
+      <div style={{ position: 'absolute', top: panelTop + 210, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
+        <MenuInfoButton label="ПРАВИЛА" href="how-to-play.html" />
+      </div>
       <div style={{ position: 'absolute', top: 18, right: 24 }}>
         <MenuSettingsButton onClick={onSettings} />
+      </div>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 28, textAlign: 'center' }}>
+        <MenuFooterLinks />
       </div>
       <div
         style={{
           position: 'absolute',
           left: 0,
           right: 0,
-          bottom: 14,
+          bottom: 8,
           textAlign: 'center',
           fontSize: 9,
           fontWeight: 700,
@@ -164,6 +176,73 @@ function LandscapeMenuScene({
         версия 1.0.0
       </div>
     </div>
+  );
+}
+
+function MenuFooterLinks() {
+  const links = [
+    ['ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ', 'privacy.html'],
+  ] as const;
+
+  return (
+    <nav
+      aria-label="Информация об игре"
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        columnGap: 12,
+        rowGap: 3,
+        padding: '0 18px',
+      }}
+    >
+      {links.map(([label, path]) => (
+        <a
+          key={path}
+          href={asset(path)}
+          style={{
+            color: 'rgba(221, 229, 247, 0.78)',
+            fontSize: 8.5,
+            fontWeight: 800,
+            letterSpacing: 0.75,
+            lineHeight: 1.2,
+            textDecoration: 'none',
+            textShadow: '0 2px 4px rgba(0,0,0,0.85)',
+          }}
+        >
+          {label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+function MenuInfoButton({ label, href }: { label: string; href: string }) {
+  const backgroundAsset = asset('assets/images/menu-button-levels.webp');
+  return (
+    <a
+      href={asset(href)}
+      style={{
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+        border: 'none',
+        color: 'var(--gold-bright)',
+        background: 'transparent',
+        fontFamily: 'var(--font-body)',
+        fontSize: 19,
+        fontWeight: 900,
+        letterSpacing: 2.1,
+        textDecoration: 'none',
+        textShadow: '0 2px 3px rgba(0,0,0,0.66)',
+      }}
+    >
+      <img src={backgroundAsset} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} draggable={false} />
+      <span style={{ position: 'relative' }}>{label}</span>
+    </a>
   );
 }
 

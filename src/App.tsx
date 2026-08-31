@@ -18,13 +18,23 @@ type Screen = 'menu' | 'levels' | 'settings' | 'game' | 'tutorialComplete' | 'ca
 
 const isDev = import.meta.env.DEV;
 
+function initialScreen(): Screen {
+  return typeof window !== 'undefined' && window.location.hash === '#levels' ? 'levels' : 'menu';
+}
+
+function setLevelSelectAddress(isOpen: boolean): void {
+  if (typeof window === 'undefined') return;
+  const address = `${window.location.pathname}${window.location.search}${isOpen ? '#levels' : ''}`;
+  window.history.replaceState(null, '', address);
+}
+
 export default function App() {
   const progressRepository = useMemo(() => new ProgressRepository(), []);
   const musicService = useMemo(() => new MusicService(), []);
   const analyticsService = useMemo(() => new AnalyticsService(), []);
   const engine = useMemo(() => new DozorEngine(), []);
 
-  const [screen, setScreen] = useState<Screen>('menu');
+  const [screen, setScreen] = useState<Screen>(initialScreen);
   const [unlockedLevels, setUnlockedLevels] = useState<Set<number>>(new Set([0]));
   const [seenOnboardingLevels, setSeenOnboardingLevels] = useState<Set<number>>(new Set());
   const [levelStars, setLevelStars] = useState<Map<number, number>>(new Map());
@@ -96,6 +106,7 @@ export default function App() {
   };
 
   const goToGame = (levelIndex?: number) => {
+    setLevelSelectAddress(false);
     void musicService.stopMenu();
     const requested = levelIndex ?? highestLevel;
     engine.goToLevel(!tutorialComplete && requested >= 5 ? 4 : requested);
@@ -112,9 +123,11 @@ export default function App() {
 
   const openLevelSelect = () => {
     void musicService.stopMenu();
+    setLevelSelectAddress(true);
     setScreen('levels');
   };
   const closeLevelSelect = () => {
+    setLevelSelectAddress(false);
     setScreen('menu');
     void musicService.startMenu();
   };
@@ -139,10 +152,12 @@ export default function App() {
       if (before === FIRST_SCORED_LEVEL_INDEX - 1) {
         nextTutorialComplete = true;
         setTutorialComplete(true);
+        analyticsService.tutorialCompleted();
         setScreen('tutorialComplete');
       }
       persist({ unlockedLevels: nextUnlocked, seenOnboardingLevels: nextSeen, tutorialComplete: nextTutorialComplete });
     } else if (before === campaignLevels.length - 1) {
+      analyticsService.campaignCompleted();
       setScreen('campaignComplete');
     }
   };
@@ -202,6 +217,23 @@ export default function App() {
     musicService.applyVolume();
   };
 
+  const resetProgress = () => {
+    progressRepository.resetProgress();
+    const initialUnlocked = new Set([0]);
+    const initialSeen = new Set<number>();
+    const initialStars = new Map<number, number>();
+    unlockedLevelsRef.current = initialUnlocked;
+    seenOnboardingRef.current = initialSeen;
+    tutorialCompleteRef.current = false;
+    setUnlockedLevels(initialUnlocked);
+    setHighestLevel(0);
+    setSeenOnboardingLevels(initialSeen);
+    setTutorialComplete(false);
+    setLevelStars(initialStars);
+    engine.goToLevel(0);
+    goToMenu();
+  };
+
   const setAnalyticsConsentAndSave = (consent: boolean) => {
     setAnalyticsConsent(consent);
     progressRepository.saveAnalyticsConsent(consent);
@@ -252,6 +284,7 @@ export default function App() {
           musicVolume={musicVolume}
           onMusicEnabledChanged={setMusicEnabledAndSave}
           onVolumeChanged={setMusicVolumeAndSave}
+          onProgressReset={resetProgress}
           onBack={goToMenu}
         />
       );

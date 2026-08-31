@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { RoundControl } from '../components/shared/RoundControl';
 import { useViewportSize } from '../components/game/useViewportSize';
@@ -8,18 +9,45 @@ interface SettingsProps {
   musicVolume: number;
   onMusicEnabledChanged: (enabled: boolean) => void;
   onVolumeChanged: (volume: number) => void;
+  onProgressReset: () => void;
   onBack: () => void;
 }
 
 export function SettingsScreen(props: SettingsProps) {
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
+  const [confirmingReset, setConfirmingReset] = useState(false);
 
-  if (isLandscape) {
-    return <LandscapeSettingsScene {...props} />;
-  }
+  const scene = isLandscape ? (
+    <LandscapeSettingsScene {...props} onResetRequested={() => setConfirmingReset(true)} />
+  ) : (
+    <PortraitSettingsScene {...props} onResetRequested={() => setConfirmingReset(true)} />
+  );
 
-  const { musicEnabled, musicVolume, onMusicEnabledChanged, onVolumeChanged, onBack } = props;
+  return (
+    <>
+      {scene}
+      {confirmingReset && (
+        <ResetProgressConfirmation
+          onCancel={() => setConfirmingReset(false)}
+          onConfirm={() => {
+            setConfirmingReset(false);
+            props.onProgressReset();
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function PortraitSettingsScene({
+  musicEnabled,
+  musicVolume,
+  onMusicEnabledChanged,
+  onVolumeChanged,
+  onBack,
+  onResetRequested,
+}: SettingsProps & { onResetRequested: () => void }) {
   return (
     <DesignCanvas>
       <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
@@ -63,6 +91,7 @@ export function SettingsScreen(props: SettingsProps) {
             musicVolume={musicVolume}
             onMusicEnabledChanged={onMusicEnabledChanged}
             onVolumeChanged={onVolumeChanged}
+            onResetRequested={onResetRequested}
           />
         </div>
       </div>
@@ -80,7 +109,8 @@ function LandscapeSettingsScene({
   onMusicEnabledChanged,
   onVolumeChanged,
   onBack,
-}: SettingsProps) {
+  onResetRequested,
+}: SettingsProps & { onResetRequested: () => void }) {
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       <img
@@ -131,6 +161,7 @@ function LandscapeSettingsScene({
             musicVolume={musicVolume}
             onMusicEnabledChanged={onMusicEnabledChanged}
             onVolumeChanged={onVolumeChanged}
+            onResetRequested={onResetRequested}
           />
         </div>
       </div>
@@ -154,7 +185,8 @@ function MusicSettingsCard({
   musicVolume,
   onMusicEnabledChanged,
   onVolumeChanged,
-}: Pick<SettingsProps, 'musicEnabled' | 'musicVolume' | 'onMusicEnabledChanged' | 'onVolumeChanged'>) {
+  onResetRequested,
+}: Pick<SettingsProps, 'musicEnabled' | 'musicVolume' | 'onMusicEnabledChanged' | 'onVolumeChanged'> & { onResetRequested: () => void }) {
   return (
     <div
       style={{
@@ -214,8 +246,59 @@ function MusicSettingsCard({
         onChange={(e) => onVolumeChanged(Number(e.target.value))}
         style={{ width: '100%', marginTop: 8, accentColor: '#d8a537' }}
       />
+      <div style={{ height: 24, marginTop: 26, borderTop: '1px solid rgba(207,162,68,0.38)' }} />
+      <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>СБРОС ПРОГРЕССА</div>
+      <p style={{ margin: '8px 0 15px', color: '#c6d3ed', fontSize: 13, fontWeight: 700, lineHeight: 1.42 }}>
+        Удалить пройденные уровни и звёзды.
+      </p>
+      <button
+        type="button"
+        onClick={onResetRequested}
+        style={{ width: '100%', minHeight: 44, border: '1.5px solid rgba(240,142,104,0.86)', borderRadius: 12, color: '#ffe2d7', background: 'linear-gradient(#77323b, #451d2b)', fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 1, cursor: 'pointer' }}
+      >
+        СБРОСИТЬ ДОСТИЖЕНИЯ
+      </button>
     </div>
   );
+}
+
+function ResetProgressConfirmation({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reset-progress-title"
+      style={{ position: 'fixed', zIndex: 20, inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(1,4,14,0.79)' }}
+    >
+      <div style={{ width: 'min(390px, 100%)', padding: '26px 24px 22px', border: '2px solid #d0a344', borderRadius: 22, background: 'linear-gradient(145deg, #203c7b, #0b1637)', boxShadow: '0 20px 60px rgba(0,0,0,0.72)', textAlign: 'center' }}>
+        <h2 id="reset-progress-title" style={{ margin: 0, color: 'var(--gold-bright)', fontFamily: 'var(--font-display)', fontSize: 20, letterSpacing: 1.1 }}>
+          СБРОСИТЬ ПРОГРЕСС?
+        </h2>
+        <p style={{ margin: '14px 0 22px', color: '#d9e4f8', fontSize: 15, fontWeight: 700, lineHeight: 1.45 }}>
+          Пройденные уровни и звёзды будут удалены. Это действие нельзя отменить.
+        </p>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button type="button" onClick={onCancel} style={confirmationButtonStyle(false)}>ОТМЕНА</button>
+          <button type="button" onClick={onConfirm} style={confirmationButtonStyle(true)}>СБРОСИТЬ</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function confirmationButtonStyle(danger: boolean) {
+  return {
+    flex: 1,
+    minHeight: 44,
+    border: danger ? '1.5px solid rgba(240,142,104,0.86)' : '1.5px solid rgba(207,162,68,0.76)',
+    borderRadius: 12,
+    color: danger ? '#ffe2d7' : '#ffe6b0',
+    background: danger ? 'linear-gradient(#77323b, #451d2b)' : 'linear-gradient(#294781, #182852)',
+    fontFamily: 'var(--font-display)',
+    fontSize: 13,
+    letterSpacing: 0.8,
+    cursor: 'pointer',
+  } as const;
 }
 
 function RuneToggle({ value, onChange }: { value: boolean; onChange: (value: boolean) => void }) {

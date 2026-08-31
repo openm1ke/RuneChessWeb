@@ -2,86 +2,60 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#05091a" />
-    <title>Сохранение и аналитика — RuneChess</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Russo+One&display=swap" rel="stylesheet" />
+    <title>Политика конфиденциальности — RuneChess</title>
     <style>
       :root { color-scheme: dark; }
       * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        color: #edf3ff;
-        background: radial-gradient(circle at 50% -20%, #203e80, #07122c 42%, #03050d 80%);
-        font-family: "Nunito", system-ui, sans-serif;
-        line-height: 1.6;
-      }
-      main { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 44px 0 60px; }
+      html { background: #05091a; }
+      body { min-width:320px; margin:0; min-height:100vh; color:#edf3ff; background:linear-gradient(180deg,rgba(3,7,18,.3),#05091a 72%),url('./assets/images/menu-castle-bg-web-wide.webp') top center / max(1120px,100%) auto no-repeat,#05091a; font-family:Nunito,system-ui,sans-serif; line-height:1.6; }
+      main { width:min(1040px,calc(100% - 64px)); margin:0 auto; padding:26px 0 60px; }
+      .nav { display:flex; justify-content:center; } .brand { display:block; width:clamp(170px,26vw,240px); height:auto; }
+      .back-control { position:fixed; z-index:2; top:22px; left:20px; display:flex; align-items:center; justify-content:center; width:44px; height:44px; border:2px solid rgba(224,168,63,.8); border-radius:15px; color:#ffd77a; background:linear-gradient(to bottom,rgba(58,84,156,.92),rgba(14,25,60,.92)); box-shadow:0 5px 16px rgba(0,0,0,.5); font-size:28px; line-height:1; text-decoration:none; } .back-control:hover,.back-control:focus-visible { filter:brightness(1.14); transform:translateY(-1px); }
       h1, h2 { color: #ffdc82; font-family: "Russo One", system-ui, sans-serif; letter-spacing: .04em; }
       h1 { font-size: clamp(25px, 5vw, 36px); line-height: 1.2; }
       h2 { margin-top: 32px; font-size: 17px; }
       p, li { color: #d3ddf4; }
       a { color: #8edcff; }
-      .card { padding: 22px; border: 1px solid rgba(236,178,48,.65); border-radius: 18px; background: rgba(7, 18, 48, .85); box-shadow: 0 16px 48px rgba(0,0,0,.35); }
+      .card { max-width:760px; margin:clamp(58px,10vw,112px) auto 0; padding:clamp(24px,4vw,40px); border:1px solid rgba(236,178,48,.65); border-radius:24px; background:linear-gradient(145deg,rgba(27,48,102,.92),rgba(8,18,48,.94)); box-shadow:0 22px 60px rgba(0,0,0,.35); }
       .muted { color: #aebbd9; font-size: 14px; }
       button { border: 1px solid #ffd86e; border-radius: 10px; padding: 11px 14px; color: #10234c; background: linear-gradient(#ffe39a, #e9ae35); font: inherit; font-weight: 800; cursor: pointer; }
       .result { min-height: 1.5em; margin-top: 10px; color: #c5f3df; }
+      @media (max-width:760px) { body { background-size:auto 690px; } main { width:min(100% - 40px,620px); padding-top:18px; } }
     </style>
   </head>
   <body>
+    <a class="back-control" href="./" aria-label="Назад в меню">‹</a>
     <main>
-      <p><a href="./">← Вернуться в RuneChess</a></p>
+      <nav class="nav" aria-label="Основная навигация"><a href="./" aria-label="RuneChess — главная"><img class="brand" src="./assets/branding/runechess-logo.png" alt="RuneChess" /></a></nav>
       <div class="card">
-        <h1>Сохранение и аналитика RuneChess Web</h1>
-        <p class="muted">Дата обновления: 31 августа 2026 года</p>
+        <h1>Политика конфиденциальности</h1>
 
-        <h2>1. Что используется в игре</h2>
-        <p>
-          Эта страница объясняет, как RuneChess Web использует сохранение прогресса и необязательную веб-аналитику.
-        </p>
+        <h2>1. Сохранение игры</h2>
+        <p>Ресурс использует локальное хранилище браузера, чтобы сохранять ваш прогресс, звёзды, обучение и настройки. Регистрация и личные данные не нужны.</p>
 
-        <h2>2. Локальное сохранение</h2>
-        <p>Игра не требует регистрации и не запрашивает имя, email, телефон или платёжные данные.</p>
-        <ul>
-          <li><strong>Локальное хранилище браузера:</strong> пройденные уровни, лучшие звёзды, обучение и настройки музыки. Эти данные остаются на устройстве пользователя и необходимы, чтобы игра запоминала результаты.</li>
-        </ul>
+        <h2>2. Аналитика</h2>
+        <p>Только с вашего согласия подключается Яндекс Метрика. Она помогает понять, как проходят уровни: номер уровня, время, ходы, подсказки и звёзды.</p>
 
-        <h2>3. Яндекс Метрика</h2>
-        <p>
-          Только после согласия пользователя сайт подключает Яндекс Метрику. Сервис Яндекса может обрабатывать данные о посещении, устройстве и действиях в игре,
-          включая номер уровня, время решения, число ходов, подсказок, сбросов и звёзд. Эти сведения нужны для анализа прохождения и улучшения уровней.
-        </p>
-
-        <h2>4. Согласие и отказ</h2>
-        <p>
-          При первом посещении можно согласиться на аналитику или выбрать вариант «Только необходимые». Отказ не ограничивает игру и сохранение прогресса.
-          Яндекс Метрика загружается только после согласия.
-        </p>
+        <h2>3. Ваш выбор</h2>
+        <p>Можно играть без аналитики — это не влияет на сохранение прогресса.</p>
         <button type="button" id="withdraw-consent">Отозвать согласие на аналитику</button>
         <div class="result" id="withdraw-result" role="status"></div>
 
-        <h2>5. Условия Яндекса</h2>
-        <p>
-          Условия обработки данных сервисом Яндекс Метрика доступны на страницах
-          <a href="https://yandex.ru/legal/metrica_termsofuse/ru/" target="_blank" rel="noreferrer">условий Метрики</a> и
-          <a href="https://yandex.ru/legal/confidential/ru/" target="_blank" rel="noreferrer">политики конфиденциальности Яндекса</a>.
-        </p>
+        <h2>4. Удаление данных</h2>
+        <p>Прогресс можно удалить в настройках браузера, очистив данные сайта.</p>
 
-        <h2>6. Срок хранения и удаление</h2>
-        <p>
-          Локальные данные хранятся, пока пользователь не удалит данные сайта в настройках браузера. Отказ от аналитики сохраняется в браузере и применяется при следующей загрузке игры.
-          RuneChess Web не создаёт аккаунтов и не получает данных, по которым можно надёжно установить личность посетителя или найти отдельный визит в Яндекс Метрике.
-          Поэтому удаление локального прогресса выполняется самим пользователем через настройки браузера.
-        </p>
-
-        <h2>7. Изменения страницы</h2>
-        <p>При существенном изменении способов сохранения или аналитики будет обновлена дата этой страницы и, при необходимости, повторно запрошено согласие.</p>
+        <p class="muted">Подробнее: <a href="https://yandex.ru/legal/metrica_termsofuse/ru/" target="_blank" rel="noreferrer">условия Метрики</a> и <a href="https://yandex.ru/legal/confidential/ru/" target="_blank" rel="noreferrer">политика Яндекса</a>.</p>
       </div>
     </main>
     <script>
       document.getElementById('withdraw-consent').addEventListener('click', function () {
         localStorage.setItem('runechess.analytics_consent_v1', JSON.stringify(false));
-        document.getElementById('withdraw-result').textContent = 'Согласие отозвано. При следующей загрузке игры аналитика не будет включаться.';
+        document.getElementById('withdraw-result').textContent = 'Согласие отозвано. Аналитика не будет включаться.';
       });
     </script>
   </body>

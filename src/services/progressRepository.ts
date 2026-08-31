@@ -41,6 +41,14 @@ function writeJson(key: string, value: unknown): void {
   }
 }
 
+function removeValue(key: string): void {
+  try {
+    window.localStorage.removeItem(key);
+  } catch (error) {
+    logError(`remove ${key}`, error);
+  }
+}
+
 function logError(action: string, error: unknown): void {
   if (import.meta.env.DEV) {
     console.warn(`Dozor: progress ${action} failed:`, error);
@@ -133,6 +141,14 @@ export class ProgressRepository {
   saveMusicSettings(args: { musicEnabled: boolean; musicVolume: number }): void {
     writeJson(KEYS.musicEnabled, args.musicEnabled);
     writeJson(KEYS.musicVolume, args.musicVolume);
+  }
+
+  /** Clears level completion and tutorial state while keeping music and privacy choices. */
+  resetProgress(): void {
+    removeValue(KEYS.unlockedLevels);
+    removeValue(KEYS.seenOnboardingLevels);
+    removeValue(KEYS.tutorialComplete);
+    removeValue(KEYS.levelStars);
   }
 
   saveAnalyticsConsent(consent: boolean): void {

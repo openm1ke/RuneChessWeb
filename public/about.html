@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#05091a" />
+    <meta
+      name="description"
+      content="RuneChess — атмосферная шахматная головоломка. Расставляйте фигуры, активируйте руны-монеты и проходите уровни."
+    />
+    <link rel="icon" type="image/png" href="./assets/branding/favicon-32.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Russo+One&display=swap" rel="stylesheet" />
+    <title>О RuneChess — шахматная головоломка</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      html { background: #05091a; }
+      body {
+        min-width: 320px;
+        margin: 0;
+        color: #e8efff;
+        font-family: Nunito, system-ui, sans-serif;
+        background:
+          linear-gradient(180deg, rgba(3, 7, 18, .2), #05091a 70%),
+          url('./assets/images/menu-castle-bg-web-wide.webp') top center / max(1120px, 100%) auto no-repeat,
+          #05091a;
+      }
+      a { color: inherit; }
+      .page { width: min(1040px, calc(100% - 32px)); margin: 0 auto; padding: 26px 0 52px; }
+      .nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+      .brand { display: block; width: clamp(170px, 26vw, 240px); height: auto; }
+      .text-link { color: #d6e4ff; font-weight: 900; font-size: 13px; letter-spacing: 1px; text-decoration: none; }
+      .text-link:hover, .text-link:focus-visible { color: #ffe3a0; }
+      .hero { max-width: 680px; padding: clamp(58px, 11vw, 130px) 0 clamp(62px, 10vw, 112px); }
+      .eyebrow { margin: 0 0 14px; color: #ffd77a; font: 15px 'Russo One', sans-serif; letter-spacing: .12em; }
+      h1, h2 { font-family: 'Russo One', sans-serif; }
+      h1 { max-width: 680px; margin: 0; color: #ffe2a4; font-size: clamp(36px, 6vw, 66px); line-height: 1.08; letter-spacing: .02em; text-shadow: 0 4px 18px rgba(0, 0, 0, .72); }
+      .hero p { max-width: 620px; margin: 24px 0 0; color: #d4e0f8; font-size: clamp(17px, 2.2vw, 21px); font-weight: 700; line-height: 1.55; text-shadow: 0 2px 8px rgba(0, 0, 0, .75); }
+      .play { display: inline-flex; align-items: center; justify-content: center; min-height: 54px; margin-top: 30px; padding: 0 30px; border: 1px solid #f6d782; border-radius: 14px; color: #162350; background: linear-gradient(135deg, #ffe7a9, #e3ad3a); box-shadow: 0 10px 30px rgba(0,0,0,.4), inset 0 1px rgba(255,255,255,.65); font: 18px 'Russo One', sans-serif; letter-spacing: .09em; text-decoration: none; }
+      .play:hover, .play:focus-visible { transform: translateY(-1px); filter: brightness(1.06); }
+      .section { margin-top: 28px; padding: clamp(24px, 4vw, 42px); border: 1px solid rgba(215, 164, 55, .55); border-radius: 24px; background: linear-gradient(145deg, rgba(27, 48, 102, .92), rgba(8, 18, 48, .94)); box-shadow: 0 22px 60px rgba(0, 0, 0, .28); }
+      h2 { margin: 0; color: #ffe2a4; font-size: clamp(23px, 3vw, 32px); letter-spacing: .04em; }
+      .section > p { max-width: 760px; margin: 15px 0 0; color: #d4e0f8; font-size: 17px; font-weight: 700; line-height: 1.58; }
+      .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
+      .step { min-height: 178px; padding: 23px; border: 1px solid rgba(203, 155, 52, .48); border-radius: 18px; background: rgba(4, 13, 39, .48); }
+      .step b { display: block; color: #ffd77a; font: 24px 'Russo One', sans-serif; }
+      .step h3 { margin: 14px 0 8px; color: #edf3ff; font-size: 18px; }
+      .step p { margin: 0; color: #c3d1ed; font-size: 15px; font-weight: 700; line-height: 1.5; }
+      .note { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; margin-top: 24px; padding: 18px 20px; border-radius: 16px; background: rgba(7, 15, 42, .62); }
+      .note span { color: #5ce1d3; font: 24px 'Russo One', sans-serif; }
+      .note p { margin: 0; color: #cbdaf4; font-size: 15px; font-weight: 700; line-height: 1.55; }
+      footer { display: flex; flex-wrap: wrap; gap: 10px 22px; justify-content: center; margin-top: 30px; color: #acbad8; font-size: 14px; font-weight: 700; }
+      footer a { color: #cbdafa; text-decoration: none; }
+      footer a:hover { color: #ffe2a4; }
+      @media (max-width: 680px) {
+        body { background-size: auto 690px; }
+        .page { width: min(100% - 24px, 620px); padding-top: 18px; }
+        .steps { grid-template-columns: 1fr; }
+        .step { min-height: 0; }
+        .nav { align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <nav class="nav" aria-label="Основная навигация">
+        <a href="./" aria-label="RuneChess — главная"><img class="brand" src="./assets/branding/runechess-logo.png" alt="RuneChess" /></a>
+        <a class="text-link" href="./">ИГРАТЬ</a>
+      </nav>
+
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">ШАХМАТЫ · РУНЫ · ГОЛОВОЛОМКИ</p>
+        <h1 id="page-title">Шахматная магия, где каждый ход имеет значение</h1>
+        <p>RuneChess — одиночная логическая игра. Расставляйте шахматные фигуры так, чтобы активировать руны-монеты точными атаками и открыть путь к следующему испытанию.</p>
+        <a class="play" href="./">НАЧАТЬ ИГРУ</a>
+      </section>
+
+      <section class="section" aria-labelledby="idea-title">
+        <h2 id="idea-title">О чём RuneChess</h2>
+        <p>Это не партия против соперника: перед вами задача на одну шахматную позицию. На поле уже лежат монеты-руны. Каждой нужно ровно определённое число атак — ни больше, ни меньше. Выбирайте фигуры из набора, продумывайте линии атаки и находите решение.</p>
+        <div class="steps">
+          <article class="step"><b>01</b><h3>Разберитесь в поле</h3><p>Посмотрите, какие монеты находятся на доске и сколько атак нужно каждой из них.</p></article>
+          <article class="step"><b>02</b><h3>Поставьте фигуры</h3><p>Используйте правила шахматных ходов, чтобы создать точные линии атаки.</p></article>
+          <article class="step"><b>03</b><h3>Откройте руну</h3><p>Активируйте все монеты и завершите уровень с лучшим результатом.</p></article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="progress-title">
+        <h2 id="progress-title">Учитесь и проходите кампанию</h2>
+        <p>Первые уровни постепенно знакомят с фигурами и правилами. В основной кампании задачи становятся сложнее: приходится сочетать несколько типов фигур, планировать ходы и экономить подсказки ради трёх звёзд.</p>
+        <div class="note"><span>✦</span><p>RuneChess не содержит ставок, покупок за реальные деньги или соревновательной игры на деньги. Монеты на поле — только элементы головоломки и часть мира игры.</p></div>
+      </section>
+
+      <footer>
+        <a href="./">Играть</a>
+        <a href="./about.html" aria-current="page">О игре</a>
+        <a href="./how-to-play.html">Как играть</a>
+        <a href="./how-to-play.html#levels">Уровни</a>
+        <a href="./privacy.html">Политика конфиденциальности</a>
+      </footer>
+    </main>
+  </body>
+</html>

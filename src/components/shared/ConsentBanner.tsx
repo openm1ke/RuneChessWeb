@@ -45,7 +45,7 @@ export function ConsentBanner({
           href="./privacy.html"
           style={{ marginLeft: 'auto', color: '#b9ccf5', fontSize: 12 }}
         >
-          Подробнее о сохранении и аналитике
+          Политика конфиденциальности
         </a>
       </div>
     </section>
