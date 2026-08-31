@@ -58,6 +58,10 @@ export class DozorEngine {
   levelResult: LevelAttemptResult | null = null;
 
   onLevelSolved: ((levelIndex: number, result: LevelAttemptResult) => void) | null = null;
+  onHintUsed: ((levelIndex: number, hintUsedCount: number) => void) | null = null;
+  onLevelReset:
+    | ((levelIndex: number, metrics: { elapsedSeconds: number; moveCount: number; hintUsedCount: number }) => void)
+    | null = null;
 
   private listeners = new Set<() => void>();
   private cachedSnapshot: DozorSnapshot | null = null;
@@ -213,6 +217,7 @@ export class DozorEngine {
   }
 
   resetLevel(): void {
+    this.onLevelReset?.(this.levelIndex, this.currentAttemptMetrics());
     this.loadLevel();
     this.notify();
   }
@@ -264,8 +269,19 @@ export class DozorEngine {
   toggleHint(): void {
     const turningOn = !this.hint;
     this.hint = !this.hint;
-    if (turningOn) this.hintUsedCount++;
+    if (turningOn) {
+      this.hintUsedCount++;
+      this.onHintUsed?.(this.levelIndex, this.hintUsedCount);
+    }
     this.notify();
+  }
+
+  private currentAttemptMetrics(): { elapsedSeconds: number; moveCount: number; hintUsedCount: number } {
+    return {
+      elapsedSeconds: Math.round((Date.now() - this.attemptStart) / 1000),
+      moveCount: this.moveCount,
+      hintUsedCount: this.hintUsedCount,
+    };
   }
 
   private hintCell(occ: ReadonlySet<string>, beaconKey: ReadonlySet<string>): Cell | null {

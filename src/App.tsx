@@ -3,6 +3,7 @@ import { DozorEngine, FIRST_SCORED_LEVEL_INDEX } from './game/dozorEngine';
 import { campaignLevels } from './data/campaignLevels';
 import { ProgressRepository } from './services/progressRepository';
 import { MusicService } from './services/musicService';
+import { AnalyticsService } from './services/analyticsService';
 import { MenuScreen } from './screens/MenuScreen';
 import { LevelSelectScreen } from './screens/LevelSelectScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -19,6 +20,7 @@ const isDev = import.meta.env.DEV;
 export default function App() {
   const progressRepository = useMemo(() => new ProgressRepository(), []);
   const musicService = useMemo(() => new MusicService(), []);
+  const analyticsService = useMemo(() => new AnalyticsService(), []);
   const engine = useMemo(() => new DozorEngine(), []);
 
   const [screen, setScreen] = useState<Screen>('menu');
@@ -45,6 +47,7 @@ export default function App() {
     if (snapshot.musicEnabled) void musicService.startMenu();
 
     engine.onLevelSolved = (levelIndex: number, result: LevelAttemptResult) => {
+      analyticsService.levelCompleted(levelIndex, result);
       if (result.stars == null) return;
       setLevelStars((prev) => {
         const merged = mergeBestStars(prev.get(levelIndex), result.stars!);
@@ -60,6 +63,8 @@ export default function App() {
         return next;
       });
     };
+    engine.onHintUsed = (levelIndex, hintUsedCount) => analyticsService.hintUsed(levelIndex, hintUsedCount);
+    engine.onLevelReset = (levelIndex, metrics) => analyticsService.levelReset(levelIndex, metrics);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -90,6 +95,7 @@ export default function App() {
     void musicService.stopMenu();
     const requested = levelIndex ?? highestLevel;
     engine.goToLevel(!tutorialComplete && requested >= 5 ? 4 : requested);
+    analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX);
     setScreen('game');
     void musicService.startGame();
   };
@@ -113,6 +119,7 @@ export default function App() {
     const before = engine.levelIndex;
     engine.nextLevel();
     if (engine.levelIndex > before) {
+      analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX);
       const nextUnlocked = new Set(unlockedLevels);
       nextUnlocked.add(engine.levelIndex);
       setUnlockedLevels(nextUnlocked);
@@ -143,6 +150,7 @@ export default function App() {
       return;
     }
     engine.nextLevel();
+    analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX);
     const nextUnlocked = new Set(unlockedLevels);
     nextUnlocked.add(engine.levelIndex);
     setUnlockedLevels(nextUnlocked);
