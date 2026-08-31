@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Small, purpose-cut icons (2.5KB / 60KB) rather than the 1.5MB master
+         artwork the branding source ships at — a favicon is only ever shown
+         at a few dozen pixels. -->
+    <link rel="icon" type="image/png" href="./assets/branding/favicon-32.png" />
+    <link rel="apple-touch-icon" href="./assets/branding/apple-touch-icon-180.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#05091a" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Russo+One&display=swap"
+      rel="stylesheet"
+    />
+    <!-- The menu screen (the app's first paint) is the only screen whose
+         background art is worth a priority hint — everything else (game
+         board, level-select, completion screens) only ever loads once the
+         player actually navigates there. -->
+    <link rel="preload" as="image" type="image/webp" href="./assets/images/menu-castle-bg-clean.webp" />
+    <title>RuneChess</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/main.tsx"></script>
+  </body>
+</html>

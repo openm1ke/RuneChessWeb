@@ -1,0 +1,14 @@
+import { useEffect, useState } from 'react';
+
+/** Tracks the live browser viewport size — used to pick portrait vs landscape layout. */
+export function useViewportSize() {
+  const [size, setSize] = useState(() => ({ width: window.innerWidth, height: window.innerHeight }));
+
+  useEffect(() => {
+    const onResize = () => setSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  return size;
+}

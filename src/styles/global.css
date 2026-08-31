@@ -1,0 +1,53 @@
+@import './tokens.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-body);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
+}
+
+/* A thin gold-on-navy scrollbar for scrollable panels (e.g. the level
+   list), matching the app's own gold/navy language instead of the
+   browser's default scrollbar. */
+.dozor-scroll-panel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-border) rgba(11, 23, 51, 0.5);
+}
+.dozor-scroll-panel::-webkit-scrollbar {
+  width: 8px;
+}
+.dozor-scroll-panel::-webkit-scrollbar-track {
+  background: rgba(11, 23, 51, 0.5);
+  border-radius: 8px;
+}
+.dozor-scroll-panel::-webkit-scrollbar-thumb {
+  background: var(--gold-border);
+  border-radius: 8px;
+  border: 2px solid rgba(11, 23, 51, 0.5);
+}
+.dozor-scroll-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}

@@ -1,0 +1,14 @@
+:root {
+  --gold: #ffd77a;
+  --gold-bright: #ffe2a4;
+  --gold-border: #cf9c3c;
+  --gold-border-strong: #d8a537;
+  --panel-top: #1e3068;
+  --panel-bottom: #0f1a3c;
+  --ink: #05091a;
+  --text-soft: #cee1ff;
+  --success-a: #3ee0a6;
+  --success-b: #0c7355;
+  --font-display: 'Russo One', 'Arial Narrow', sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+}
