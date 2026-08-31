@@ -29,6 +29,62 @@ img {
   pointer-events: none;
 }
 
+/* A restrained confirmation effect for a beacon that has its exact attack
+   count: a grounded turquoise aura plus tiny four-point runic sparks. */
+.beacon-activation-aura {
+  position: absolute;
+  z-index: 0;
+  left: -5.5%;
+  top: -5.5%;
+  width: 111%;
+  height: 111%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(63, 237, 225, 0) 0 28%,
+    rgba(63, 237, 225, 0.10) 48%,
+    rgba(63, 237, 225, 0.30) 78%,
+    rgba(63, 237, 225, 0) 100%
+  );
+}
+
+/* The aura resolves into a deliberately soft rim on the board — visible
+   enough to ground the hovering coin, never a hard UI-style outline. */
+.beacon-activation-aura::after {
+  content: '';
+  position: absolute;
+  inset: 3%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(63, 237, 225, 0) 52%,
+    rgba(90, 246, 235, 0.26) 76%,
+    rgba(63, 237, 225, 0) 94%
+  );
+  filter: blur(2.2px);
+  transform: scale(1.03);
+}
+
+.beacon-activation-spark {
+  position: absolute;
+  top: 67%;
+  width: var(--sparkle-size);
+  height: var(--sparkle-size);
+  opacity: 0;
+  background: linear-gradient(135deg, #f5ffff, #61fff0 62%, #ffe7a0);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 1px rgba(156, 255, 246, 0.82));
+  animation: beacon-spark-fall 1.45s linear infinite;
+}
+
+@keyframes beacon-spark-fall {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.62); }
+  14% { opacity: 0.92; }
+  72% { opacity: 0.76; }
+  100% { opacity: 0; transform: translate(-50%, var(--sparkle-travel)) scale(1.08); }
+}
+
 /* A thin gold-on-navy scrollbar for scrollable panels (e.g. the level
    list), matching the app's own gold/navy language instead of the
    browser's default scrollbar. */

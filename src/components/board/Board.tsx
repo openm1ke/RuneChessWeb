@@ -137,32 +137,56 @@ function BeaconCoin({ beacon, done }: { beacon: Cell & { target: number }; done:
         width: size,
         height: size,
         pointerEvents: 'none',
-        transition: 'transform 260ms cubic-bezier(0.33,1,0.68,1)',
-        transform: done ? 'translateY(-11.5%) scale(1.045)' : 'none',
       }}
     >
-      {done && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: size * 0.02,
-            left: '50%',
-            width: size * 0.88,
-            height: size * 0.23,
-            transform: 'translateX(-50%)',
-            borderRadius: size,
-            background: 'radial-gradient(circle, rgba(255,211,107,0.4) 0%, rgba(255,211,107,0) 100%)',
-          }}
+      {done && <ActivatedBeaconAura />}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          width: '100%',
+          height: '100%',
+          transition: 'transform 260ms cubic-bezier(0.33,1,0.68,1)',
+          transform: done ? 'translateY(-11.5%) scale(1.045)' : 'none',
+        }}
+      >
+        <img
+          src={asset(`assets/images/coin-${beacon.target}.webp`)}
+          width={size}
+          height={size}
+          alt={`${beacon.target}`}
+          style={{ display: 'block' }}
+          draggable={false}
         />
-      )}
-      <img
-        src={asset(`assets/images/coin-${beacon.target}.webp`)}
-        width={size}
-        height={size}
-        alt={`${beacon.target}`}
-        style={{ display: 'block' }}
-        draggable={false}
-      />
+      </div>
+    </div>
+  );
+}
+
+const beaconSparkles = [
+  { left: '17%', delay: '0s', travel: '19px', size: '5px' },
+  { left: '83%', delay: '-1.18s', travel: '17px', size: '6px' },
+  { left: '29%', delay: '-0.89s', travel: '14px', size: '5px' },
+  { left: '71%', delay: '-0.61s', travel: '18px', size: '6px' },
+  { left: '39%', delay: '-0.33s', travel: '13px', size: '4px' },
+];
+
+/** The aura is grounded on the cell while only the coin art lifts above it. */
+function ActivatedBeaconAura() {
+  return (
+    <div className="beacon-activation-aura" aria-hidden="true">
+      {beaconSparkles.map((sparkle, index) => (
+        <span
+          key={index}
+          className="beacon-activation-spark"
+          style={{
+            left: sparkle.left,
+            animationDelay: sparkle.delay,
+            '--sparkle-travel': sparkle.travel,
+            '--sparkle-size': sparkle.size,
+          } as React.CSSProperties}
+        />
+      ))}
     </div>
   );
 }
