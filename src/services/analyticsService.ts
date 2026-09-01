@@ -4,6 +4,8 @@ const COUNTER_ID = 112107479;
 
 export type LevelEntrySource = 'menu_play' | 'level_select' | 'next_level' | 'skip_level';
 
+type AnalyticsParameter = string | number | boolean | { [key: string]: AnalyticsParameter };
+
 declare global {
   interface Window {
     ym?: (counterId: number, method: string, ...args: unknown[]) => void;
@@ -60,14 +62,25 @@ export class AnalyticsService {
   }
 
   levelCompleted(levelIndex: number, result: LevelAttemptResult, entrySource: LevelEntrySource): void {
+    const levelNumber = levelIndex + 1;
     this.goal('level_completed', {
-      level: levelIndex + 1,
+      level: levelNumber,
       is_tutorial: result.stars == null,
       stars: result.stars ?? 0,
       elapsed_seconds: result.elapsedSeconds,
       moves: result.moveCount,
       hints_used: result.hintUsedCount,
       entry_source: entrySource,
+    });
+
+    // Metrica can calculate averages for numeric visit parameters. Keeping the
+    // level number in the path makes the report expandable as
+    // gameplay → completion_time_by_level → level number, with the numeric
+    // value available as an average for that level.
+    this.visitParams({
+      gameplay: {
+        completion_time_by_level: { [String(levelNumber)]: result.elapsedSeconds },
+      },
     });
   }
 
@@ -115,11 +128,16 @@ export class AnalyticsService {
     this.goal('campaign_completed', {});
   }
 
-  private goal(name: string, params: Record<string, string | number | boolean>): void {
+  private goal(name: string, params: Record<string, AnalyticsParameter>): void {
     // Do not pollute the production analytics counter while running the local
     // Vite development server. Failure of the counter or an ad blocker must
     // never affect play.
     if (!this.enabled || typeof window.ym !== 'function') return;
     window.ym(COUNTER_ID, 'reachGoal', name, params);
+  }
+
+  private visitParams(params: Record<string, AnalyticsParameter>): void {
+    if (!this.enabled || typeof window.ym !== 'function') return;
+    window.ym(COUNTER_ID, 'params', params);
   }
 }
