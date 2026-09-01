@@ -73,13 +73,12 @@ export class AnalyticsService {
       entry_source: entrySource,
     });
 
-    // Metrica can calculate averages for numeric visit parameters. Keeping the
-    // level number in the path makes the report expandable as
-    // gameplay → completion_time_by_level → level number, with the numeric
-    // value available as an average for that level.
+    // Metrica can calculate averages for numeric visit parameters. The level
+    // identifier stays a string in the path so it is not included in the
+    // average. The only numeric value below it is the solve time in seconds.
     this.visitParams({
       gameplay: {
-        completion_time_by_level: { [String(levelNumber)]: result.elapsedSeconds },
+        completion_time_by_level: { [`level_${levelNumber}`]: result.elapsedSeconds },
       },
     });
   }
