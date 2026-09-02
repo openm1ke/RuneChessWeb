@@ -137,6 +137,13 @@ function BeaconCoin({ beacon, done }: { beacon: Cell & { target: number }; done:
         width: size,
         height: size,
         pointerEvents: 'none',
+        // Establishes a stacking context of its own so the inner zIndex:1
+        // below (coin above its own aura) stays scoped to this wrapper.
+        // Without this, that zIndex leaks past an unpositioned parent into
+        // the shared board stacking context and beats every piece's own
+        // (unset/auto) zIndex outright — coins would render on top of every
+        // piece regardless of row, no matter what DOM order they're drawn in.
+        zIndex: 0,
       }}
     >
       {done && <ActivatedBeaconAura />}

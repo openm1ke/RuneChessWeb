@@ -1,12 +1,20 @@
 import { RoundControl } from '../shared/RoundControl';
 
-export function TopControls({ onBack, onHint }: { onBack: () => void; onHint: () => void }) {
+export function TopControls({
+  onBack,
+  onHint,
+  hintEnabled = true,
+}: {
+  onBack: () => void;
+  onHint: () => void;
+  hintEnabled?: boolean;
+}) {
   return (
     <div style={{ position: 'absolute', top: 22, left: 20, right: 20, display: 'flex', justifyContent: 'space-between' }}>
       <RoundControl onClick={onBack} label="Назад">
         ‹
       </RoundControl>
-      <RoundControl onClick={onHint} label="Подсказка">
+      <RoundControl onClick={onHint} disabled={!hintEnabled} label="Подсказка">
         💡
       </RoundControl>
     </div>

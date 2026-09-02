@@ -136,6 +136,27 @@ export class MusicService {
     this._gameAudio.pause();
   }
 
+  private wasMenuPlayingBeforePause = false;
+  private wasGamePlayingBeforePause = false;
+
+  /** Pauses whichever track is currently playing without resetting its
+   * position — used for the platform's `game_api_pause` event (tab losing
+   * focus, an ad showing, etc.), unlike [stopMenu]/[stopGame] which are a
+   * deliberate screen change and restart the track from the top next time. */
+  pauseAll(): void {
+    this.wasMenuPlayingBeforePause = !!this._menuAudio && !this._menuAudio.paused;
+    this.wasGamePlayingBeforePause = !!this._gameAudio && !this._gameAudio.paused;
+    this._menuAudio?.pause();
+    this._gameAudio?.pause();
+  }
+
+  /** Resumes exactly what [pauseAll] paused — a no-op for whichever track
+   * wasn't actually playing at pause time. */
+  resumeAll(): void {
+    if (this.wasMenuPlayingBeforePause) void this._menuAudio?.play().catch(() => {});
+    if (this.wasGamePlayingBeforePause) void this._gameAudio?.play().catch(() => {});
+  }
+
   applyVolume(): void {
     if (!this.enabled) return;
     if (this._menuAudio) this._menuAudio.volume = this.menuVolume;

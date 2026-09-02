@@ -83,10 +83,11 @@ export class AnalyticsService {
     });
   }
 
-  hintUsed(levelIndex: number, hintUsedCount: number): void {
+  hintUsed(levelIndex: number, hintUsedCount: number, viaAd = false): void {
     this.goal('hint_used', {
       level: levelIndex + 1,
       hint_number: hintUsedCount,
+      via_ad: viaAd,
     });
   }
 
@@ -125,6 +126,51 @@ export class AnalyticsService {
 
   campaignCompleted(): void {
     this.goal('campaign_completed', {});
+  }
+
+  // --- Ad events — mirrors the mobile app's AnalyticsService one-to-one so
+  // the same funnel definitions (ad_requested → ad_shown → ad_rewarded →
+  // hint_used/bonus_star_granted) apply to both. `placement` is always
+  // 'extra_hint' or 'bonus_star'.
+
+  adRequested(placement: string): void {
+    this.goal('ad_requested', { placement });
+  }
+
+  adLoaded(placement: string): void {
+    this.goal('ad_loaded', { placement });
+  }
+
+  adLoadFailed(placement: string, reason?: string): void {
+    this.goal('ad_load_failed', reason ? { placement, reason } : { placement });
+  }
+
+  adShown(placement: string): void {
+    this.goal('ad_shown', { placement });
+  }
+
+  adShowFailed(placement: string, reason?: string): void {
+    this.goal('ad_show_failed', reason ? { placement, reason } : { placement });
+  }
+
+  adRewarded(placement: string): void {
+    this.goal('ad_rewarded', { placement });
+  }
+
+  adClosedWithoutReward(placement: string): void {
+    this.goal('ad_closed_without_reward', { placement });
+  }
+
+  adUnavailable(placement: string): void {
+    this.goal('ad_unavailable', { placement });
+  }
+
+  bonusStarGranted(levelIndex: number, starsBefore: number, starsAfter: number): void {
+    this.goal('bonus_star_granted', {
+      level: levelIndex + 1,
+      stars_before: starsBefore,
+      stars_after: starsAfter,
+    });
   }
 
   private goal(name: string, params: Record<string, AnalyticsParameter>): void {

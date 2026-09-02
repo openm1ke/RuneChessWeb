@@ -46,6 +46,11 @@
          player actually navigates there. -->
     <link rel="preload" as="image" type="image/webp" href="./assets/images/menu-castle-bg-clean.webp" />
     <title>RuneChess — шахматная головоломка</title>
+    <!-- Yandex Games SDK — safe to load unconditionally, including on the
+         plain runechess.ru site: outside the Yandex Games iframe `YaGames`
+         simply never appears, which `yandexGamesSdk.ts` treats as "not on
+         the platform" rather than an error. See YANDEX_GAMES_PLATFORM_PLAN.md. -->
+    <script src="https://yandex.ru/games/sdk/v2"></script>
   </head>
   <body>
     <div id="root"></div>

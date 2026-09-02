@@ -14,10 +14,21 @@ export function LevelResultOverlay({
   result,
   onContinue,
   onRetry,
+  bonusStarOffered = false,
+  bonusStarEnabled = false,
+  onBonusStarRequested,
 }: {
   result: LevelAttemptResult;
   onContinue: () => void;
   onRetry: () => void;
+  /** Whether the "звезда за рекламу" block should be shown at all — solved
+   * with zero hints and below 3 stars. Mirrors the mobile app's
+   * `_bonusStarOffered`. */
+  bonusStarOffered?: boolean;
+  /** Whether the block is currently tappable (a rewarded ad isn't already
+   * loading/showing for this placement). */
+  bonusStarEnabled?: boolean;
+  onBonusStarRequested?: () => void;
 }) {
   const scored = result.stars != null;
   const [t, setT] = useState(0);
@@ -170,6 +181,29 @@ export function LevelResultOverlay({
                   }}
                 >
                   ПРОЙТИ ЕЩЁ РАЗ
+                </button>
+              </div>
+            )}
+            {bonusStarOffered && (
+              <div style={{ marginTop: 10 }}>
+                <button
+                  type="button"
+                  disabled={!bonusStarEnabled}
+                  onClick={onBonusStarRequested}
+                  style={{
+                    padding: '8px 22px',
+                    borderRadius: 12,
+                    border: '1.3px solid rgba(255,226,164,0.6)',
+                    background: 'linear-gradient(to bottom, rgba(224,168,63,0.28), rgba(224,168,63,0.1))',
+                    color: 'var(--gold-bright)',
+                    fontSize: 12,
+                    fontWeight: 800,
+                    letterSpacing: 1.1,
+                    cursor: bonusStarEnabled ? 'pointer' : 'default',
+                    opacity: bonusStarEnabled ? 1 : 0.5,
+                  }}
+                >
+                  🎬 ЗВЕЗДА ЗА РЕКЛАМУ
                 </button>
               </div>
             )}

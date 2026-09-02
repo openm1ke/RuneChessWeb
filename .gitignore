@@ -3,3 +3,8 @@ dist
 dist-ssr
 *.local
 .DS_Store
+
+# Yandex Games store-listing assets (screenshots, video, source recordings,
+# the built archive itself) — large binaries generated for the console
+# upload, not app source. Never commit these.
+/promo/

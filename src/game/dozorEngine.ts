@@ -56,9 +56,16 @@ export class DozorEngine {
   moveCount = 0;
   hintUsedCount = 0;
   levelResult: LevelAttemptResult | null = null;
+  /** Set once a rewarded-ad bonus star has been granted for the current
+   * frozen result; reset on every fresh attempt (see `loadLevel`). Mirrors
+   * the mobile `DozorController._bonusStarAppliedForAttempt` guard — it
+   * only gates *when the offer is shown*, not how many times `applyBonusStar`
+   * itself can be called (1→2, then 2→3 each need their own confirmed ad). */
+  bonusStarApplied = false;
 
   onLevelSolved: ((levelIndex: number, result: LevelAttemptResult) => void) | null = null;
-  onHintUsed: ((levelIndex: number, hintUsedCount: number) => void) | null = null;
+  onHintUsed: ((levelIndex: number, hintUsedCount: number, viaAd: boolean) => void) | null = null;
+  onBonusStarApplied: ((levelIndex: number, starsBefore: number, starsAfter: number) => void) | null = null;
   onLevelReset:
     | ((levelIndex: number, metrics: { elapsedSeconds: number; moveCount: number; hintUsedCount: number }) => void)
     | null = null;
@@ -101,6 +108,7 @@ export class DozorEngine {
     this.moveCount = 0;
     this.hintUsedCount = 0;
     this.levelResult = null;
+    this.bonusStarApplied = false;
   }
 
   private checkForSolve(): void {
@@ -266,13 +274,40 @@ export class DozorEngine {
     return true;
   }
 
+  /** Free toggle for tutorial levels — never used on campaign levels, where
+   * every hint is earned via [grantHint]. */
   toggleHint(): void {
     const turningOn = !this.hint;
     this.hint = !this.hint;
     if (turningOn) {
       this.hintUsedCount++;
-      this.onHintUsed?.(this.levelIndex, this.hintUsedCount);
+      this.onHintUsed?.(this.levelIndex, this.hintUsedCount, false);
     }
+    this.notify();
+  }
+
+  /** Grants one earned hint after a confirmed rewarded-ad view — campaign
+   * hints are "purchased" individually this way, never toggled off by a
+   * second tap. Mirrors `DozorController.grantHint()`. */
+  grantHint(): void {
+    this.hint = true;
+    this.hintUsedCount++;
+    this.onHintUsed?.(this.levelIndex, this.hintUsedCount, true);
+    this.notify();
+  }
+
+  /** Bumps the current frozen result by one star (never above 3) after a
+   * confirmed bonus-star ad reward. May be called again after a fresh ad
+   * view once the result is still below 3 (1→2, then 2→3). Mirrors
+   * `DozorController.applyBonusStar()`. */
+  applyBonusStar(): void {
+    const current = this.levelResult;
+    const currentStars = current?.stars;
+    if (current == null || currentStars == null || currentStars >= 3) return;
+    this.bonusStarApplied = true;
+    const starsAfter = currentStars + 1;
+    this.levelResult = { ...current, stars: starsAfter };
+    this.onBonusStarApplied?.(this.levelIndex, currentStars, starsAfter);
     this.notify();
   }
 

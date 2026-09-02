@@ -4,6 +4,14 @@ import { campaignLevels } from './data/campaignLevels';
 import { ProgressRepository } from './services/progressRepository';
 import { MusicService } from './services/musicService';
 import { AnalyticsService, type LevelEntrySource } from './services/analyticsService';
+import { RewardedAdsService } from './services/rewardedAdsService';
+import {
+  applyPlatformLanguage,
+  getYandexGamesSdk,
+  isRealYandexGamesPlatform,
+  startYandexGamesPlatform,
+  type YandexGamesSdk,
+} from './services/yandexGamesSdk';
 import { ConsentBanner } from './components/shared/ConsentBanner';
 import { MenuScreen } from './screens/MenuScreen';
 import { LevelSelectScreen } from './screens/LevelSelectScreen';
@@ -32,6 +40,7 @@ export default function App() {
   const progressRepository = useMemo(() => new ProgressRepository(), []);
   const musicService = useMemo(() => new MusicService(), []);
   const analyticsService = useMemo(() => new AnalyticsService(), []);
+  const rewardedAdsService = useMemo(() => new RewardedAdsService(analyticsService), [analyticsService]);
   const engine = useMemo(() => new DozorEngine(), []);
 
   const [screen, setScreen] = useState<Screen>(initialScreen);
@@ -43,9 +52,37 @@ export default function App() {
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [musicVolume, setMusicVolume] = useState(0.6);
   const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(null);
+  const [yandexGamesSdk, setYandexGamesSdk] = useState<YandexGamesSdk | null>(null);
+  // Separate from the sdk existing at all (see isRealYandexGamesPlatform's
+  // doc comment) — this is specifically the "are we actually embedded in
+  // games.yandex.ru right now" check. Gates the RSYA rewarded-ads flow
+  // (`RewardedAdsService`, built for the plain site via `Ya.Context.AdvManager`)
+  // off entirely on the real platform: that RSYA integration cannot show
+  // anything inside the Yandex Games iframe — there is no РСЯ contract for
+  // this surface, only a separate `ysdk.adv` integration would work here,
+  // and that hasn't been built yet. Until it is, hints/bonus star fall back
+  // to the same free toggle tutorial levels already use everywhere — see
+  // GameScreen's handling of a missing `rewardedAdsService` prop.
+  const [isOnYandexGamesPlatform, setIsOnYandexGamesPlatform] = useState(false);
 
   useEffect(() => {
     musicService.init();
+
+    // Yandex Games platform integration (no-op on the plain runechess.ru
+    // site — see getYandexGamesSdk's doc comment). LoadingAPI.ready() fires
+    // as soon as we resolve here: the menu is the app's first paint and is
+    // immediately interactive, so there is no later "gameplay is ready"
+    // moment to wait for. See YANDEX_GAMES_PLATFORM_PLAN.md.
+    void getYandexGamesSdk().then((sdk) => {
+      if (!sdk) return;
+      setYandexGamesSdk(sdk);
+      setIsOnYandexGamesPlatform(isRealYandexGamesPlatform(sdk));
+      applyPlatformLanguage(sdk);
+      startYandexGamesPlatform(sdk, {
+        onPause: () => musicService.pauseAll(),
+        onResume: () => musicService.resumeAll(),
+      });
+    });
     const snapshot = progressRepository.load();
     setUnlockedLevels(snapshot.unlockedLevels);
     setHighestLevel(snapshot.highestLevel);
@@ -77,8 +114,25 @@ export default function App() {
         return next;
       });
     };
-    engine.onHintUsed = (levelIndex, hintUsedCount) => analyticsService.hintUsed(levelIndex, hintUsedCount);
+    engine.onHintUsed = (levelIndex, hintUsedCount, viaAd) =>
+      analyticsService.hintUsed(levelIndex, hintUsedCount, viaAd);
     engine.onLevelReset = (levelIndex, metrics) => analyticsService.levelReset(levelIndex, metrics);
+    engine.onBonusStarApplied = (levelIndex, starsBefore, starsAfter) => {
+      analyticsService.bonusStarGranted(levelIndex, starsBefore, starsAfter);
+      setLevelStars((prev) => {
+        const merged = mergeBestStars(prev.get(levelIndex), starsAfter);
+        if (merged === prev.get(levelIndex)) return prev;
+        const next = new Map(prev);
+        next.set(levelIndex, merged);
+        progressRepository.save({
+          unlockedLevels: unlockedLevelsRef.current,
+          seenOnboardingLevels: seenOnboardingRef.current,
+          tutorialComplete: tutorialCompleteRef.current,
+          levelStars: next,
+        });
+        return next;
+      });
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -96,6 +150,15 @@ export default function App() {
   useEffect(() => {
     tutorialCompleteRef.current = tutorialComplete;
   }, [tutorialComplete]);
+
+  // Brackets actual gameplay for the Yandex Games platform's own engagement
+  // metrics — distinct from `game_api_pause`/`resume` above, which react to
+  // the platform interrupting us, not to our own screen navigation.
+  useEffect(() => {
+    if (!yandexGamesSdk) return;
+    if (screen === 'game') yandexGamesSdk.features.GameplayAPI.start();
+    else yandexGamesSdk.features.GameplayAPI.stop();
+  }, [yandexGamesSdk, screen]);
 
   useEffect(() => {
     if (analyticsConsent && screen === 'levels') analyticsService.levelSelectOpened();
@@ -325,6 +388,7 @@ export default function App() {
           onSkipLevel={isDev ? skipLevel : undefined}
           onResetOnboarding={resetOnboardingForDebug}
           seenOnboardingLevels={seenOnboardingLevels}
+          rewardedAdsService={isOnYandexGamesPlatform ? undefined : rewardedAdsService}
         />
       );
     case 'menu':

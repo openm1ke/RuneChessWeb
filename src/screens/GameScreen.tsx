@@ -10,9 +10,9 @@ import { ResetConfirmDialog } from '../components/game/ResetConfirmDialog';
 import { LevelResultOverlay } from '../components/game/LevelResultOverlay';
 import { TutorialCoachmark, type CoachmarkLayout } from '../components/game/TutorialCoachmark';
 import { useDozorEngine } from '../game/useDozorEngine';
-import type { DozorEngine } from '../game/dozorEngine';
-import { FIRST_SCORED_LEVEL_INDEX } from '../data/campaignLevels';
+import { FIRST_SCORED_LEVEL_INDEX, type DozorEngine } from '../game/dozorEngine';
 import { asset } from '../lib/assetUrl';
+import type { RewardedAdsService, RewardedAdState } from '../services/rewardedAdsService';
 
 const isDev = import.meta.env.DEV;
 
@@ -23,6 +23,7 @@ export function GameScreen({
   onSkipLevel,
   onResetOnboarding,
   seenOnboardingLevels,
+  rewardedAdsService,
 }: {
   engine: DozorEngine;
   onBack: () => void;
@@ -30,6 +31,7 @@ export function GameScreen({
   onSkipLevel?: () => void;
   onResetOnboarding?: () => void;
   seenOnboardingLevels: Set<number>;
+  rewardedAdsService?: RewardedAdsService;
 }) {
   const { snapshot } = useDozorEngine(engine);
   const boardRef = useRef<HTMLDivElement>(null!);
@@ -37,6 +39,50 @@ export function GameScreen({
   const drag = useDragController(engine, boardRef, trayRef);
   const [beamPhase, setBeamPhase] = useState(0);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [extraHintState, setExtraHintState] = useState<RewardedAdState>('idle');
+  const [bonusStarState, setBonusStarState] = useState<RewardedAdState>('idle');
+
+  useEffect(() => {
+    if (!rewardedAdsService) return;
+    setExtraHintState(rewardedAdsService.stateOf('extraHint'));
+    setBonusStarState(rewardedAdsService.stateOf('bonusStar'));
+    return rewardedAdsService.addListener((placement, state) => {
+      if (placement === 'extraHint') setExtraHintState(state);
+      else setBonusStarState(state);
+    });
+  }, [rewardedAdsService]);
+
+  const onCampaignLevel = engine.levelIndex >= FIRST_SCORED_LEVEL_INDEX;
+
+  // On tutorial levels the hint stays a free toggle; on campaign levels
+  // every hint is requested via a rewarded ad and only ever turns on
+  // (never off) — see `DozorEngine.grantHint`. The button itself is
+  // disabled while a show is already in flight, guarding a fast double-tap
+  // the same way the mobile app's `_hintButtonEnabled` does.
+  const hintEnabled = !onCampaignLevel || !rewardedAdsService || extraHintState !== 'loading';
+  const handleHint = () => {
+    if (!onCampaignLevel || !rewardedAdsService) {
+      engine.toggleHint();
+      return;
+    }
+    if (extraHintState === 'loading') return;
+    void rewardedAdsService.show('extraHint').then(() => {
+      if (rewardedAdsService.stateOf('extraHint') === 'rewarded') engine.grantHint();
+    });
+  };
+
+  const bonusStarOffered =
+    rewardedAdsService != null &&
+    snapshot.solved &&
+    engine.levelResult?.stars != null &&
+    engine.levelResult.stars < 3 &&
+    engine.hintUsedCount === 0;
+  const requestBonusStar = () => {
+    if (!rewardedAdsService || bonusStarState === 'loading') return;
+    void rewardedAdsService.show('bonusStar').then(() => {
+      if (rewardedAdsService.stateOf('bonusStar') === 'rewarded') engine.applyBonusStar();
+    });
+  };
 
   useEffect(() => {
     if (snapshot.beams.length === 0) return;
@@ -65,6 +111,9 @@ export function GameScreen({
           result={engine.levelResult}
           onContinue={onNextLevel}
           onRetry={() => engine.resetLevel()}
+          bonusStarOffered={bonusStarOffered}
+          bonusStarEnabled={bonusStarOffered && bonusStarState !== 'loading'}
+          onBonusStarRequested={requestBonusStar}
         />
       )}
       {showResetConfirm && (
@@ -153,7 +202,7 @@ export function GameScreen({
     return (
       <div style={{ position: 'fixed', inset: 0, background: '#030406', overflow: 'hidden' }}>
         <LandscapeGameBackdrop />
-        <TopControls onBack={onBack} onHint={() => engine.toggleHint()} />
+        <TopControls onBack={onBack} onHint={handleHint} hintEnabled={hintEnabled} />
         <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} />
         <Board
           engine={engine}
@@ -197,7 +246,7 @@ export function GameScreen({
     <DesignCanvas background="#05091a">
       <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
         <StaticGameBackdrop />
-        <TopControls onBack={onBack} onHint={() => engine.toggleHint()} />
+        <TopControls onBack={onBack} onHint={handleHint} hintEnabled={hintEnabled} />
         <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} />
         <Board engine={engine} snapshot={snapshot} beamPhase={beamPhase} drag={drag} boardRef={boardRef} />
         <Tray engine={engine} snapshot={snapshot} drag={drag} trayRef={trayRef} />

@@ -5,12 +5,14 @@ export function RoundControl({
   onLongPress,
   size = 44,
   label,
+  disabled = false,
   children,
 }: {
   onClick: () => void;
   onLongPress?: () => void;
   size?: number;
   label?: string;
+  disabled?: boolean;
   children: ReactNode;
 }) {
   let pressTimer: number | undefined;
@@ -25,6 +27,7 @@ export function RoundControl({
     <button
       type="button"
       aria-label={label}
+      disabled={disabled}
       onClick={onClick}
       onPointerDown={handlePointerDown}
       onPointerUp={clearTimer}
@@ -41,7 +44,8 @@ export function RoundControl({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        cursor: 'pointer',
+        cursor: disabled ? 'default' : 'pointer',
+        opacity: disabled ? 0.45 : 1,
       }}
     >
       {children}
