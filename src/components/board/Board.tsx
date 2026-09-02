@@ -2,11 +2,12 @@ import { useMemo, type PointerEvent, type ReactElement, type RefObject } from 'r
 import type { DozorEngine, DozorSnapshot } from '../../game/dozorEngine';
 import { BOARD_N } from '../../game/attackRules';
 import { cellKey, type Beam, type Cell, type Piece } from '../../game/models';
-import { pieceOnBoardSize, pieceSkins, type PieceType } from '../../game/pieceTypes';
+import { pieceOnBoardSize, pieceSkins, pieceUprightRotationDeg, type PieceType } from '../../game/pieceTypes';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from './boardPerspective';
 import { PieceArt } from './PieceArt';
 import type { DragController } from './useDragController';
 import { asset } from '../../lib/assetUrl';
+import { playPieceSet } from '../../services/musicService';
 
 const CELL_UNIT = BoardPerspective.sourceSize / BOARD_N;
 
@@ -271,7 +272,7 @@ function PieceOnBoard({
             bottom: isHeld ? '14%' : 0,
             left: '50%',
             transition: 'bottom 180ms cubic-bezier(0.33,1,0.68,1)',
-            transform: `translateX(-50%) rotate(${piece.type === 'king' ? -4.3 : 0}deg)`,
+            transform: `translateX(-50%) rotate(${pieceUprightRotationDeg[piece.type] ?? 0}deg)`,
             transformOrigin: 'bottom center',
           }}
         >
@@ -378,7 +379,10 @@ export function Board({
       }}
       onClick={(e) => {
         const cell = cellAt(e.clientX, e.clientY);
-        if (cell) engine.tapCell(cell.c, cell.r);
+        if (!cell) return;
+        const before = engine.moveCount;
+        engine.tapCell(cell.c, cell.r);
+        if (engine.moveCount > before) playPieceSet();
       }}
     >
       <div

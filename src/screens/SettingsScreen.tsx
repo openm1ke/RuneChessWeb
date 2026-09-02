@@ -9,6 +9,8 @@ interface SettingsProps {
   musicVolume: number;
   onMusicEnabledChanged: (enabled: boolean) => void;
   onVolumeChanged: (volume: number) => void;
+  soundEffectsEnabled: boolean;
+  onSoundEffectsEnabledChanged: (enabled: boolean) => void;
   onProgressReset: () => void;
   onBack: () => void;
 }
@@ -45,6 +47,8 @@ function PortraitSettingsScene({
   musicVolume,
   onMusicEnabledChanged,
   onVolumeChanged,
+  soundEffectsEnabled,
+  onSoundEffectsEnabledChanged,
   onBack,
   onResetRequested,
 }: SettingsProps & { onResetRequested: () => void }) {
@@ -91,6 +95,8 @@ function PortraitSettingsScene({
             musicVolume={musicVolume}
             onMusicEnabledChanged={onMusicEnabledChanged}
             onVolumeChanged={onVolumeChanged}
+            soundEffectsEnabled={soundEffectsEnabled}
+            onSoundEffectsEnabledChanged={onSoundEffectsEnabledChanged}
             onResetRequested={onResetRequested}
           />
         </div>
@@ -108,6 +114,8 @@ function LandscapeSettingsScene({
   musicVolume,
   onMusicEnabledChanged,
   onVolumeChanged,
+  soundEffectsEnabled,
+  onSoundEffectsEnabledChanged,
   onBack,
   onResetRequested,
 }: SettingsProps & { onResetRequested: () => void }) {
@@ -161,6 +169,8 @@ function LandscapeSettingsScene({
             musicVolume={musicVolume}
             onMusicEnabledChanged={onMusicEnabledChanged}
             onVolumeChanged={onVolumeChanged}
+            soundEffectsEnabled={soundEffectsEnabled}
+            onSoundEffectsEnabledChanged={onSoundEffectsEnabledChanged}
             onResetRequested={onResetRequested}
           />
         </div>
@@ -185,8 +195,13 @@ function MusicSettingsCard({
   musicVolume,
   onMusicEnabledChanged,
   onVolumeChanged,
+  soundEffectsEnabled,
+  onSoundEffectsEnabledChanged,
   onResetRequested,
-}: Pick<SettingsProps, 'musicEnabled' | 'musicVolume' | 'onMusicEnabledChanged' | 'onVolumeChanged'> & { onResetRequested: () => void }) {
+}: Pick<
+  SettingsProps,
+  'musicEnabled' | 'musicVolume' | 'onMusicEnabledChanged' | 'onVolumeChanged' | 'soundEffectsEnabled' | 'onSoundEffectsEnabledChanged'
+> & { onResetRequested: () => void }) {
   return (
     <div
       style={{
@@ -225,7 +240,7 @@ function MusicSettingsCard({
         <div style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: 1.1, color: 'var(--gold-bright)' }}>
           Музыка
         </div>
-        <RuneToggle value={musicEnabled} onChange={onMusicEnabledChanged} />
+        <RuneToggle value={musicEnabled} onChange={onMusicEnabledChanged} label="Включить музыку" />
       </div>
       <div style={{ height: 26 }} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -246,6 +261,34 @@ function MusicSettingsCard({
         onChange={(e) => onVolumeChanged(Number(e.target.value))}
         style={{ width: '100%', marginTop: 8, accentColor: '#d8a537' }}
       />
+      <div style={{ height: 22, marginTop: 22, borderTop: '1px solid rgba(207,162,68,0.38)' }} />
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => onSoundEffectsEnabledChanged(!soundEffectsEnabled)}
+        style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', marginTop: 20 }}
+      >
+        <div
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: '50%',
+            background: 'rgba(18,32,68,0.85)',
+            border: '1.7px solid rgba(216,165,55,0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--gold)',
+            fontSize: 18,
+          }}
+        >
+          🔔
+        </div>
+        <div style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: 1.1, color: 'var(--gold-bright)' }}>
+          Звуковые эффекты
+        </div>
+        <RuneToggle value={soundEffectsEnabled} onChange={onSoundEffectsEnabledChanged} label="Включить звуковые эффекты" />
+      </div>
       <div style={{ height: 24, marginTop: 26, borderTop: '1px solid rgba(207,162,68,0.38)' }} />
       <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>СБРОС ПРОГРЕССА</div>
       <p style={{ margin: '8px 0 15px', color: '#c6d3ed', fontSize: 13, fontWeight: 700, lineHeight: 1.42 }}>
@@ -301,13 +344,13 @@ function confirmationButtonStyle(danger: boolean) {
   } as const;
 }
 
-function RuneToggle({ value, onChange }: { value: boolean; onChange: (value: boolean) => void }) {
+function RuneToggle({ value, onChange, label }: { value: boolean; onChange: (value: boolean) => void; label: string }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={value}
-      aria-label="Включить музыку"
+      aria-label={label}
       onClick={() => onChange(!value)}
       style={{
         width: 56,

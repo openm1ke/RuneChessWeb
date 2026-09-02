@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { DozorEngine, FIRST_SCORED_LEVEL_INDEX } from './game/dozorEngine';
 import { campaignLevels } from './data/campaignLevels';
 import { ProgressRepository } from './services/progressRepository';
-import { MusicService } from './services/musicService';
+import { MusicService, setSoundEffectsEnabled } from './services/musicService';
 import { AnalyticsService, type LevelEntrySource } from './services/analyticsService';
 import { RewardedAdsService } from './services/rewardedAdsService';
 import {
@@ -25,6 +25,19 @@ import { mergeBestStars } from './game/starRating';
 type Screen = 'menu' | 'levels' | 'settings' | 'game' | 'tutorialComplete' | 'campaignComplete';
 
 const isDev = import.meta.env.DEV;
+
+/** Temporary global kill-switch for rewarded ads, on both the plain site
+ * (RSYA, via `RewardedAdsService`/`Ya.Context.AdvManager`) and — already via
+ * `isOnYandexGamesPlatform` below — the Yandex Games platform. Neither has
+ * an approved ad contract/blockId yet, so `RewardedAdsService.show()` never
+ * resolves to a reward: the hint button would sit there doing nothing.
+ * Flip this back to `true` once a real РСЯ contract (and/or a `ysdk.adv`
+ * integration for the platform) exists — that's the only change needed;
+ * every call site already falls back to the free-toggle hint/no bonus-star
+ * offer whenever `rewardedAdsService` is undefined, exactly like a tutorial
+ * level. See YANDEX_GAMES_PLATFORM_PLAN.md.
+ */
+const ADS_AVAILABLE = false;
 
 function initialScreen(): Screen {
   return typeof window !== 'undefined' && window.location.hash === '#levels' ? 'levels' : 'menu';
@@ -51,6 +64,7 @@ export default function App() {
   const [highestLevel, setHighestLevel] = useState(0);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [musicVolume, setMusicVolume] = useState(0.6);
+  const [soundEffectsEnabled, setSoundEffectsEnabledState] = useState(true);
   const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(null);
   const [yandexGamesSdk, setYandexGamesSdk] = useState<YandexGamesSdk | null>(null);
   // Separate from the sdk existing at all (see isRealYandexGamesPlatform's
@@ -91,6 +105,8 @@ export default function App() {
     setLevelStars(snapshot.levelStars);
     setMusicEnabled(snapshot.musicEnabled);
     setMusicVolume(snapshot.musicVolume);
+    setSoundEffectsEnabledState(snapshot.soundEffectsEnabled);
+    setSoundEffectsEnabled(snapshot.soundEffectsEnabled);
     setAnalyticsConsent(snapshot.analyticsConsent);
     if (snapshot.analyticsConsent) analyticsService.enable();
     musicService.enabled = snapshot.musicEnabled;
@@ -288,6 +304,12 @@ export default function App() {
     }
   };
 
+  const setSoundEffectsEnabledAndSave = (enabled: boolean) => {
+    setSoundEffectsEnabledState(enabled);
+    setSoundEffectsEnabled(enabled);
+    progressRepository.saveSoundEffectsEnabled(enabled);
+  };
+
   const setMusicVolumeAndSave = (volume: number) => {
     const clamped = Math.min(1, Math.max(0, volume));
     setMusicVolume(clamped);
@@ -364,6 +386,8 @@ export default function App() {
           musicVolume={musicVolume}
           onMusicEnabledChanged={setMusicEnabledAndSave}
           onVolumeChanged={setMusicVolumeAndSave}
+          soundEffectsEnabled={soundEffectsEnabled}
+          onSoundEffectsEnabledChanged={setSoundEffectsEnabledAndSave}
           onProgressReset={resetProgress}
           onBack={goToMenu}
         />
@@ -388,7 +412,7 @@ export default function App() {
           onSkipLevel={isDev ? skipLevel : undefined}
           onResetOnboarding={resetOnboardingForDebug}
           seenOnboardingLevels={seenOnboardingLevels}
-          rewardedAdsService={isOnYandexGamesPlatform ? undefined : rewardedAdsService}
+          rewardedAdsService={ADS_AVAILABLE && !isOnYandexGamesPlatform ? rewardedAdsService : undefined}
         />
       );
     case 'menu':

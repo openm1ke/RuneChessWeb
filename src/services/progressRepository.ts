@@ -9,6 +9,7 @@ export interface ProgressSnapshot {
   levelStars: Map<number, number>;
   musicEnabled: boolean;
   musicVolume: number;
+  soundEffectsEnabled: boolean;
   analyticsConsent: boolean | null;
 }
 
@@ -18,6 +19,7 @@ const KEYS = {
   tutorialComplete: 'dozor.tutorial_campaign_complete',
   musicEnabled: 'dozor.music_enabled',
   musicVolume: 'dozor.music_volume',
+  soundEffectsEnabled: 'dozor.sound_effects_enabled',
   levelStars: 'dozor.level_stars_v1',
   analyticsConsent: 'runechess.analytics_consent_v1',
 } as const;
@@ -75,6 +77,7 @@ export class ProgressRepository {
     const musicEnabled = readJson<boolean>(KEYS.musicEnabled) ?? true;
     const storedMusicVolume = readJson<number>(KEYS.musicVolume) ?? 0.6;
     const musicVolume = Math.min(1, Math.max(0, storedMusicVolume));
+    const soundEffectsEnabled = readJson<boolean>(KEYS.soundEffectsEnabled) ?? true;
     const storedAnalyticsConsent = readJson<unknown>(KEYS.analyticsConsent);
     const analyticsConsent = typeof storedAnalyticsConsent === 'boolean' ? storedAnalyticsConsent : null;
 
@@ -114,6 +117,7 @@ export class ProgressRepository {
       levelStars,
       musicEnabled,
       musicVolume,
+      soundEffectsEnabled,
       analyticsConsent,
     };
   }
@@ -141,6 +145,10 @@ export class ProgressRepository {
   saveMusicSettings(args: { musicEnabled: boolean; musicVolume: number }): void {
     writeJson(KEYS.musicEnabled, args.musicEnabled);
     writeJson(KEYS.musicVolume, args.musicVolume);
+  }
+
+  saveSoundEffectsEnabled(enabled: boolean): void {
+    writeJson(KEYS.soundEffectsEnabled, enabled);
   }
 
   /** Clears level completion and tutorial state while keeping music and privacy choices. */

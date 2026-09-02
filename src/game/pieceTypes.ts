@@ -29,6 +29,15 @@ export const pieceSkins: Record<PieceType, PieceSkin> = {
   pawn: { color: '#63C978', glow: 'rgba(99,201,120,0.95)' },
 };
 
+/** A few sprites aren't drawn perfectly upright in the source art — this
+ * corrects each one in place (applied on top of the piece's own upright
+ * pose, both on the board and in the tray). Zero for every type not listed
+ * here. */
+export const pieceUprightRotationDeg: Partial<Record<PieceType, number>> = {
+  king: -6.5,
+  rook: 4,
+};
+
 /** Dedicated sprite art for every piece type. */
 export const pieceAsset: Record<PieceType, string> = {
   rook: asset('assets/images/p-rook-android.webp'),

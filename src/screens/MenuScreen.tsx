@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { asset } from '../lib/assetUrl';
+import { playNavigationPress, playNavigationRelease } from '../services/musicService';
 
 export function MenuScreen({
   onPlay,
@@ -200,6 +201,8 @@ function MenuFooterLinks() {
         <a
           key={path}
           href={asset(path)}
+          onPointerDown={playNavigationPress}
+          onClick={playNavigationRelease}
           style={{
             color: 'rgba(221, 229, 247, 0.78)',
             fontSize: 8.5,
@@ -222,6 +225,8 @@ function MenuInfoButton({ label, href }: { label: string; href: string }) {
   return (
     <a
       href={asset(href)}
+      onPointerDown={playNavigationPress}
+      onClick={playNavigationRelease}
       style={{
         position: 'relative',
         display: 'flex',
@@ -291,10 +296,16 @@ export function MenuActionButton({
   return (
     <button
       type="button"
-      onPointerDown={() => setPressed(true)}
+      onPointerDown={() => {
+        setPressed(true);
+        playNavigationPress();
+      }}
       onPointerUp={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
-      onClick={onClick}
+      onClick={() => {
+        playNavigationRelease();
+        onClick();
+      }}
       style={{
         position: 'relative',
         width: '100%',
@@ -330,7 +341,11 @@ function MenuSettingsButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onPointerDown={playNavigationPress}
+      onClick={() => {
+        playNavigationRelease();
+        onClick();
+      }}
       aria-label="Настройки"
       style={{
         width: 48,

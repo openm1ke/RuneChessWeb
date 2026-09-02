@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { LevelAttemptResult } from '../../game/starRating';
 import { StarAsset } from '../shared/StarRow';
-import { playChime } from '../../services/musicService';
+import { playChime, playResultComplete, playResultContinue } from '../../services/musicService';
 
 const CAPTIONS: Record<number, string> = {
   3: 'Отличное решение!',
@@ -37,6 +37,9 @@ export function LevelResultOverlay({
   const startRef = useRef<number | null>(null);
   const duration = scored ? 1300 : 550;
 
+  // Plays once, immediately on mount — i.e. the instant the level is solved.
+  useEffect(() => playResultComplete(), []);
+
   useEffect(() => {
     let raf = 0;
     const tick = (time: number) => {
@@ -70,6 +73,7 @@ export function LevelResultOverlay({
 
   const handleContinue = () => {
     if (exiting) return;
+    playResultContinue();
     setExiting(true);
     window.setTimeout(onContinue, 240);
   };

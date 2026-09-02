@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { playNavigationPress, playNavigationRelease } from '../../services/musicService';
 
 export function RoundControl({
   onClick,
@@ -17,18 +18,23 @@ export function RoundControl({
 }) {
   let pressTimer: number | undefined;
   const handlePointerDown = () => {
+    playNavigationPress();
     if (!onLongPress) return;
     pressTimer = window.setTimeout(onLongPress, 550);
   };
   const clearTimer = () => {
     if (pressTimer != null) window.clearTimeout(pressTimer);
   };
+  const handleClick = () => {
+    playNavigationRelease();
+    onClick();
+  };
   return (
     <button
       type="button"
       aria-label={label}
       disabled={disabled}
-      onClick={onClick}
+      onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerUp={clearTimer}
       onPointerLeave={clearTimer}

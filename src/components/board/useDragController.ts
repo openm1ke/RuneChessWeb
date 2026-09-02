@@ -1,8 +1,9 @@
 import { useRef, useState, createElement, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react';
 import type { DozorEngine } from '../../game/dozorEngine';
 import type { Piece, TrayItem } from '../../game/models';
-import { pieceAsset } from '../../game/pieceTypes';
+import { pieceAsset, pieceUprightRotationDeg } from '../../game/pieceTypes';
 import { BoardPerspective } from './boardPerspective';
+import { playPieceLift, playPieceSet } from '../../services/musicService';
 
 interface DragState {
   kind: 'board' | 'tray';
@@ -59,9 +60,9 @@ export function useDragController(
       });
       if (!cell) return;
       if (current.kind === 'tray' && current.item) {
-        engine.dropTrayItem(current.item.id, cell.c, cell.r);
+        if (engine.dropTrayItem(current.item.id, cell.c, cell.r)) playPieceSet();
       } else if (current.kind === 'board' && current.piece) {
-        engine.movePiece(current.piece.id, cell.c, cell.r);
+        if (engine.movePiece(current.piece.id, cell.c, cell.r)) playPieceSet();
       }
       return;
     }
@@ -88,12 +89,14 @@ export function useDragController(
 
   const startFromBoard = (piece: Piece, event: ReactPointerEvent) => {
     event.stopPropagation();
+    playPieceLift();
     updateDrag({ kind: 'board', piece, x: event.clientX, y: event.clientY });
     attachWindowListeners();
   };
 
   const startFromTray = (item: TrayItem, event: ReactPointerEvent) => {
     event.stopPropagation();
+    playPieceLift();
     updateDrag({ kind: 'tray', item, x: event.clientX, y: event.clientY });
     attachWindowListeners();
   };
@@ -112,6 +115,7 @@ export function useDragController(
           objectFit: 'contain',
           pointerEvents: 'none',
           zIndex: 1000,
+          transform: `rotate(${pieceUprightRotationDeg[type] ?? 0}deg)`,
           filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.5))',
         },
       })

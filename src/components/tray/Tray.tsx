@@ -1,6 +1,6 @@
 import type { PointerEvent, RefObject } from 'react';
 import type { DozorEngine, DozorSnapshot } from '../../game/dozorEngine';
-import { pieceSkins, type PieceType } from '../../game/pieceTypes';
+import { pieceSkins, pieceUprightRotationDeg, type PieceType } from '../../game/pieceTypes';
 import { PieceArt } from '../board/PieceArt';
 import type { DragController } from '../board/useDragController';
 
@@ -37,7 +37,12 @@ function TrayItemTile({
         transition: 'background 160ms, border-color 160ms',
       }}
     >
-      <div style={{ transform: type === 'king' ? 'rotate(-4.3deg)' : 'none', transformOrigin: 'bottom center' }}>
+      <div
+        style={{
+          transform: `rotate(${pieceUprightRotationDeg[type] ?? 0}deg)`,
+          transformOrigin: 'bottom center',
+        }}
+      >
         <PieceArt type={type} width={44} height={70} />
       </div>
     </div>

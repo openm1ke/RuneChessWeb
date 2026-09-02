@@ -3,6 +3,34 @@ import { asset } from '../lib/assetUrl';
 const MENU_TRACK = asset('assets/audio/dozor-moonlit-garden.m4a');
 const GAME_TRACK = asset('assets/audio/dozor-velvet-observatory.m4a');
 export const STAR_CHIME_TRACK = asset('assets/audio/dozor-star-chime.m4a');
+export const RESULT_COMPLETE_TRACK = asset('assets/audio/dozor-result-complete.m4a');
+export const RESULT_CONTINUE_TRACK = asset('assets/audio/dozor-result-continue.m4a');
+const PIECE_LIFT_TRACK = asset('assets/audio/dozor-piece-lift.m4a');
+const PIECE_SET_TRACK = asset('assets/audio/dozor-piece-set.m4a');
+const NAV_PRESS_TRACK = asset('assets/audio/dozor-menu-click-press.m4a');
+const NAV_RELEASE_TRACK = asset('assets/audio/dozor-menu-click-release.m4a');
+
+/** Gates every short sound effect below (star chime, board/menu clicks) —
+ * independent of the background-music `enabled`/`volume` settings, and
+ * shared as module state since these are played from many leaf components
+ * that don't otherwise have access to a `MusicService` instance. */
+let soundEffectsEnabled = true;
+
+export function setSoundEffectsEnabled(enabled: boolean): void {
+  soundEffectsEnabled = enabled;
+}
+
+/** Plays a single short sound effect, fire-and-forget. */
+function playSound(src: string, volume: number): void {
+  if (!soundEffectsEnabled) return;
+  try {
+    const audio = new Audio(src);
+    audio.volume = volume;
+    void audio.play().catch(() => {});
+  } catch {
+    // Ignore — sound effects are a nice-to-have, never load-bearing.
+  }
+}
 
 function fadeAudio(
   audio: HTMLAudioElement,
@@ -171,11 +199,35 @@ export class MusicService {
 
 /** Plays a single short sound effect (used for the per-star chime). */
 export function playChime(volume = 0.38): void {
-  try {
-    const audio = new Audio(STAR_CHIME_TRACK);
-    audio.volume = volume;
-    void audio.play().catch(() => {});
-  } catch {
-    // Ignore — sound effects are a nice-to-have, never load-bearing.
-  }
+  playSound(STAR_CHIME_TRACK, volume);
+}
+
+/** Soft interaction sounds, controlled separately from background music so
+ * the board stays responsive even with music disabled — see
+ * `setSoundEffectsEnabled`. */
+export function playPieceLift(): void {
+  playSound(PIECE_LIFT_TRACK, 0.46);
+}
+
+export function playPieceSet(): void {
+  playSound(PIECE_SET_TRACK, 0.42);
+}
+
+/** Two halves of a restrained desktop-style mouse click. They are separate
+ * so navigation controls can play the press immediately and the release
+ * only when the click is actually triggered. */
+export function playNavigationPress(): void {
+  playSound(NAV_PRESS_TRACK, 0.34);
+}
+
+export function playNavigationRelease(): void {
+  playSound(NAV_RELEASE_TRACK, 0.3);
+}
+
+export function playResultComplete(): void {
+  playSound(RESULT_COMPLETE_TRACK, 0.42);
+}
+
+export function playResultContinue(): void {
+  playSound(RESULT_CONTINUE_TRACK, 0.34);
 }
