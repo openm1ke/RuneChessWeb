@@ -20,6 +20,7 @@ interface AchievementsProps {
   achievementProgress: AchievementProgressState;
   achievementUnlockedAt: Map<string, string>;
   onBack: () => void;
+  onAchievementViewed?: (achievementId: string, unlocked: boolean) => void;
 }
 
 export function AchievementsScreen(props: AchievementsProps) {
@@ -43,7 +44,10 @@ export function AchievementsScreen(props: AchievementsProps) {
     <AchievementGrid
       unlocked={unlocked}
       conditionArgs={conditionArgs}
-      onSelect={setSelected}
+      onSelect={(achievement) => {
+        setSelected(achievement);
+        props.onAchievementViewed?.(achievement.id, unlocked.has(achievement.id));
+      }}
     />
   );
   const stats = (

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  achievementCategory,
+  allAchievements,
   coinFive,
   coinFour,
   coinOne,
@@ -120,5 +122,26 @@ describe('progressFor', () => {
     expect(progressFor(mainKing.id, { ...baseArgs, levelStars: half })).toBeCloseTo(
       Math.floor(mainCampaignScoredLevelCount / 2) / mainCampaignScoredLevelCount,
     );
+  });
+});
+
+describe('achievementCategory', () => {
+  it('tags the 5 story/mastery achievements as orbs', () => {
+    for (const id of [trainingPawn.id, fiftyRook.id, hundredBishop.id, mainKing.id, extraQueen.id]) {
+      expect(achievementCategory(id)).toBe('orb');
+    }
+  });
+
+  it('tags the 6 player-journey achievements as coins', () => {
+    for (const id of [coinZero.id, coinOne.id, coinTwo.id, coinThree.id, coinFour.id, coinFive.id]) {
+      expect(achievementCategory(id)).toBe('coin');
+    }
+  });
+
+  it('categorizes every achievement in the catalog with no leftovers', () => {
+    const orbs = allAchievements.filter((a) => achievementCategory(a.id) === 'orb');
+    const coins = allAchievements.filter((a) => achievementCategory(a.id) === 'coin');
+    expect(orbs.length).toBe(5);
+    expect(coins.length).toBe(6);
   });
 });

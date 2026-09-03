@@ -126,6 +126,12 @@ export const allAchievements: AchievementDefinition[] = [
   coinFive,
 ];
 
+/** The 5 story/mastery trophies ("шары") vs the 6 player-journey trophies
+ * ("монеты") — used to tag analytics events, not for any gameplay logic. */
+export function achievementCategory(id: string): 'orb' | 'coin' {
+  return id.startsWith('coin_') ? 'coin' : 'orb';
+}
+
 export function perfectLevelCount(levelStars: Map<number, number>): number {
   let count = 0;
   for (const stars of levelStars.values()) if (stars === 3) count++;

@@ -4,6 +4,10 @@ const COUNTER_ID = 112107479;
 
 export type LevelEntrySource = 'menu_play' | 'level_select' | 'next_level' | 'skip_level';
 
+/** Which of the achievement-progress callbacks led to the unlock — see
+ * `recordNewAchievements` in `App.tsx`. */
+export type AchievementUnlockTrigger = 'level_solved' | 'hint_used' | 'bonus_star' | 'tutorial_completed';
+
 type AnalyticsParameter = string | number | boolean | { [key: string]: AnalyticsParameter };
 
 declare global {
@@ -174,6 +178,38 @@ export class AnalyticsService {
       level: levelIndex + 1,
       stars_before: starsBefore,
       stars_after: starsAfter,
+    });
+  }
+
+  // --- Achievements — the cabinet, its trophies, and the moment one is
+  // actually earned. `achievementId` is one of the 11 ids from
+  // `AchievementCatalog` (e.g. 'training_pawn', 'coin_zero_first_hint').
+
+  achievementUnlocked(achievementId: string, category: 'orb' | 'coin', trigger: AchievementUnlockTrigger): void {
+    this.goal('achievement_unlocked', {
+      achievement_id: achievementId,
+      category,
+      trigger,
+    });
+  }
+
+  achievementsOpened(): void {
+    this.goal('achievements_opened', {});
+  }
+
+  achievementViewed(achievementId: string, unlocked: boolean): void {
+    this.goal('achievement_viewed', {
+      achievement_id: achievementId,
+      unlocked,
+    });
+  }
+
+  /** A visit parameter (not a goal) so unlocked-achievement count can be
+   * used as a segmentation dimension — mirrors the `gameplay.
+   * completion_time_by_level` pattern in `levelCompleted` above. */
+  achievementProgressSnapshot(unlockedTotal: number): void {
+    this.visitParams({
+      achievements: { unlocked_total: unlockedTotal },
     });
   }
 

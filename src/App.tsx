@@ -3,7 +3,7 @@ import { DozorEngine, FIRST_SCORED_LEVEL_INDEX } from './game/dozorEngine';
 import { campaignLevels, MAIN_CAMPAIGN_LEVEL_COUNT } from './data/campaignLevels';
 import { ProgressRepository } from './services/progressRepository';
 import { MusicService, setSoundEffectsEnabled, playAchievementReveal } from './services/musicService';
-import { AnalyticsService, type LevelEntrySource } from './services/analyticsService';
+import { AnalyticsService, type AchievementUnlockTrigger, type LevelEntrySource } from './services/analyticsService';
 import { RewardedAdsService } from './services/rewardedAdsService';
 import {
   applyPlatformLanguage,
@@ -23,7 +23,15 @@ import { TutorialCompleteScreen } from './screens/TutorialCompleteScreen';
 import { AchievementsScreen } from './screens/AchievementsScreen';
 import type { LevelAttemptResult } from './game/starRating';
 import { mergeBestStars } from './game/starRating';
-import { allAchievements, trainingPawn, mainKing, extraQueen, unlockedIds, type AchievementDefinition } from './data/achievements';
+import {
+  allAchievements,
+  achievementCategory,
+  trainingPawn,
+  mainKing,
+  extraQueen,
+  unlockedIds,
+  type AchievementDefinition,
+} from './data/achievements';
 import {
   initialAchievementProgress,
   recordHintUsed,
@@ -170,7 +178,7 @@ export default function App() {
           achievementUnlockedAt: achievementUnlockedAtRef.current,
           achievementProgress: newProgress,
         });
-        recordNewAchievements(next, newProgress);
+        recordNewAchievements(next, newProgress, 'level_solved');
         return next;
       });
     };
@@ -191,7 +199,7 @@ export default function App() {
         achievementUnlockedAt: achievementUnlockedAtRef.current,
         achievementProgress: newProgress,
       });
-      recordNewAchievements(levelStarsRef.current, newProgress);
+      recordNewAchievements(levelStarsRef.current, newProgress, 'hint_used');
     };
     engine.onLevelReset = (levelIndex, metrics) => {
       analyticsService.levelReset(levelIndex, metrics);
@@ -228,11 +236,11 @@ export default function App() {
           achievementUnlockedAt: achievementUnlockedAtRef.current,
           achievementProgress: newProgress,
         });
-        recordNewAchievements(next, newProgress);
+        recordNewAchievements(next, newProgress, 'bonus_star');
         return next;
       });
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Refs mirroring state for use inside the onLevelSolved closure/persist calls.
@@ -274,6 +282,7 @@ export default function App() {
   const recordNewAchievements = (
     solvedLevelStars: Map<number, number>,
     solvedAchievementProgress: AchievementProgressState,
+    trigger: AchievementUnlockTrigger,
     tutorialCompleteOverride?: boolean,
   ): void => {
     const tutorialCompleteValue = tutorialCompleteOverride ?? tutorialCompleteRef.current;
@@ -296,6 +305,11 @@ export default function App() {
       if (definition) newlyUnlocked.push(definition);
     }
     if (newlyUnlocked.length === 0) return;
+
+    for (const achievement of newlyUnlocked) {
+      analyticsService.achievementUnlocked(achievement.id, achievementCategory(achievement.id), trigger);
+    }
+    analyticsService.achievementProgressSnapshot(nextUnlockedAt.size);
 
     achievementUnlockedAtRef.current = nextUnlockedAt;
     setAchievementUnlockedAt(nextUnlockedAt);
@@ -338,6 +352,10 @@ export default function App() {
 
   useEffect(() => {
     if (analyticsConsent && screen === 'settings') analyticsService.settingsOpened();
+  }, [analyticsConsent, analyticsService, screen]);
+
+  useEffect(() => {
+    if (analyticsConsent && screen === 'achievements') analyticsService.achievementsOpened();
   }, [analyticsConsent, analyticsService, screen]);
 
   const persist = (overrides: Partial<{ unlockedLevels: Set<number>; seenOnboardingLevels: Set<number>; tutorialComplete: boolean; levelStars: Map<number, number> }>) => {
@@ -412,7 +430,7 @@ export default function App() {
         nextTutorialComplete = true;
         setTutorialComplete(true);
         analyticsService.tutorialCompleted();
-        recordNewAchievements(levelStarsRef.current, achievementProgressRef.current, true);
+        recordNewAchievements(levelStarsRef.current, achievementProgressRef.current, 'tutorial_completed', true);
         setScreen('tutorialComplete');
       }
       persist({ unlockedLevels: nextUnlocked, seenOnboardingLevels: nextSeen, tutorialComplete: nextTutorialComplete });
@@ -441,8 +459,12 @@ export default function App() {
   const skipLevel = () => {
     const before = engine.levelIndex;
     if (before >= campaignLevels.length - 1) {
+      analyticsService.campaignCompleted();
       setScreen('campaignComplete');
       return;
+    }
+    if (before === MAIN_CAMPAIGN_LEVEL_COUNT - 1) {
+      analyticsService.mainCampaignCompleted();
     }
     engine.nextLevel();
     levelEntrySourceRef.current = 'skip_level';
@@ -458,7 +480,11 @@ export default function App() {
       setSeenOnboardingLevels(nextSeen);
     }
     const nextTutorialComplete = before === FIRST_SCORED_LEVEL_INDEX - 1 ? true : tutorialComplete;
-    if (nextTutorialComplete !== tutorialComplete) setTutorialComplete(true);
+    if (nextTutorialComplete !== tutorialComplete) {
+      setTutorialComplete(true);
+      analyticsService.tutorialCompleted();
+      recordNewAchievements(levelStarsRef.current, achievementProgressRef.current, 'tutorial_completed', true);
+    }
     persist({ unlockedLevels: nextUnlocked, seenOnboardingLevels: nextSeen, tutorialComplete: nextTutorialComplete });
   };
 
@@ -623,6 +649,7 @@ export default function App() {
           achievementProgress={achievementProgress}
           achievementUnlockedAt={achievementUnlockedAt}
           onBack={goToMenu}
+          onAchievementViewed={(id, unlocked) => analyticsService.achievementViewed(id, unlocked)}
         />
       );
     case 'settings':
