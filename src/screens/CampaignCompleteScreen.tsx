@@ -1,6 +1,8 @@
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { MenuActionButton } from './MenuScreen';
+import { AchievementReveal } from '../components/shared/AchievementReveal';
+import type { AchievementDefinition } from '../data/achievements';
 import { campaignLevels } from '../data/campaignLevels';
 import { asset } from '../lib/assetUrl';
 
@@ -11,12 +13,23 @@ const COINS = [
   { target: 4, left: 300, top: 580, size: 44 },
 ];
 
-export function CampaignCompleteScreen({ onLevels, onMenu }: { onLevels: () => void; onMenu: () => void }) {
+interface CampaignCompleteProps {
+  onLevels: () => void;
+  onMenu: () => void;
+  /** The "Хранитель короны" achievement, shown revealing inline when
+   * passed — mirrors the mobile app's inline reveal on this screen. */
+  achievement?: AchievementDefinition | null;
+  animateAchievement?: boolean;
+  onAchievementRevealed?: () => void;
+}
+
+export function CampaignCompleteScreen(props: CampaignCompleteProps) {
+  const { onLevels, onMenu } = props;
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
 
   if (isLandscape) {
-    return <LandscapeCampaignCompleteScene onLevels={onLevels} onMenu={onMenu} viewport={viewport} />;
+    return <LandscapeCampaignCompleteScene {...props} viewport={viewport} />;
   }
 
   return (
@@ -46,6 +59,22 @@ export function CampaignCompleteScreen({ onLevels, onMenu }: { onLevels: () => v
           />
         ))}
         <div style={{ position: 'absolute', left: 32, right: 32, top: 360, textAlign: 'center' }}>
+          {props.achievement && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: 1.3, color: '#ffd678', marginBottom: 6 }}>
+                ДОСТИЖЕНИЕ ОТКРЫТО
+              </div>
+              <AchievementReveal
+                achievement={props.achievement}
+                size={72}
+                animate={props.animateAchievement}
+                onRevealed={props.onAchievementRevealed}
+              />
+              <div style={{ marginTop: 6, fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--gold-bright)' }}>
+                {props.achievement.title}
+              </div>
+            </div>
+          )}
           <div
             style={{
               fontFamily: 'var(--font-display)',
@@ -96,12 +125,11 @@ export function CampaignCompleteScreen({ onLevels, onMenu }: { onLevels: () => v
 function LandscapeCampaignCompleteScene({
   onLevels,
   onMenu,
+  achievement,
+  animateAchievement,
+  onAchievementRevealed,
   viewport,
-}: {
-  onLevels: () => void;
-  onMenu: () => void;
-  viewport: { width: number; height: number };
-}) {
+}: CampaignCompleteProps & { viewport: { width: number; height: number } }) {
   const { width, height } = viewport;
   const panelWidth = Math.min(720, Math.max(440, width * 0.48));
   const panelLeft = (width - panelWidth) / 2;
@@ -156,6 +184,17 @@ function LandscapeCampaignCompleteScene({
         draggable={false}
       />
       <div style={{ position: 'absolute', top: height * 0.28, left: panelLeft, width: panelWidth, textAlign: 'center' }}>
+        {achievement && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: 1.3, color: '#ffd678', marginBottom: 6 }}>
+              ДОСТИЖЕНИЕ ОТКРЫТО
+            </div>
+            <AchievementReveal achievement={achievement} size={72} animate={animateAchievement} onRevealed={onAchievementRevealed} />
+            <div style={{ marginTop: 6, fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--gold-bright)' }}>
+              {achievement.title}
+            </div>
+          </div>
+        )}
         <div
           style={{
             fontFamily: 'var(--font-display)',

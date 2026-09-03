@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import type { LevelAttemptResult } from '../../game/starRating';
+import type { AchievementDefinition } from '../../data/achievements';
 import { StarAsset } from '../shared/StarRow';
+import { AchievementReveal } from '../shared/AchievementReveal';
 import { playChime, playResultComplete, playResultContinue } from '../../services/musicService';
 
 const CAPTIONS: Record<number, string> = {
   3: 'Отличное решение!',
   2: 'Хорошо! Ещё немного — и все три звезды ваши.',
-  1: 'Уровень пройден! Сыграйте ещё раз для лучшего результата.',
+  1: 'Сыграйте ещё раз для лучшего результата.',
 };
 
 /** Shown the instant every beacon first reaches its exact target. */
@@ -17,6 +19,8 @@ export function LevelResultOverlay({
   bonusStarOffered = false,
   bonusStarEnabled = false,
   onBonusStarRequested,
+  achievement = null,
+  onAchievementRevealed,
 }: {
   result: LevelAttemptResult;
   onContinue: () => void;
@@ -29,6 +33,10 @@ export function LevelResultOverlay({
    * loading/showing for this placement). */
   bonusStarEnabled?: boolean;
   onBonusStarRequested?: () => void;
+  /** A newly-unlocked achievement to reveal inline, above the star row —
+   * mirrors the mobile app's `resultAchievement`. */
+  achievement?: AchievementDefinition | null;
+  onAchievementRevealed?: () => void;
 }) {
   const scored = result.stars != null;
   const [t, setT] = useState(0);
@@ -120,6 +128,32 @@ export function LevelResultOverlay({
           >
             УРОВЕНЬ ПРОЙДЕН
           </div>
+          {achievement && (
+            <div style={{ opacity: phase(titleWindow[0], titleWindow[1]), marginTop: 12 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 11,
+                  letterSpacing: 1.3,
+                  color: '#ffd678',
+                  marginBottom: 8,
+                }}
+              >
+                ДОСТИЖЕНИЕ ОТКРЫТО
+              </div>
+              <AchievementReveal achievement={achievement} size={80} animate onRevealed={onAchievementRevealed} />
+              <div
+                style={{
+                  marginTop: 6,
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 13,
+                  color: 'var(--gold-bright)',
+                }}
+              >
+                {achievement.title}
+              </div>
+            </div>
+          )}
           {result.stars != null ? (
             <>
               <div style={{ height: 18 }} />

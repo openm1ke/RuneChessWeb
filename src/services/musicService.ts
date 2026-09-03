@@ -9,6 +9,7 @@ const PIECE_LIFT_TRACK = asset('assets/audio/dozor-piece-lift.m4a');
 const PIECE_SET_TRACK = asset('assets/audio/dozor-piece-set.m4a');
 const NAV_PRESS_TRACK = asset('assets/audio/dozor-menu-click-press.m4a');
 const NAV_RELEASE_TRACK = asset('assets/audio/dozor-menu-click-release.m4a');
+const ACHIEVEMENT_REVEAL_TRACK = asset('assets/audio/dozor-achievement-reveal.m4a');
 
 /** Gates every short sound effect below (star chime, board/menu clicks) —
  * independent of the background-music `enabled`/`volume` settings, and
@@ -230,4 +231,8 @@ export function playResultComplete(): void {
 
 export function playResultContinue(): void {
   playSound(RESULT_CONTINUE_TRACK, 0.34);
+}
+
+export function playAchievementReveal(): void {
+  playSound(ACHIEVEMENT_REVEAL_TRACK, 0.5);
 }

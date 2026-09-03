@@ -8,16 +8,18 @@ export function MenuScreen({
   onPlay,
   onLevels,
   onSettings,
+  onAchievements,
 }: {
   onPlay: () => void;
   onLevels: () => void;
   onSettings: () => void;
+  onAchievements: () => void;
 }) {
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
 
   if (isLandscape) {
-    return <LandscapeMenuScene onPlay={onPlay} onLevels={onLevels} onSettings={onSettings} />;
+    return <LandscapeMenuScene onPlay={onPlay} onLevels={onLevels} onSettings={onSettings} onAchievements={onAchievements} />;
   }
 
   return (
@@ -60,6 +62,9 @@ export function MenuScreen({
           <MenuActionButton label="УРОВНИ" onClick={onLevels} />
         </div>
         <div style={{ position: 'absolute', top: 594, left: 92, right: 92, height: 72 }}>
+          <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={17} letterSpacing={1.8} />
+        </div>
+        <div style={{ position: 'absolute', top: 680, left: 92, right: 92, height: 72 }}>
           <MenuInfoButton label="ПРАВИЛА" href="how-to-play.html" />
         </div>
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 36, textAlign: 'center' }}>
@@ -98,10 +103,12 @@ function LandscapeMenuScene({
   onPlay,
   onLevels,
   onSettings,
+  onAchievements,
 }: {
   onPlay: () => void;
   onLevels: () => void;
   onSettings: () => void;
+  onAchievements: () => void;
 }) {
   const { width, height } = useViewportSize();
   const panelWidth = Math.min(290, Math.max(210, width * 0.27));
@@ -153,6 +160,9 @@ function LandscapeMenuScene({
         <MenuActionButton label="УРОВНИ" onClick={onLevels} />
       </div>
       <div style={{ position: 'absolute', top: panelTop + 210, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
+        <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={16} letterSpacing={1.4} />
+      </div>
+      <div style={{ position: 'absolute', top: panelTop + 284, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
         <MenuInfoButton label="ПРАВИЛА" href="how-to-play.html" />
       </div>
       <div style={{ position: 'absolute', top: 18, right: 24 }}>

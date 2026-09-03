@@ -1,14 +1,27 @@
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { MenuActionButton } from './MenuScreen';
+import { AchievementReveal } from '../components/shared/AchievementReveal';
+import type { AchievementDefinition } from '../data/achievements';
 import { asset } from '../lib/assetUrl';
 
-export function TutorialCompleteScreen({ onContinue, onLevels }: { onContinue: () => void; onLevels: () => void }) {
+interface TutorialCompleteProps {
+  onContinue: () => void;
+  onLevels: () => void;
+  /** The "Первый ход" achievement, shown revealing inline when passed —
+   * mirrors the mobile app's inline reveal on this screen. */
+  achievement?: AchievementDefinition | null;
+  animateAchievement?: boolean;
+  onAchievementRevealed?: () => void;
+}
+
+export function TutorialCompleteScreen(props: TutorialCompleteProps) {
+  const { onContinue, onLevels } = props;
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
 
   if (isLandscape) {
-    return <LandscapeTutorialCompleteScene onContinue={onContinue} onLevels={onLevels} />;
+    return <LandscapeTutorialCompleteScene {...props} />;
   }
 
   return (
@@ -21,7 +34,11 @@ export function TutorialCompleteScreen({ onContinue, onLevels }: { onContinue: (
           draggable={false}
         />
         <div style={{ position: 'absolute', left: 36, right: 36, top: 270, textAlign: 'center' }}>
-          <div style={{ fontSize: 54, color: '#ffd56a' }}>✦</div>
+          {props.achievement ? (
+            <AchievementRevealBlock achievement={props.achievement} animate={props.animateAchievement} onRevealed={props.onAchievementRevealed} size={72} />
+          ) : (
+            <div style={{ fontSize: 54, color: '#ffd56a' }}>✦</div>
+          )}
           <div style={{ height: 16 }} />
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 27, lineHeight: 1.25, letterSpacing: 1.7, color: 'var(--gold-bright)' }}>
             ВЫ ПРОШЛИ
@@ -50,7 +67,7 @@ export function TutorialCompleteScreen({ onContinue, onLevels }: { onContinue: (
  * The tutorial finale uses the wide castle art and keeps the next choices
  * side-by-side, avoiding a shrunken portrait page after rotation.
  */
-function LandscapeTutorialCompleteScene({ onContinue, onLevels }: { onContinue: () => void; onLevels: () => void }) {
+function LandscapeTutorialCompleteScene({ onContinue, onLevels, achievement, animateAchievement, onAchievementRevealed }: TutorialCompleteProps) {
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       <img
@@ -70,7 +87,11 @@ function LandscapeTutorialCompleteScene({ onContinue, onLevels }: { onContinue: 
         }}
       >
         <div style={{ maxWidth: 680, padding: '0 32px', textAlign: 'center' }}>
-          <div style={{ fontSize: 56, color: '#ffd56a' }}>✦</div>
+          {achievement ? (
+            <AchievementRevealBlock achievement={achievement} animate={animateAchievement} onRevealed={onAchievementRevealed} size={84} />
+          ) : (
+            <div style={{ fontSize: 56, color: '#ffd56a' }}>✦</div>
+          )}
           <div style={{ height: 14 }} />
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 31, letterSpacing: 1.7, color: 'var(--gold-bright)' }}>
             ВЫ ПРОШЛИ ОБУЧЕНИЕ
@@ -91,6 +112,30 @@ function LandscapeTutorialCompleteScene({ onContinue, onLevels }: { onContinue: 
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function AchievementRevealBlock({
+  achievement,
+  animate,
+  onRevealed,
+  size,
+}: {
+  achievement: AchievementDefinition;
+  animate?: boolean;
+  onRevealed?: () => void;
+  size: number;
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+      <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: 1.3, color: '#ffd678' }}>
+        ДОСТИЖЕНИЕ ОТКРЫТО
+      </div>
+      <AchievementReveal achievement={achievement} size={size} animate={animate} onRevealed={onRevealed} />
+      <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, color: 'var(--gold-bright)' }}>
+        {achievement.title}
       </div>
     </div>
   );

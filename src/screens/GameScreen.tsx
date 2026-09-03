@@ -13,6 +13,7 @@ import { useDozorEngine } from '../game/useDozorEngine';
 import { FIRST_SCORED_LEVEL_INDEX, type DozorEngine } from '../game/dozorEngine';
 import { asset } from '../lib/assetUrl';
 import type { RewardedAdsService, RewardedAdState } from '../services/rewardedAdsService';
+import type { AchievementDefinition } from '../data/achievements';
 
 const isDev = import.meta.env.DEV;
 
@@ -24,6 +25,8 @@ export function GameScreen({
   onResetOnboarding,
   seenOnboardingLevels,
   rewardedAdsService,
+  achievement,
+  onAchievementRevealed,
 }: {
   engine: DozorEngine;
   onBack: () => void;
@@ -32,6 +35,10 @@ export function GameScreen({
   onResetOnboarding?: () => void;
   seenOnboardingLevels: Set<number>;
   rewardedAdsService?: RewardedAdsService;
+  /** A newly-unlocked achievement to reveal inline in the level-result
+   * overlay — passed through from `App.tsx`'s achievement bookkeeping. */
+  achievement?: AchievementDefinition | null;
+  onAchievementRevealed?: () => void;
 }) {
   const { snapshot } = useDozorEngine(engine);
   const boardRef = useRef<HTMLDivElement>(null!);
@@ -114,6 +121,8 @@ export function GameScreen({
           bonusStarOffered={bonusStarOffered}
           bonusStarEnabled={bonusStarOffered && bonusStarState !== 'loading'}
           onBonusStarRequested={requestBonusStar}
+          achievement={achievement}
+          onAchievementRevealed={onAchievementRevealed}
         />
       )}
       {showResetConfirm && (

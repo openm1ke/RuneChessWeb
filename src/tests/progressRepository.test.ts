@@ -95,4 +95,74 @@ describe('ProgressRepository', () => {
     expect(snapshot.musicVolume).toBeCloseTo(0.25);
     expect(snapshot.analyticsConsent).toBe(true);
   });
+
+  it('defaults to empty achievement state when nothing is stored', () => {
+    const repo = new ProgressRepository();
+    const snapshot = repo.load();
+    expect(snapshot.achievementUnlockedAt.size).toBe(0);
+    expect(snapshot.achievementProgress.hintedLevels.size).toBe(0);
+    expect(snapshot.achievementProgress.noHintLevels.size).toBe(0);
+    expect(snapshot.achievementProgress.cleanStreak).toEqual({ lastLevel: null, length: 0 });
+    expect(snapshot.achievementProgress.perfectStreak).toEqual({ lastLevel: null, length: 0 });
+  });
+
+  it('round-trips achievement unlock timestamps and progress state', () => {
+    const repo = new ProgressRepository();
+    repo.save({
+      unlockedLevels: new Set([0]),
+      seenOnboardingLevels: new Set(),
+      tutorialComplete: true,
+      levelStars: new Map([[5, 3]]),
+      achievementUnlockedAt: new Map([
+        ['training_pawn', '2026-09-01T00:00:00.000Z'],
+        ['coin_zero_first_hint', '2026-09-02T00:00:00.000Z'],
+      ]),
+      achievementProgress: {
+        hintedLevels: new Set([5, 6]),
+        noHintLevels: new Set([7, 8, 9]),
+        cleanStreak: { lastLevel: 9, length: 3 },
+        perfectStreak: { lastLevel: 9, length: 2 },
+        pendingPerfectLevel: null,
+        pendingPerfectWasNext: false,
+      },
+    });
+
+    const snapshot = repo.load();
+    expect(snapshot.achievementUnlockedAt.get('training_pawn')).toBe('2026-09-01T00:00:00.000Z');
+    expect(snapshot.achievementUnlockedAt.get('coin_zero_first_hint')).toBe('2026-09-02T00:00:00.000Z');
+    expect([...snapshot.achievementProgress.hintedLevels].sort()).toEqual([5, 6]);
+    expect([...snapshot.achievementProgress.noHintLevels].sort()).toEqual([7, 8, 9]);
+    expect(snapshot.achievementProgress.cleanStreak).toEqual({ lastLevel: 9, length: 3 });
+    expect(snapshot.achievementProgress.perfectStreak).toEqual({ lastLevel: 9, length: 2 });
+    // The pending bonus-star window is a per-session concern only — never
+    // persisted, since it must resolve or vanish before the tab closes.
+    expect(snapshot.achievementProgress.pendingPerfectLevel).toBeNull();
+  });
+
+  it('resetProgress also clears achievement unlocks and progress', () => {
+    const repo = new ProgressRepository();
+    repo.save({
+      unlockedLevels: new Set([0]),
+      seenOnboardingLevels: new Set(),
+      tutorialComplete: false,
+      levelStars: new Map(),
+      achievementUnlockedAt: new Map([['training_pawn', '2026-09-01T00:00:00.000Z']]),
+      achievementProgress: {
+        hintedLevels: new Set([5]),
+        noHintLevels: new Set([6]),
+        cleanStreak: { lastLevel: 6, length: 1 },
+        perfectStreak: { lastLevel: null, length: 0 },
+        pendingPerfectLevel: null,
+        pendingPerfectWasNext: false,
+      },
+    });
+
+    repo.resetProgress();
+
+    const snapshot = repo.load();
+    expect(snapshot.achievementUnlockedAt.size).toBe(0);
+    expect(snapshot.achievementProgress.hintedLevels.size).toBe(0);
+    expect(snapshot.achievementProgress.noHintLevels.size).toBe(0);
+    expect(snapshot.achievementProgress.cleanStreak).toEqual({ lastLevel: null, length: 0 });
+  });
 });

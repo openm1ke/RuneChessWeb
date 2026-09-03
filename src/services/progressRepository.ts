@@ -1,5 +1,6 @@
 import { campaignLevels } from '../data/campaignLevels';
 import { FIRST_SCORED_LEVEL_INDEX } from '../game/dozorEngine';
+import type { AchievementProgressState, StreakState } from '../game/achievementProgress';
 
 export interface ProgressSnapshot {
   unlockedLevels: Set<number>;
@@ -11,6 +12,8 @@ export interface ProgressSnapshot {
   musicVolume: number;
   soundEffectsEnabled: boolean;
   analyticsConsent: boolean | null;
+  achievementUnlockedAt: Map<string, string>;
+  achievementProgress: AchievementProgressState;
 }
 
 const KEYS = {
@@ -22,7 +25,48 @@ const KEYS = {
   soundEffectsEnabled: 'dozor.sound_effects_enabled',
   levelStars: 'dozor.level_stars_v1',
   analyticsConsent: 'runechess.analytics_consent_v1',
+  achievementUnlockedAt: 'dozor.achievement_unlocked_at_v1',
+  achievementHintedLevels: 'dozor.achievement_hinted_levels_v1',
+  achievementNoHintLevels: 'dozor.achievement_no_hint_levels_v1',
+  achievementCleanStreak: 'dozor.achievement_clean_streak_v1',
+  achievementPerfectStreak: 'dozor.achievement_perfect_streak_v1',
 } as const;
+
+function readStreak(key: string): StreakState {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (raw == null) return { lastLevel: null, length: 0 };
+    const [lastLevelRaw, lengthRaw] = raw.split(',');
+    const lastLevel = Number.parseInt(lastLevelRaw, 10);
+    const length = Number.parseInt(lengthRaw, 10);
+    if (!Number.isInteger(lastLevel) || !Number.isInteger(length) || length <= 0) {
+      return { lastLevel: null, length: 0 };
+    }
+    return { lastLevel, length };
+  } catch (error) {
+    logError(`read ${key}`, error);
+    return { lastLevel: null, length: 0 };
+  }
+}
+
+function writeStreak(key: string, streak: StreakState): void {
+  try {
+    if (streak.lastLevel == null || streak.length <= 0) {
+      window.localStorage.removeItem(key);
+      return;
+    }
+    window.localStorage.setItem(key, `${streak.lastLevel},${streak.length}`);
+  } catch (error) {
+    logError(`write ${key}`, error);
+  }
+}
+
+function readIndexSet(key: string): Set<number> {
+  const raw = readJson<string[]>(key) ?? [];
+  return new Set(
+    raw.map((v) => Number.parseInt(v, 10)).filter((index) => Number.isInteger(index) && index >= 0),
+  );
+}
 
 function readJson<T>(key: string): T | null {
   try {
@@ -109,6 +153,22 @@ export class ProgressRepository {
     unlocked.add(0);
     const highest = Math.max(...unlocked);
 
+    const achievementUnlockedAt = new Map<string, string>();
+    const rawUnlockedAt = readJson<Record<string, unknown>>(KEYS.achievementUnlockedAt);
+    if (rawUnlockedAt != null) {
+      for (const [id, value] of Object.entries(rawUnlockedAt)) {
+        if (typeof value === 'string') achievementUnlockedAt.set(id, value);
+      }
+    }
+    const achievementProgress: AchievementProgressState = {
+      hintedLevels: readIndexSet(KEYS.achievementHintedLevels),
+      noHintLevels: readIndexSet(KEYS.achievementNoHintLevels),
+      cleanStreak: readStreak(KEYS.achievementCleanStreak),
+      perfectStreak: readStreak(KEYS.achievementPerfectStreak),
+      pendingPerfectLevel: null,
+      pendingPerfectWasNext: false,
+    };
+
     return {
       unlockedLevels: unlocked,
       highestLevel: highest,
@@ -119,6 +179,8 @@ export class ProgressRepository {
       musicVolume,
       soundEffectsEnabled,
       analyticsConsent,
+      achievementUnlockedAt,
+      achievementProgress,
     };
   }
 
@@ -127,6 +189,8 @@ export class ProgressRepository {
     seenOnboardingLevels: Set<number>;
     tutorialComplete: boolean;
     levelStars: Map<number, number>;
+    achievementUnlockedAt?: Map<string, string>;
+    achievementProgress?: AchievementProgressState;
   }): void {
     writeJson(
       KEYS.unlockedLevels,
@@ -140,6 +204,18 @@ export class ProgressRepository {
     const starsPayload: Record<string, number> = {};
     for (const [index, stars] of args.levelStars) starsPayload[String(index)] = stars;
     writeJson(KEYS.levelStars, starsPayload);
+
+    if (args.achievementUnlockedAt != null) {
+      const unlockedAtPayload: Record<string, string> = {};
+      for (const [id, date] of args.achievementUnlockedAt) unlockedAtPayload[id] = date;
+      writeJson(KEYS.achievementUnlockedAt, unlockedAtPayload);
+    }
+    if (args.achievementProgress != null) {
+      writeJson(KEYS.achievementHintedLevels, [...args.achievementProgress.hintedLevels].sort((a, b) => a - b).map(String));
+      writeJson(KEYS.achievementNoHintLevels, [...args.achievementProgress.noHintLevels].sort((a, b) => a - b).map(String));
+      writeStreak(KEYS.achievementCleanStreak, args.achievementProgress.cleanStreak);
+      writeStreak(KEYS.achievementPerfectStreak, args.achievementProgress.perfectStreak);
+    }
   }
 
   saveMusicSettings(args: { musicEnabled: boolean; musicVolume: number }): void {
@@ -157,6 +233,11 @@ export class ProgressRepository {
     removeValue(KEYS.seenOnboardingLevels);
     removeValue(KEYS.tutorialComplete);
     removeValue(KEYS.levelStars);
+    removeValue(KEYS.achievementUnlockedAt);
+    removeValue(KEYS.achievementHintedLevels);
+    removeValue(KEYS.achievementNoHintLevels);
+    removeValue(KEYS.achievementCleanStreak);
+    removeValue(KEYS.achievementPerfectStreak);
   }
 
   saveAnalyticsConsent(consent: boolean): void {

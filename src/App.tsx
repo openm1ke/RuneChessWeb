@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { DozorEngine, FIRST_SCORED_LEVEL_INDEX } from './game/dozorEngine';
 import { campaignLevels } from './data/campaignLevels';
 import { ProgressRepository } from './services/progressRepository';
-import { MusicService, setSoundEffectsEnabled } from './services/musicService';
+import { MusicService, setSoundEffectsEnabled, playAchievementReveal } from './services/musicService';
 import { AnalyticsService, type LevelEntrySource } from './services/analyticsService';
 import { RewardedAdsService } from './services/rewardedAdsService';
 import {
@@ -13,16 +13,28 @@ import {
   type YandexGamesSdk,
 } from './services/yandexGamesSdk';
 import { ConsentBanner } from './components/shared/ConsentBanner';
+import { AchievementCelebrationOverlay } from './components/shared/AchievementReveal';
 import { MenuScreen } from './screens/MenuScreen';
 import { LevelSelectScreen } from './screens/LevelSelectScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { GameScreen } from './screens/GameScreen';
 import { CampaignCompleteScreen } from './screens/CampaignCompleteScreen';
 import { TutorialCompleteScreen } from './screens/TutorialCompleteScreen';
+import { AchievementsScreen } from './screens/AchievementsScreen';
 import type { LevelAttemptResult } from './game/starRating';
 import { mergeBestStars } from './game/starRating';
+import { allAchievements, trainingPawn, mainKing, extraQueen, unlockedIds, type AchievementDefinition } from './data/achievements';
+import {
+  initialAchievementProgress,
+  recordHintUsed,
+  recordLevelSolved,
+  recordBonusStarApplied,
+  recordReset,
+  finalizePending,
+  type AchievementProgressState,
+} from './game/achievementProgress';
 
-type Screen = 'menu' | 'levels' | 'settings' | 'game' | 'tutorialComplete' | 'campaignComplete';
+type Screen = 'menu' | 'levels' | 'settings' | 'game' | 'tutorialComplete' | 'campaignComplete' | 'achievements';
 
 const isDev = import.meta.env.DEV;
 
@@ -66,6 +78,12 @@ export default function App() {
   const [musicVolume, setMusicVolume] = useState(0.6);
   const [soundEffectsEnabled, setSoundEffectsEnabledState] = useState(true);
   const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(null);
+  const [achievementUnlockedAt, setAchievementUnlockedAt] = useState<Map<string, string>>(new Map());
+  const [achievementProgress, setAchievementProgress] = useState<AchievementProgressState>(initialAchievementProgress);
+  const [levelResultAchievement, setLevelResultAchievement] = useState<AchievementDefinition | null>(null);
+  const [celebrationQueue, setCelebrationQueue] = useState<AchievementDefinition[]>([]);
+  const [tutorialAchievement, setTutorialAchievement] = useState<AchievementDefinition | null>(null);
+  const [campaignAchievement, setCampaignAchievement] = useState<AchievementDefinition | null>(null);
   const [yandexGamesSdk, setYandexGamesSdk] = useState<YandexGamesSdk | null>(null);
   // Separate from the sdk existing at all (see isRealYandexGamesPlatform's
   // doc comment) — this is specifically the "are we actually embedded in
@@ -103,6 +121,11 @@ export default function App() {
     setSeenOnboardingLevels(snapshot.seenOnboardingLevels);
     setTutorialComplete(snapshot.tutorialComplete);
     setLevelStars(snapshot.levelStars);
+    levelStarsRef.current = snapshot.levelStars;
+    setAchievementUnlockedAt(snapshot.achievementUnlockedAt);
+    achievementUnlockedAtRef.current = snapshot.achievementUnlockedAt;
+    setAchievementProgress(snapshot.achievementProgress);
+    achievementProgressRef.current = snapshot.achievementProgress;
     setMusicEnabled(snapshot.musicEnabled);
     setMusicVolume(snapshot.musicVolume);
     setSoundEffectsEnabledState(snapshot.soundEffectsEnabled);
@@ -116,36 +139,82 @@ export default function App() {
     engine.onLevelSolved = (levelIndex: number, result: LevelAttemptResult) => {
       analyticsService.levelCompleted(levelIndex, result, levelEntrySourceRef.current);
       if (result.stars == null) return;
+
+      const newProgress = recordLevelSolved(finalizePending(achievementProgressRef.current), levelIndex, result);
+      achievementProgressRef.current = newProgress;
+      setAchievementProgress(newProgress);
+
       setLevelStars((prev) => {
         const merged = mergeBestStars(prev.get(levelIndex), result.stars!);
-        if (merged === prev.get(levelIndex)) return prev;
-        const next = new Map(prev);
-        next.set(levelIndex, merged);
+        const next = merged === prev.get(levelIndex) ? prev : new Map(prev).set(levelIndex, merged);
+        levelStarsRef.current = next;
         progressRepository.save({
           unlockedLevels: unlockedLevelsRef.current,
           seenOnboardingLevels: seenOnboardingRef.current,
           tutorialComplete: tutorialCompleteRef.current,
           levelStars: next,
+          achievementUnlockedAt: achievementUnlockedAtRef.current,
+          achievementProgress: newProgress,
         });
+        recordNewAchievements(next, newProgress);
         return next;
       });
     };
-    engine.onHintUsed = (levelIndex, hintUsedCount, viaAd) =>
+    engine.onHintUsed = (levelIndex, hintUsedCount, viaAd) => {
       analyticsService.hintUsed(levelIndex, hintUsedCount, viaAd);
-    engine.onLevelReset = (levelIndex, metrics) => analyticsService.levelReset(levelIndex, metrics);
+      // Hints on the 5 tutorial levels never count towards a coin
+      // achievement — see docs/ACHIEVEMENTS_SPEC.md.
+      if (levelIndex < FIRST_SCORED_LEVEL_INDEX) return;
+      const newProgress = recordHintUsed(achievementProgressRef.current, levelIndex);
+      if (newProgress === achievementProgressRef.current) return;
+      achievementProgressRef.current = newProgress;
+      setAchievementProgress(newProgress);
+      progressRepository.save({
+        unlockedLevels: unlockedLevelsRef.current,
+        seenOnboardingLevels: seenOnboardingRef.current,
+        tutorialComplete: tutorialCompleteRef.current,
+        levelStars: levelStarsRef.current,
+        achievementUnlockedAt: achievementUnlockedAtRef.current,
+        achievementProgress: newProgress,
+      });
+      recordNewAchievements(levelStarsRef.current, newProgress);
+    };
+    engine.onLevelReset = (levelIndex, metrics) => {
+      analyticsService.levelReset(levelIndex, metrics);
+      // Both "Сбросить" and "Пройти ещё раз" break both series
+      // unconditionally, regardless of which level it happens on.
+      const newProgress = recordReset(achievementProgressRef.current);
+      achievementProgressRef.current = newProgress;
+      setAchievementProgress(newProgress);
+      progressRepository.save({
+        unlockedLevels: unlockedLevelsRef.current,
+        seenOnboardingLevels: seenOnboardingRef.current,
+        tutorialComplete: tutorialCompleteRef.current,
+        levelStars: levelStarsRef.current,
+        achievementUnlockedAt: achievementUnlockedAtRef.current,
+        achievementProgress: newProgress,
+      });
+    };
     engine.onBonusStarApplied = (levelIndex, starsBefore, starsAfter) => {
       analyticsService.bonusStarGranted(levelIndex, starsBefore, starsAfter);
+
+      const newProgress = recordBonusStarApplied(achievementProgressRef.current, levelIndex, starsAfter);
+      achievementProgressRef.current = newProgress;
+      setAchievementProgress(newProgress);
+
       setLevelStars((prev) => {
         const merged = mergeBestStars(prev.get(levelIndex), starsAfter);
-        if (merged === prev.get(levelIndex)) return prev;
-        const next = new Map(prev);
-        next.set(levelIndex, merged);
+        const next = merged === prev.get(levelIndex) ? prev : new Map(prev).set(levelIndex, merged);
+        levelStarsRef.current = next;
         progressRepository.save({
           unlockedLevels: unlockedLevelsRef.current,
           seenOnboardingLevels: seenOnboardingRef.current,
           tutorialComplete: tutorialCompleteRef.current,
           levelStars: next,
+          achievementUnlockedAt: achievementUnlockedAtRef.current,
+          achievementProgress: newProgress,
         });
+        recordNewAchievements(next, newProgress);
         return next;
       });
     };
@@ -156,6 +225,9 @@ export default function App() {
   const unlockedLevelsRef = useRef(unlockedLevels);
   const seenOnboardingRef = useRef(seenOnboardingLevels);
   const tutorialCompleteRef = useRef(tutorialComplete);
+  const levelStarsRef = useRef(levelStars);
+  const achievementUnlockedAtRef = useRef(achievementUnlockedAt);
+  const achievementProgressRef = useRef(achievementProgress);
   const levelEntrySourceRef = useRef<LevelEntrySource>('menu_play');
   useEffect(() => {
     unlockedLevelsRef.current = unlockedLevels;
@@ -166,6 +238,78 @@ export default function App() {
   useEffect(() => {
     tutorialCompleteRef.current = tutorialComplete;
   }, [tutorialComplete]);
+  useEffect(() => {
+    levelStarsRef.current = levelStars;
+  }, [levelStars]);
+  useEffect(() => {
+    achievementUnlockedAtRef.current = achievementUnlockedAt;
+  }, [achievementUnlockedAt]);
+  useEffect(() => {
+    achievementProgressRef.current = achievementProgress;
+  }, [achievementProgress]);
+
+  /**
+   * Diffs `unlockedIds(...)` against `achievementUnlockedAtRef` to find ids
+   * that just became unlocked, records them (with the current timestamp)
+   * and persists, then routes each into the right reveal slot: the first
+   * "regular" achievement (everything except the tutorial/campaign/streak
+   * milestones, which get their own dedicated screen) goes inline into the
+   * level-result overlay, any further ones queue behind a full-screen
+   * celebration popup — a port of the mobile app's `_recordNewAchievements`.
+   */
+  const recordNewAchievements = (
+    solvedLevelStars: Map<number, number>,
+    solvedAchievementProgress: AchievementProgressState,
+    tutorialCompleteOverride?: boolean,
+  ): void => {
+    const tutorialCompleteValue = tutorialCompleteOverride ?? tutorialCompleteRef.current;
+    const ids = unlockedIds({
+      tutorialComplete: tutorialCompleteValue,
+      levelStars: solvedLevelStars,
+      hintedLevelsCount: solvedAchievementProgress.hintedLevels.size,
+      noHintLevelsCount: solvedAchievementProgress.noHintLevels.size,
+      cleanStreakLength: solvedAchievementProgress.cleanStreak.length,
+      perfectStreakLength: solvedAchievementProgress.perfectStreak.length,
+    });
+
+    const newlyUnlocked: AchievementDefinition[] = [];
+    const nextUnlockedAt = new Map(achievementUnlockedAtRef.current);
+    const now = new Date().toISOString();
+    for (const id of ids) {
+      if (nextUnlockedAt.has(id)) continue;
+      nextUnlockedAt.set(id, now);
+      const definition = allAchievements.find((a) => a.id === id);
+      if (definition) newlyUnlocked.push(definition);
+    }
+    if (newlyUnlocked.length === 0) return;
+
+    achievementUnlockedAtRef.current = nextUnlockedAt;
+    setAchievementUnlockedAt(nextUnlockedAt);
+    progressRepository.save({
+      unlockedLevels: unlockedLevelsRef.current,
+      seenOnboardingLevels: seenOnboardingRef.current,
+      tutorialComplete: tutorialCompleteValue,
+      levelStars: solvedLevelStars,
+      achievementUnlockedAt: nextUnlockedAt,
+      achievementProgress: solvedAchievementProgress,
+    });
+
+    // Pawn/king get their own dedicated reveal on the tutorial/campaign
+    // completion screens below; queen has no matching "completion" screen
+    // of its own (it can unlock mid-campaign, like coinFour) so — as on
+    // mobile — it is recorded silently and only ever visible on the
+    // achievements cabinet.
+    const dedicated = new Set([trainingPawn.id, mainKing.id, extraQueen.id]);
+    const regular = newlyUnlocked.filter((a) => !dedicated.has(a.id));
+    if (regular.length > 0) {
+      setLevelResultAchievement(regular[0]);
+      if (regular.length > 1) setCelebrationQueue((prev) => [...prev, ...regular.slice(1)]);
+    }
+    const pawn = newlyUnlocked.find((a) => a.id === trainingPawn.id);
+    if (pawn) setTutorialAchievement(pawn);
+    const king = newlyUnlocked.find((a) => a.id === mainKing.id);
+    if (king) setCampaignAchievement(king);
+  };
 
   // Brackets actual gameplay for the Yandex Games platform's own engagement
   // metrics — distinct from `game_api_pause`/`resume` above, which react to
@@ -224,6 +368,7 @@ export default function App() {
   };
 
   const nextLevel = () => {
+    setLevelResultAchievement(null);
     const before = engine.levelIndex;
     engine.nextLevel();
     if (engine.levelIndex > before) {
@@ -245,6 +390,7 @@ export default function App() {
         nextTutorialComplete = true;
         setTutorialComplete(true);
         analyticsService.tutorialCompleted();
+        recordNewAchievements(levelStarsRef.current, achievementProgressRef.current, true);
         setScreen('tutorialComplete');
       }
       persist({ unlockedLevels: nextUnlocked, seenOnboardingLevels: nextSeen, tutorialComplete: nextTutorialComplete });
@@ -327,11 +473,20 @@ export default function App() {
     unlockedLevelsRef.current = initialUnlocked;
     seenOnboardingRef.current = initialSeen;
     tutorialCompleteRef.current = false;
+    levelStarsRef.current = initialStars;
+    achievementUnlockedAtRef.current = new Map();
+    achievementProgressRef.current = initialAchievementProgress;
     setUnlockedLevels(initialUnlocked);
     setHighestLevel(0);
     setSeenOnboardingLevels(initialSeen);
     setTutorialComplete(false);
     setLevelStars(initialStars);
+    setAchievementUnlockedAt(new Map());
+    setAchievementProgress(initialAchievementProgress);
+    setLevelResultAchievement(null);
+    setCelebrationQueue([]);
+    setTutorialAchievement(null);
+    setCampaignAchievement(null);
     engine.goToLevel(0);
     goToMenu();
   };
@@ -351,6 +506,13 @@ export default function App() {
           onDeclineAnalytics={() => setAnalyticsConsentAndSave(false)}
         />
       )}
+      {celebrationQueue.length > 0 && (
+        <AchievementCelebrationOverlay
+          achievement={celebrationQueue[0]}
+          onDismiss={() => setCelebrationQueue((prev) => prev.slice(1))}
+          onRevealed={playAchievementReveal}
+        />
+      )}
     </>
   );
 
@@ -358,11 +520,16 @@ export default function App() {
     case 'campaignComplete':
       return withConsent(
         <CampaignCompleteScreen
+          achievement={campaignAchievement}
+          animateAchievement
+          onAchievementRevealed={playAchievementReveal}
           onLevels={() => {
+            setCampaignAchievement(null);
             void musicService.stopGame(true);
             setScreen('levels');
           }}
           onMenu={() => {
+            setCampaignAchievement(null);
             void musicService.stopGame(true);
             setScreen('menu');
             void musicService.startMenu();
@@ -372,11 +539,28 @@ export default function App() {
     case 'tutorialComplete':
       return withConsent(
         <TutorialCompleteScreen
-          onContinue={() => setScreen('game')}
+          achievement={tutorialAchievement}
+          animateAchievement
+          onAchievementRevealed={playAchievementReveal}
+          onContinue={() => {
+            setTutorialAchievement(null);
+            setScreen('game');
+          }}
           onLevels={() => {
+            setTutorialAchievement(null);
             void musicService.stopGame(true);
             setScreen('levels');
           }}
+        />
+      );
+    case 'achievements':
+      return withConsent(
+        <AchievementsScreen
+          tutorialComplete={tutorialComplete}
+          levelStars={levelStars}
+          achievementProgress={achievementProgress}
+          achievementUnlockedAt={achievementUnlockedAt}
+          onBack={goToMenu}
         />
       );
     case 'settings':
@@ -413,10 +597,19 @@ export default function App() {
           onResetOnboarding={resetOnboardingForDebug}
           seenOnboardingLevels={seenOnboardingLevels}
           rewardedAdsService={ADS_AVAILABLE && !isOnYandexGamesPlatform ? rewardedAdsService : undefined}
+          achievement={levelResultAchievement}
+          onAchievementRevealed={playAchievementReveal}
         />
       );
     case 'menu':
     default:
-      return withConsent(<MenuScreen onPlay={() => goToGame()} onLevels={openLevelSelect} onSettings={() => setScreen('settings')} />);
+      return withConsent(
+        <MenuScreen
+          onPlay={() => goToGame()}
+          onLevels={openLevelSelect}
+          onSettings={() => setScreen('settings')}
+          onAchievements={() => setScreen('achievements')}
+        />
+      );
   }
 }
