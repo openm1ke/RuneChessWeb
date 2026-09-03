@@ -1,4 +1,4 @@
-import { campaignLevels } from './campaignLevels';
+import { campaignLevels, MAIN_CAMPAIGN_LEVEL_COUNT } from './campaignLevels';
 import { FIRST_SCORED_LEVEL_INDEX } from '../game/dozorEngine';
 import { asset } from '../lib/assetUrl';
 
@@ -20,13 +20,18 @@ export interface AchievementDefinition {
  * condition must never require them. */
 export const firstScoredLevelIndex = FIRST_SCORED_LEVEL_INDEX;
 
-/** Number of scored levels in the (currently only) campaign — the web port
- * has no 7×7 continuation campaign yet, so this equals the total scored
- * level count for now. Kept as its own named constant (rather than reusing
- * the total inline) so «Хранитель короны» reads the same way it does on
- * mobile, and so the two conditions cleanly diverge again the moment a
- * second campaign is added here. */
-export const mainCampaignScoredLevelCount = campaignLevels.length - firstScoredLevelIndex;
+/** Number of scored levels in the ORIGINAL 6×6 campaign only — «Хранитель
+ * короны» requires 3★ on exactly these, not the bonus 7×7 campaign too.
+ * Deliberately derived from the fixed `MAIN_CAMPAIGN_LEVEL_COUNT` boundary
+ * rather than `campaignLevels.length` (which now also includes the bonus
+ * campaign) — mirrors the mobile app's
+ * `kMainCampaignLevelCount - firstScoredLevelIndex`. */
+export const mainCampaignScoredLevelCount = MAIN_CAMPAIGN_LEVEL_COUNT - firstScoredLevelIndex;
+
+/** Number of scored levels across EVERY campaign — used by «Легенда
+ * RuneChess» (which does span both) and by the achievements cabinet's
+ * "Пройдено уровней" stat. Grows automatically as campaigns are added. */
+export const totalScoredLevelCount = campaignLevels.length - firstScoredLevelIndex;
 
 const iconPath = (name: string) => asset(`assets/images/achievements/${name}.webp`);
 
@@ -166,9 +171,8 @@ export function unlockedIds({
   if (mainCampaignPerfect) unlocked.add(mainKing.id);
 
   // The legend trophy spans every scored level of every campaign.
-  const totalScoredLevels = campaignLevels.length - firstScoredLevelIndex;
   let everyCampaignPerfect = true;
-  for (let offset = 0; offset < totalScoredLevels; offset++) {
+  for (let offset = 0; offset < totalScoredLevelCount; offset++) {
     if (levelStars.get(firstScoredLevelIndex + offset) !== 3) {
       everyCampaignPerfect = false;
       break;
@@ -241,12 +245,11 @@ export function progressFor(
     case coinFour.id:
       return fraction(cleanStreakLength, 100);
     case coinFive.id: {
-      const total = campaignLevels.length - firstScoredLevelIndex;
       let done = 0;
-      for (let offset = 0; offset < total; offset++) {
+      for (let offset = 0; offset < totalScoredLevelCount; offset++) {
         if (levelStars.get(firstScoredLevelIndex + offset) === 3) done++;
       }
-      return fraction(done, total);
+      return fraction(done, totalScoredLevelCount);
     }
     default:
       return 0;

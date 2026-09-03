@@ -13,6 +13,7 @@ import {
   mainCampaignScoredLevelCount,
   mainKing,
   progressFor,
+  totalScoredLevelCount,
   trainingPawn,
   unlockedIds,
 } from '../data/achievements';
@@ -63,10 +64,13 @@ describe('unlockedIds thresholds', () => {
   });
 
   it('unlocks coinFive only once every scored level of every campaign is 3 stars', () => {
-    // The web port currently has only the main campaign, so this coincides
-    // with mainKing's condition — an accepted consequence of not yet
-    // porting the bonus 7x7 campaign, not a bug.
-    const complete = perfectStars(mainCampaignScoredLevelCount);
+    // mainCampaignScoredLevelCount (107) alone is NOT enough now that the
+    // bonus 7×7 campaign exists — coinFive spans every scored level.
+    const onlyMainCampaign = perfectStars(mainCampaignScoredLevelCount);
+    expect(unlockedIds({ ...baseArgs, levelStars: onlyMainCampaign }).has(coinFive.id)).toBe(false);
+    expect(unlockedIds({ ...baseArgs, levelStars: onlyMainCampaign }).has(mainKing.id)).toBe(true);
+
+    const complete = perfectStars(totalScoredLevelCount);
     const ids = unlockedIds({ ...baseArgs, levelStars: complete });
     expect(ids.has(coinFive.id)).toBe(true);
     expect(ids.has(mainKing.id)).toBe(true);

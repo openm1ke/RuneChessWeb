@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeAttacks } from '../game/attackRules';
+import { computeAttacks, isInBounds } from '../game/attackRules';
 
 describe('computeAttacks', () => {
   it('rook attacks along all four straight rays, unblocked', () => {
@@ -72,5 +72,25 @@ describe('computeAttacks', () => {
     const occupied = new Set(['1,1']);
     const hits = computeAttacks({ type: 'pawn', c: 2, r: 2, pawnDirection: 'up', occupied });
     expect(hits).toContainEqual({ c: 1, r: 1 });
+  });
+
+  it('respects an explicit boardN — a bonus-campaign 7×7 board reaches one cell further than the default 6×6', () => {
+    const hits6 = computeAttacks({ type: 'rook', c: 5, r: 0, occupied: new Set() });
+    expect(hits6).not.toContainEqual({ c: 6, r: 0 });
+    const hits7 = computeAttacks({ type: 'rook', c: 5, r: 0, occupied: new Set(), boardN: 7 });
+    expect(hits7).toContainEqual({ c: 6, r: 0 });
+    expect(hits7).not.toContainEqual({ c: 7, r: 0 });
+  });
+});
+
+describe('isInBounds', () => {
+  it('defaults to a 6×6 board', () => {
+    expect(isInBounds(5, 5)).toBe(true);
+    expect(isInBounds(6, 5)).toBe(false);
+  });
+
+  it('accepts an explicit boardN for the bonus campaign\'s 7×7 boards', () => {
+    expect(isInBounds(6, 6, 7)).toBe(true);
+    expect(isInBounds(7, 6, 7)).toBe(false);
   });
 });

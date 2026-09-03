@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DozorEngine } from '../game/dozorEngine';
-import { campaignSolutions } from '../data/campaignLevels';
+import { campaignSolutions, MAIN_CAMPAIGN_LEVEL_COUNT } from '../data/campaignLevels';
 
 describe('DozorEngine', () => {
   let engine: DozorEngine;
@@ -84,5 +84,18 @@ describe('DozorEngine', () => {
     const beacon = engine.beacons[0];
     engine.tapTray('l1-pawn');
     expect(engine.canDropTrayItem(beacon.c, beacon.r)).toBe(false);
+  });
+
+  it('a bonus-campaign level loads a 7×7 board with the matching cellPx', () => {
+    engine.goToLevel(MAIN_CAMPAIGN_LEVEL_COUNT);
+    const snapshot = engine.snapshot();
+    expect(snapshot.boardSize).toBe(7);
+    expect(snapshot.cellPx).toBeCloseTo(292 / 7);
+  });
+
+  it('an original-campaign level still loads a 6×6 board', () => {
+    const snapshot = engine.snapshot();
+    expect(snapshot.boardSize).toBe(6);
+    expect(snapshot.cellPx).toBeCloseTo(292 / 6);
   });
 });

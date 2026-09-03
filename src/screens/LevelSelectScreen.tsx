@@ -1,9 +1,34 @@
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { MiniStarRow } from '../components/shared/StarRow';
 import { RoundControl } from '../components/shared/RoundControl';
-import { FIRST_SCORED_LEVEL_INDEX, campaignLevels } from '../data/campaignLevels';
+import { FIRST_SCORED_LEVEL_INDEX, MAIN_CAMPAIGN_LEVEL_COUNT, campaignLevels } from '../data/campaignLevels';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { asset } from '../lib/assetUrl';
+
+/** One scrollable section of the level list — a full campaign or the
+ * tutorial. Shared between the portrait and landscape layouts below so a
+ * future campaign only needs one new entry here, not a duplicated
+ * `SectionTitle`+`LevelGrid` pair in each layout. */
+function campaignSections(tutorialComplete: boolean): { label: string; start: number; count: number; locked: boolean }[] {
+  return [
+    { label: 'ОБУЧЕНИЕ · 5 УРОВНЕЙ', start: 0, count: FIRST_SCORED_LEVEL_INDEX, locked: false },
+    {
+      label: tutorialComplete ? 'ОСНОВНАЯ КАМПАНИЯ' : 'ОСНОВНАЯ КАМПАНИЯ · ПРОЙДИТЕ ОБУЧЕНИЕ',
+      start: FIRST_SCORED_LEVEL_INDEX,
+      count: MAIN_CAMPAIGN_LEVEL_COUNT - FIRST_SCORED_LEVEL_INDEX,
+      locked: !tutorialComplete,
+    },
+    {
+      label: 'НОВАЯ КАМПАНИЯ · ПОЛЕ 7×7',
+      start: MAIN_CAMPAIGN_LEVEL_COUNT,
+      count: campaignLevels.length - MAIN_CAMPAIGN_LEVEL_COUNT,
+      // Not gated by a section-wide `locked` flag on mobile either — each
+      // tile's own unlock state (from `unlockedLevels`) already governs
+      // whether it's reachable, exactly like every other level boundary.
+      locked: false,
+    },
+  ];
+}
 
 interface LevelSelectProps {
   unlockedLevels: Set<number>;
@@ -79,27 +104,20 @@ export function LevelSelectScreen(props: LevelSelectProps) {
             overflowY: 'auto',
           }}
         >
-          <SectionTitle label="ОБУЧЕНИЕ · 5 УРОВНЕЙ" />
-          <LevelGrid
-            start={0}
-            count={FIRST_SCORED_LEVEL_INDEX}
-            unlockedLevels={unlockedLevels}
-            highestUnlocked={highestUnlocked}
-            onLevelChosen={onLevelChosen}
-          />
-          <SectionTitle
-            label={tutorialComplete ? 'ОСНОВНАЯ КАМПАНИЯ' : 'ОСНОВНАЯ КАМПАНИЯ · ПРОЙДИТЕ ОБУЧЕНИЕ'}
-            locked={!tutorialComplete}
-          />
-          <LevelGrid
-            start={FIRST_SCORED_LEVEL_INDEX}
-            count={campaignLevels.length - FIRST_SCORED_LEVEL_INDEX}
-            unlockedLevels={unlockedLevels}
-            highestUnlocked={highestUnlocked}
-            locked={!tutorialComplete}
-            levelStars={levelStars}
-            onLevelChosen={onLevelChosen}
-          />
+          {campaignSections(tutorialComplete).map((section) => (
+            <div key={section.start}>
+              <SectionTitle label={section.label} locked={section.locked} />
+              <LevelGrid
+                start={section.start}
+                count={section.count}
+                unlockedLevels={unlockedLevels}
+                highestUnlocked={highestUnlocked}
+                locked={section.locked}
+                levelStars={levelStars}
+                onLevelChosen={onLevelChosen}
+              />
+            </div>
+          ))}
         </div>
       </div>
     </DesignCanvas>
@@ -170,31 +188,22 @@ function LandscapeLevelSelectScene({
           overflowY: 'auto',
         }}
       >
-        <SectionTitle label="ОБУЧЕНИЕ · 5 УРОВНЕЙ" />
-        <LevelGrid
-          start={0}
-          count={FIRST_SCORED_LEVEL_INDEX}
-          unlockedLevels={unlockedLevels}
-          highestUnlocked={highestUnlocked}
-          onLevelChosen={onLevelChosen}
-          columns={columns}
-          aspectRatio={1.32}
-        />
-        <SectionTitle
-          label={tutorialComplete ? 'ОСНОВНАЯ КАМПАНИЯ' : 'ОСНОВНАЯ КАМПАНИЯ · ПРОЙДИТЕ ОБУЧЕНИЕ'}
-          locked={!tutorialComplete}
-        />
-        <LevelGrid
-          start={FIRST_SCORED_LEVEL_INDEX}
-          count={campaignLevels.length - FIRST_SCORED_LEVEL_INDEX}
-          unlockedLevels={unlockedLevels}
-          highestUnlocked={highestUnlocked}
-          locked={!tutorialComplete}
-          levelStars={levelStars}
-          onLevelChosen={onLevelChosen}
-          columns={columns}
-          aspectRatio={1.32}
-        />
+        {campaignSections(tutorialComplete).map((section) => (
+          <div key={section.start}>
+            <SectionTitle label={section.label} locked={section.locked} />
+            <LevelGrid
+              start={section.start}
+              count={section.count}
+              unlockedLevels={unlockedLevels}
+              highestUnlocked={highestUnlocked}
+              locked={section.locked}
+              levelStars={levelStars}
+              onLevelChosen={onLevelChosen}
+              columns={columns}
+              aspectRatio={1.32}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );

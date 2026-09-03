@@ -1,6 +1,5 @@
 import { useMemo, type PointerEvent, type ReactElement, type RefObject } from 'react';
 import type { DozorEngine, DozorSnapshot } from '../../game/dozorEngine';
-import { BOARD_N } from '../../game/attackRules';
 import { cellKey, type Beam, type Cell, type Piece } from '../../game/models';
 import { pieceOnBoardSize, pieceSkins, pieceUprightRotationDeg, type PieceType } from '../../game/pieceTypes';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from './boardPerspective';
@@ -8,8 +7,6 @@ import { PieceArt } from './PieceArt';
 import type { DragController } from './useDragController';
 import { asset } from '../../lib/assetUrl';
 import { playPieceSet } from '../../services/musicService';
-
-const CELL_UNIT = BoardPerspective.sourceSize / BOARD_N;
 
 function orderPiecesByBoardDepth(pieces: Piece[], heldId: string | null): Piece[] {
   const ordered = [...pieces];
@@ -28,10 +25,11 @@ function polygonPoints(points: { x: number; y: number }[]): string {
 
 /** SVG checkerboard + dashed attack-beam rendering, a port of `BoardPainter`. */
 function BoardSvg({ snapshot, beamPhase }: { snapshot: DozorSnapshot; beamPhase: number }) {
+  const boardSize = snapshot.boardSize;
   const cells: ReactElement[] = [];
-  for (let r = 0; r < BOARD_N; r++) {
-    for (let c = 0; c < BOARD_N; c++) {
-      const corners = BoardPerspective.cellCorners(c, r);
+  for (let r = 0; r < boardSize; r++) {
+    for (let c = 0; c < boardSize; c++) {
+      const corners = BoardPerspective.cellCorners(c, r, boardSize);
       const isSolution = snapshot.solutionCell?.c === c && snapshot.solutionCell?.r === r;
       cells.push(
         <polygon
@@ -124,8 +122,8 @@ function BeamPath({ beam, beamPhase }: { beam: Beam; beamPhase: number }) {
   );
 }
 
-function BeaconCoin({ beacon, done }: { beacon: Cell & { target: number }; done: boolean }) {
-  const source = { x: (beacon.c + 0.5) * CELL_UNIT, y: (beacon.r + 0.5) * CELL_UNIT };
+function BeaconCoin({ beacon, done, cellPx }: { beacon: Cell & { target: number }; done: boolean; cellPx: number }) {
+  const source = { x: (beacon.c + 0.5) * cellPx, y: (beacon.r + 0.5) * cellPx };
   const center = BoardPerspective.project(source);
   const scale = 0.88 + (0.16 * source.y) / BoardPerspective.sourceSize;
   const size = 46 * scale;
@@ -355,10 +353,13 @@ export function Board({
     // the outer DesignCanvas transform; convert client px back to design px.
     const scaleX = BoardPerspective.width / rect.width;
     const scaleY = BoardPerspective.height / rect.height;
-    return BoardPerspective.unprojectCell({
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY,
-    });
+    return BoardPerspective.unprojectCell(
+      {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY,
+      },
+      snapshot.boardSize,
+    );
   };
 
   const orderedPieces = useMemo(
@@ -399,7 +400,12 @@ export function Board({
       >
         <BoardSvg snapshot={snapshot} beamPhase={beamPhase} />
         {snapshot.beacons.map((beacon) => (
-          <BeaconCoin key={cellKey(beacon.c, beacon.r)} beacon={beacon} done={snapshot.counts[cellKey(beacon.c, beacon.r)] === beacon.target} />
+          <BeaconCoin
+            key={cellKey(beacon.c, beacon.r)}
+            beacon={beacon}
+            done={(snapshot.counts[cellKey(beacon.c, beacon.r)] ?? 0) === beacon.target}
+            cellPx={snapshot.cellPx}
+          />
         ))}
         {snapshot.solutionCell && snapshot.hintItem && (
           <HintGhost item={snapshot.hintItem} cell={snapshot.solutionCell} cellPx={snapshot.cellPx} />

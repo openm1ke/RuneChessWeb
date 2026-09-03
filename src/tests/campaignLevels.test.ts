@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeAttacks } from '../game/attackRules';
-import { campaignLevels, campaignSolutions } from '../data/campaignLevels';
+import { campaignLevels, campaignSolutions, MAIN_CAMPAIGN_LEVEL_COUNT } from '../data/campaignLevels';
 import { cellKey } from '../game/models';
 
 describe('campaign level data', () => {
@@ -8,8 +8,25 @@ describe('campaign level data', () => {
     expect(campaignLevels.length).toBe(campaignSolutions.length);
   });
 
-  it('has 112 levels, matching the Flutter app', () => {
-    expect(campaignLevels.length).toBe(112);
+  it('has 165 levels (112 original 6×6 + 53 bonus 7×7), matching the Flutter app', () => {
+    expect(campaignLevels.length).toBe(165);
+  });
+
+  it('boards are 6×6 for the original campaign and 7×7 for the bonus continuation', () => {
+    for (let i = 0; i < MAIN_CAMPAIGN_LEVEL_COUNT; i++) {
+      expect(campaignLevels[i].boardSize).toBe(6);
+    }
+    for (let i = MAIN_CAMPAIGN_LEVEL_COUNT; i < campaignLevels.length; i++) {
+      expect(campaignLevels[i].boardSize).toBe(7);
+    }
+  });
+
+  it('the bonus campaign includes both new beacon targets (0 = empty rune, 5 = full rune)', () => {
+    const bonusTargets = new Set(
+      campaignLevels.slice(MAIN_CAMPAIGN_LEVEL_COUNT).flatMap((level) => level.beacons.map((b) => b.target)),
+    );
+    expect(bonusTargets.has(0)).toBe(true);
+    expect(bonusTargets.has(5)).toBe(true);
   });
 
   it('every level solution places exactly one figure per tray item, on distinct cells', () => {
@@ -35,6 +52,7 @@ describe('campaign level data', () => {
           r: cell.r,
           pawnDirection: item.pawnDirection,
           occupied,
+          boardN: level.boardSize,
         });
         const beaconHits = hits.filter((h) => level.beacons.some((b) => b.c === h.c && b.r === h.r));
         if (beaconHits.length === 0) allUseful = false;

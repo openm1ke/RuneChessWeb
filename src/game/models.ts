@@ -47,4 +47,7 @@ export interface Beam {
 export interface LevelDefinition {
   beacons: Beacon[];
   tray: TrayItem[];
+  /** Side length of this puzzle's board — 6 for the original campaign, 7 for
+   * the bonus continuation campaign. */
+  boardSize: number;
 }

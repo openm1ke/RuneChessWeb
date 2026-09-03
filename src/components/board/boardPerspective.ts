@@ -2,9 +2,13 @@ import { BOARD_N } from '../../game/attackRules';
 import type { Cell } from '../../game/models';
 
 /**
- * Isometric projection of the 6x6 board — a direct port of `BoardPerspective`
+ * Isometric projection of the board — a direct port of `BoardPerspective`
  * from `board.dart`. The board's top edge is narrower than its bottom edge,
- * simulating a table viewed from slightly above.
+ * simulating a table viewed from slightly above. The trapezoid frame itself
+ * (`sourceSize`/`width`/`height`/corners) is fixed regardless of board
+ * size — only `cellCorners`/`unprojectCell`'s `boardN` param changes how
+ * many (smaller) cells are packed into that same frame, e.g. for the bonus
+ * campaign's 7×7 boards.
  */
 export const BoardPerspective = {
   sourceSize: 292.0,
@@ -29,8 +33,8 @@ export const BoardPerspective = {
     return { x: left + (right - left) * (point.x / this.sourceSize), y: this.height * v };
   },
 
-  cellCorners(c: number, r: number): { x: number; y: number }[] {
-    const unit = this.sourceSize / BOARD_N;
+  cellCorners(c: number, r: number, boardN: number = BOARD_N): { x: number; y: number }[] {
+    const unit = this.sourceSize / boardN;
     const a = this.project({ x: c * unit, y: r * unit });
     const b = this.project({ x: (c + 1) * unit, y: r * unit });
     const d = this.project({ x: c * unit, y: (r + 1) * unit });
@@ -38,7 +42,7 @@ export const BoardPerspective = {
     return [a, b, e, d];
   },
 
-  unprojectCell(point: { x: number; y: number }): Cell | null {
+  unprojectCell(point: { x: number; y: number }, boardN: number = BOARD_N): Cell | null {
     const v = point.y / this.height;
     if (v < 0 || v > 1) return null;
     const left = this.leftAt(v);
@@ -46,8 +50,8 @@ export const BoardPerspective = {
     const u = (point.x - left) / (right - left);
     if (u < 0 || u > 1) return null;
     return {
-      c: Math.min(BOARD_N - 1, Math.floor(u * BOARD_N)),
-      r: Math.min(BOARD_N - 1, Math.floor(v * BOARD_N)),
+      c: Math.min(boardN - 1, Math.floor(u * boardN)),
+      r: Math.min(boardN - 1, Math.floor(v * boardN)),
     };
   },
 

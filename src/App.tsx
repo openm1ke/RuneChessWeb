@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DozorEngine, FIRST_SCORED_LEVEL_INDEX } from './game/dozorEngine';
-import { campaignLevels } from './data/campaignLevels';
+import { campaignLevels, MAIN_CAMPAIGN_LEVEL_COUNT } from './data/campaignLevels';
 import { ProgressRepository } from './services/progressRepository';
 import { MusicService, setSoundEffectsEnabled, playAchievementReveal } from './services/musicService';
 import { AnalyticsService, type LevelEntrySource } from './services/analyticsService';
@@ -34,7 +34,15 @@ import {
   type AchievementProgressState,
 } from './game/achievementProgress';
 
-type Screen = 'menu' | 'levels' | 'settings' | 'game' | 'tutorialComplete' | 'campaignComplete' | 'achievements';
+type Screen =
+  | 'menu'
+  | 'levels'
+  | 'settings'
+  | 'game'
+  | 'tutorialComplete'
+  | 'mainCampaignComplete'
+  | 'campaignComplete'
+  | 'achievements';
 
 const isDev = import.meta.env.DEV;
 
@@ -82,8 +90,14 @@ export default function App() {
   const [achievementProgress, setAchievementProgress] = useState<AchievementProgressState>(initialAchievementProgress);
   const [levelResultAchievement, setLevelResultAchievement] = useState<AchievementDefinition | null>(null);
   const [celebrationQueue, setCelebrationQueue] = useState<AchievementDefinition[]>([]);
-  const [tutorialAchievement, setTutorialAchievement] = useState<AchievementDefinition | null>(null);
-  const [campaignAchievement, setCampaignAchievement] = useState<AchievementDefinition | null>(null);
+  // The tutorial/main-campaign/full-completion screens always show their
+  // tied achievement (trainingPawn/mainKing/extraQueen) — these flags only
+  // control whether the reveal-from-locked animation plays right now
+  // (i.e. it was earned by finishing this very screen's checkpoint), mirroring
+  // the mobile app's `_tutorialAchievementJustEarned`-style flags.
+  const [tutorialJustEarned, setTutorialJustEarned] = useState(false);
+  const [mainCampaignJustEarned, setMainCampaignJustEarned] = useState(false);
+  const [extraCampaignJustEarned, setExtraCampaignJustEarned] = useState(false);
   const [yandexGamesSdk, setYandexGamesSdk] = useState<YandexGamesSdk | null>(null);
   // Separate from the sdk existing at all (see isRealYandexGamesPlatform's
   // doc comment) — this is specifically the "are we actually embedded in
@@ -294,21 +308,19 @@ export default function App() {
       achievementProgress: solvedAchievementProgress,
     });
 
-    // Pawn/king get their own dedicated reveal on the tutorial/campaign
-    // completion screens below; queen has no matching "completion" screen
-    // of its own (it can unlock mid-campaign, like coinFour) so — as on
-    // mobile — it is recorded silently and only ever visible on the
-    // achievements cabinet.
+    // Pawn/king/queen get their own dedicated reveal on the
+    // tutorial/main-campaign/full-completion screens (always shown there,
+    // see those screens' `achievement` prop below) — never queued into the
+    // level-result overlay/celebration popup like a "regular" achievement.
     const dedicated = new Set([trainingPawn.id, mainKing.id, extraQueen.id]);
     const regular = newlyUnlocked.filter((a) => !dedicated.has(a.id));
     if (regular.length > 0) {
       setLevelResultAchievement(regular[0]);
       if (regular.length > 1) setCelebrationQueue((prev) => [...prev, ...regular.slice(1)]);
     }
-    const pawn = newlyUnlocked.find((a) => a.id === trainingPawn.id);
-    if (pawn) setTutorialAchievement(pawn);
-    const king = newlyUnlocked.find((a) => a.id === mainKing.id);
-    if (king) setCampaignAchievement(king);
+    if (newlyUnlocked.some((a) => a.id === trainingPawn.id)) setTutorialJustEarned(true);
+    if (newlyUnlocked.some((a) => a.id === mainKing.id)) setMainCampaignJustEarned(true);
+    if (newlyUnlocked.some((a) => a.id === extraQueen.id)) setExtraCampaignJustEarned(true);
   };
 
   // Brackets actual gameplay for the Yandex Games platform's own engagement
@@ -370,6 +382,16 @@ export default function App() {
   const nextLevel = () => {
     setLevelResultAchievement(null);
     const before = engine.levelIndex;
+    // Mirrors the mobile app's `_nextLevel()`: the checkpoint is checked
+    // BEFORE advancing the engine, and returns early without touching it —
+    // the engine only actually moves onto the first bonus-campaign level
+    // once the player taps "ПРОДОЛЖИТЬ" (`continueAfterMainCampaign`), so a
+    // stray extra `nextLevel()` call here would silently skip level 113.
+    if (before === MAIN_CAMPAIGN_LEVEL_COUNT - 1) {
+      analyticsService.mainCampaignCompleted();
+      setScreen('mainCampaignComplete');
+      return;
+    }
     engine.nextLevel();
     if (engine.levelIndex > before) {
       levelEntrySourceRef.current = 'next_level';
@@ -398,6 +420,22 @@ export default function App() {
       analyticsService.campaignCompleted();
       setScreen('campaignComplete');
     }
+  };
+
+  /** "ПРОДОЛЖИТЬ" on the main-campaign-complete checkpoint — actually
+   * advances the engine onto level 113 (the first bonus-campaign level) and
+   * unlocks it, mirroring the mobile app's `_continueAfterMainCampaign()`. */
+  const continueAfterMainCampaign = () => {
+    engine.nextLevel();
+    levelEntrySourceRef.current = 'next_level';
+    analyticsService.levelStarted(engine.levelIndex, false, 'next_level');
+    const nextUnlocked = new Set(unlockedLevels);
+    nextUnlocked.add(engine.levelIndex);
+    setUnlockedLevels(nextUnlocked);
+    setHighestLevel(Math.max(highestLevel, engine.levelIndex));
+    setMainCampaignJustEarned(false);
+    persist({ unlockedLevels: nextUnlocked, tutorialComplete: true });
+    setScreen('game');
   };
 
   const skipLevel = () => {
@@ -485,8 +523,9 @@ export default function App() {
     setAchievementProgress(initialAchievementProgress);
     setLevelResultAchievement(null);
     setCelebrationQueue([]);
-    setTutorialAchievement(null);
-    setCampaignAchievement(null);
+    setTutorialJustEarned(false);
+    setMainCampaignJustEarned(false);
+    setExtraCampaignJustEarned(false);
     engine.goToLevel(0);
     goToMenu();
   };
@@ -520,16 +559,39 @@ export default function App() {
     case 'campaignComplete':
       return withConsent(
         <CampaignCompleteScreen
-          achievement={campaignAchievement}
-          animateAchievement
+          achievement={extraQueen}
+          animateAchievement={extraCampaignJustEarned}
           onAchievementRevealed={playAchievementReveal}
           onLevels={() => {
-            setCampaignAchievement(null);
+            setExtraCampaignJustEarned(false);
             void musicService.stopGame(true);
             setScreen('levels');
           }}
           onMenu={() => {
-            setCampaignAchievement(null);
+            setExtraCampaignJustEarned(false);
+            void musicService.stopGame(true);
+            setScreen('menu');
+            void musicService.startMenu();
+          }}
+        />
+      );
+    case 'mainCampaignComplete':
+      return withConsent(
+        <CampaignCompleteScreen
+          title={'ОСНОВНАЯ КАМПАНИЯ\nПРОЙДЕНА'}
+          subtitle="Новая кампания с полем 7×7 открыта."
+          primaryLabel="ПРОДОЛЖИТЬ"
+          onPrimary={continueAfterMainCampaign}
+          achievement={mainKing}
+          animateAchievement={mainCampaignJustEarned}
+          onAchievementRevealed={playAchievementReveal}
+          onLevels={() => {
+            setMainCampaignJustEarned(false);
+            void musicService.stopGame(true);
+            setScreen('levels');
+          }}
+          onMenu={() => {
+            setMainCampaignJustEarned(false);
             void musicService.stopGame(true);
             setScreen('menu');
             void musicService.startMenu();
@@ -539,15 +601,15 @@ export default function App() {
     case 'tutorialComplete':
       return withConsent(
         <TutorialCompleteScreen
-          achievement={tutorialAchievement}
-          animateAchievement
+          achievement={trainingPawn}
+          animateAchievement={tutorialJustEarned}
           onAchievementRevealed={playAchievementReveal}
           onContinue={() => {
-            setTutorialAchievement(null);
+            setTutorialJustEarned(false);
             setScreen('game');
           }}
           onLevels={() => {
-            setTutorialAchievement(null);
+            setTutorialJustEarned(false);
             void musicService.stopGame(true);
             setScreen('levels');
           }}

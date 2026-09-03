@@ -124,6 +124,10 @@ export class AnalyticsService {
     this.goal('tutorial_completed', {});
   }
 
+  mainCampaignCompleted(): void {
+    this.goal('main_campaign_completed', {});
+  }
+
   campaignCompleted(): void {
     this.goal('campaign_completed', {});
   }

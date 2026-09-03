@@ -54,10 +54,13 @@ export function useDragController(
     if (pointInRect(clientX, clientY, boardRect) && boardRect) {
       const scaleX = BoardPerspective.width / boardRect.width;
       const scaleY = BoardPerspective.height / boardRect.height;
-      const cell = BoardPerspective.unprojectCell({
-        x: (clientX - boardRect.left) * scaleX,
-        y: (clientY - boardRect.top) * scaleY,
-      });
+      const cell = BoardPerspective.unprojectCell(
+        {
+          x: (clientX - boardRect.left) * scaleX,
+          y: (clientY - boardRect.top) * scaleY,
+        },
+        engine.snapshot().boardSize,
+      );
       if (!cell) return;
       if (current.kind === 'tray' && current.item) {
         if (engine.dropTrayItem(current.item.id, cell.c, cell.r)) playPieceSet();

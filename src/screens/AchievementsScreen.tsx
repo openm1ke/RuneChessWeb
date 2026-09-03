@@ -5,9 +5,9 @@ import { AchievementReveal } from '../components/shared/AchievementReveal';
 import { useViewportSize } from '../components/game/useViewportSize';
 import {
   allAchievements,
-  mainCampaignScoredLevelCount,
   perfectLevelCount,
   progressFor,
+  totalScoredLevelCount,
   unlockedIds,
   type AchievementDefinition,
 } from '../data/achievements';
@@ -224,7 +224,7 @@ function ProgressPanel({
       <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1, color: 'var(--gold)', marginBottom: 8 }}>
         {unlockedCount} ИЗ {allAchievements.length} ПОЛУЧЕНО
       </div>
-      <StatRow label="Пройдено уровней" value={`${perfectLevels}/${mainCampaignScoredLevelCount}`} />
+      <StatRow label="Пройдено уровней" value={`${perfectLevels}/${totalScoredLevelCount}`} />
       <StatRow label="Получено звёзд" value={String(totalStars)} />
     </div>
   );

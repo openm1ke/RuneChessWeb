@@ -1,13 +1,11 @@
 import { campaignLevels, campaignSolutions, FIRST_SCORED_LEVEL_INDEX } from '../data/campaignLevels';
-import { computeAttacks, rayDeltasFor, isInBounds, BOARD_N } from './attackRules';
+import { computeAttacks, rayDeltasFor, isInBounds } from './attackRules';
 import type { Beacon, Beam, Cell, Piece, TrayItem } from './models';
 import { cellKey } from './models';
 import type { LevelAttemptResult } from './starRating';
 import { computeStars } from './starRating';
 
 export { FIRST_SCORED_LEVEL_INDEX };
-
-const CELL_PX = 292.0 / BOARD_N;
 
 export interface DozorSnapshot {
   pieces: Piece[];
@@ -27,6 +25,7 @@ export interface DozorSnapshot {
   sel: string | null;
   held: string | null;
   cellPx: number;
+  boardSize: number;
   occ: ReadonlySet<string>;
   beaconKey: ReadonlySet<string>;
 }
@@ -154,6 +153,7 @@ export class DozorEngine {
       r: p.r,
       pawnDirection: p.pawnDirection,
       occupied: occ,
+      boardN: this.level.boardSize,
     });
   }
 
@@ -358,6 +358,8 @@ export class DozorEngine {
   }
 
   private computeSnapshot(): DozorSnapshot {
+    const boardSize = this.level.boardSize;
+    const cellPx = 292.0 / boardSize;
     const occ = new Set<string>(this.pieces.map((p) => cellKey(p.c, p.r)));
     const beaconKey = new Set<string>(this.beacons.map((b) => cellKey(b.c, b.r)));
     const counts: Record<string, number> = {};
@@ -374,13 +376,13 @@ export class DozorEngine {
         const k = cellKey(h.c, h.r);
         counts[k] = (counts[k] ?? 0) + 1;
       }
-      const px = p.c * CELL_PX + CELL_PX / 2;
-      const py = p.r * CELL_PX + CELL_PX / 2;
+      const px = p.c * cellPx + cellPx / 2;
+      const py = p.r * cellPx + cellPx / 2;
 
       if (p.type === 'knight') {
         for (const h of hits.filter((h) => beaconKey.has(cellKey(h.c, h.r)))) {
-          const hx = h.c * CELL_PX + CELL_PX / 2;
-          const hy = h.r * CELL_PX + CELL_PX / 2;
+          const hx = h.c * cellPx + cellPx / 2;
+          const hy = h.r * cellPx + cellPx / 2;
           const mx = (px + hx) / 2;
           const my = (py + hy) / 2;
           const dx = hx - px;
@@ -403,7 +405,7 @@ export class DozorEngine {
             type: p.type,
             points: [
               { dx: px, dy: py },
-              { dx: h.c * CELL_PX + CELL_PX / 2, dy: h.r * CELL_PX + CELL_PX / 2 },
+              { dx: h.c * cellPx + cellPx / 2, dy: h.r * cellPx + cellPx / 2 },
             ],
           });
         }
@@ -411,14 +413,14 @@ export class DozorEngine {
         for (const [dc, dr] of rayDeltasFor(p.type)) {
           let c = p.c + dc;
           let r = p.r + dr;
-          while (isInBounds(c, r)) {
+          while (isInBounds(c, r, boardSize)) {
             const key = cellKey(c, r);
             if (beaconKey.has(key)) {
               beams.push({
                 type: p.type,
                 points: [
                   { dx: px, dy: py },
-                  { dx: c * CELL_PX + CELL_PX / 2, dy: r * CELL_PX + CELL_PX / 2 },
+                  { dx: c * cellPx + cellPx / 2, dy: r * cellPx + cellPx / 2 },
                 ],
               });
             }
@@ -454,7 +456,8 @@ export class DozorEngine {
       nextSolutionItem,
       sel: this.sel,
       held: this.held,
-      cellPx: CELL_PX,
+      cellPx,
+      boardSize,
       occ,
       beaconKey,
     };

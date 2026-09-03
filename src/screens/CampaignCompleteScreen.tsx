@@ -16,11 +16,44 @@ const COINS = [
 interface CampaignCompleteProps {
   onLevels: () => void;
   onMenu: () => void;
-  /** The "Хранитель короны" achievement, shown revealing inline when
-   * passed — mirrors the mobile app's inline reveal on this screen. */
+  /** Defaults to "КАМПАНИЯ ПРОЙДЕНА"; a '\n' renders as a line break — used
+   * for the two-line main-campaign checkpoint title. */
+  title?: string;
+  /** Defaults to "Вы открыли все {campaignLevels.length} уровней". */
+  subtitle?: string;
+  /** Defaults to "К УРОВНЯМ" / onLevels. */
+  primaryLabel?: string;
+  onPrimary?: () => void;
+  /** Defaults to "В МЕНЮ" / onMenu. */
+  secondaryLabel?: string;
+  onSecondary?: () => void;
+  /** The achievement tied to this checkpoint (e.g. "Хранитель короны" for
+   * finishing the main campaign, "Владыка рун" for finishing everything),
+   * shown revealing inline — mirrors the mobile app's inline reveal on this
+   * screen, which always shows the relevant trophy here regardless of
+   * whether it's actually unlocked yet (`animateAchievement` only controls
+   * whether the reveal-from-locked animation plays right now). */
   achievement?: AchievementDefinition | null;
   animateAchievement?: boolean;
   onAchievementRevealed?: () => void;
+}
+
+function TitleText({ title, fontSize }: { title: string; fontSize: number }) {
+  return (
+    <div
+      style={{
+        fontFamily: 'var(--font-display)',
+        fontSize,
+        lineHeight: 1.25,
+        letterSpacing: 2,
+        color: 'var(--gold-bright)',
+        textShadow: '0 3px 8px rgba(0,0,0,0.8)',
+        whiteSpace: 'pre-line',
+      }}
+    >
+      {title}
+    </div>
+  );
 }
 
 export function CampaignCompleteScreen(props: CampaignCompleteProps) {
@@ -75,27 +108,17 @@ export function CampaignCompleteScreen(props: CampaignCompleteProps) {
               </div>
             </div>
           )}
-          <div
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 27,
-              letterSpacing: 2,
-              color: 'var(--gold-bright)',
-              textShadow: '0 3px 8px rgba(0,0,0,0.8)',
-            }}
-          >
-            КАМПАНИЯ ПРОЙДЕНА
-          </div>
+          <TitleText title={props.title ?? 'КАМПАНИЯ ПРОЙДЕНА'} fontSize={27} />
           <div style={{ height: 16 }} />
           <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-soft)' }}>
-            Вы открыли все {campaignLevels.length} уровней
+            {props.subtitle ?? `Вы открыли все ${campaignLevels.length} уровней`}
           </div>
         </div>
         <div style={{ position: 'absolute', top: 560, left: 78, right: 78, height: 68 }}>
-          <MenuActionButton label="К УРОВНЯМ" onClick={onLevels} />
+          <MenuActionButton label={props.primaryLabel ?? 'К УРОВНЯМ'} onClick={props.onPrimary ?? onLevels} />
         </div>
         <div style={{ position: 'absolute', top: 640, left: 78, right: 78, height: 68 }}>
-          <MenuActionButton label="В МЕНЮ" onClick={onMenu} />
+          <MenuActionButton label={props.secondaryLabel ?? 'В МЕНЮ'} onClick={props.onSecondary ?? onMenu} />
         </div>
         <div
           style={{
@@ -125,6 +148,12 @@ export function CampaignCompleteScreen(props: CampaignCompleteProps) {
 function LandscapeCampaignCompleteScene({
   onLevels,
   onMenu,
+  title,
+  subtitle,
+  primaryLabel,
+  onPrimary,
+  secondaryLabel,
+  onSecondary,
   achievement,
   animateAchievement,
   onAchievementRevealed,
@@ -195,20 +224,10 @@ function LandscapeCampaignCompleteScene({
             </div>
           </div>
         )}
-        <div
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 31,
-            letterSpacing: 2,
-            color: 'var(--gold-bright)',
-            textShadow: '0 3px 8px rgba(0,0,0,0.8)',
-          }}
-        >
-          КАМПАНИЯ ПРОЙДЕНА
-        </div>
+        <TitleText title={title ?? 'КАМПАНИЯ ПРОЙДЕНА'} fontSize={31} />
         <div style={{ height: 14 }} />
         <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-soft)' }}>
-          Вы открыли все {campaignLevels.length} уровней
+          {subtitle ?? `Вы открыли все ${campaignLevels.length} уровней`}
         </div>
       </div>
       <div
@@ -223,10 +242,10 @@ function LandscapeCampaignCompleteScene({
         }}
       >
         <div style={{ flex: 1 }}>
-          <MenuActionButton label="К УРОВНЯМ" onClick={onLevels} />
+          <MenuActionButton label={primaryLabel ?? 'К УРОВНЯМ'} onClick={onPrimary ?? onLevels} />
         </div>
         <div style={{ flex: 1 }}>
-          <MenuActionButton label="В МЕНЮ" onClick={onMenu} />
+          <MenuActionButton label={secondaryLabel ?? 'В МЕНЮ'} onClick={onSecondary ?? onMenu} />
         </div>
       </div>
     </div>

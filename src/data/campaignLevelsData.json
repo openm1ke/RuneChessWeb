@@ -5326,6 +5326,3327 @@
           "pawnDirection": "up"
         }
       ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 4,
+          "r": 4,
+          "target": 5
+        },
+        {
+          "c": 6,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l113-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l113-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l113-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l113-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l113-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 5,
+          "r": 5,
+          "target": 5
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 1
+        },
+        {
+          "c": 6,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l114-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l114-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l114-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l114-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l114-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 5,
+          "r": 5,
+          "target": 5
+        },
+        {
+          "c": 4,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l115-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l115-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l115-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l115-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l115-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l115-pawn",
+          "type": "pawn",
+          "pawnDirection": "down"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 2,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l116-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l116-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l116-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 3,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 6,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l117-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l117-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l117-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 6,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 5,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 1,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l118-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l118-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l118-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 2,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 0,
+          "r": 1,
+          "target": 1
+        },
+        {
+          "c": 0,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 1,
+          "r": 0,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l119-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l119-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l119-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 2,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l120-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l120-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l120-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l120-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 4,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l121-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l121-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l121-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 2,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l122-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l122-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l122-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 1,
+          "r": 2,
+          "target": 1
+        },
+        {
+          "c": 6,
+          "r": 2,
+          "target": 1
+        },
+        {
+          "c": 3,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 6,
+          "target": 1
+        },
+        {
+          "c": 5,
+          "r": 1,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l123-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l123-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l123-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 4,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 5,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l124-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l124-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l124-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 1,
+          "r": 1,
+          "target": 1
+        },
+        {
+          "c": 5,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 5,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 2,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l125-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l125-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l125-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l125-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 6,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 3
+        },
+        {
+          "c": 3,
+          "r": 6,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 2,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l126-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l126-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l126-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 2,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 6,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l127-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l127-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l127-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 2,
+          "r": 1,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 2,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l128-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l128-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l128-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 5,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 5,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l129-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l129-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l129-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 2,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 5,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l130-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l130-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l130-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l130-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 5,
+          "r": 6,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 2,
+          "target": 0
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l131-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l131-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l131-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 5,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 2,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 6,
+          "target": 1
+        },
+        {
+          "c": 3,
+          "r": 6,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 3,
+          "target": 0
+        },
+        {
+          "c": 1,
+          "r": 6,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l132-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l132-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l132-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 1,
+          "r": 1,
+          "target": 3
+        },
+        {
+          "c": 3,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 6,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 3,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 2,
+          "target": 0
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l133-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l133-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l133-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 1,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 5,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 1,
+          "target": 0
+        },
+        {
+          "c": 3,
+          "r": 6,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l134-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l134-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l134-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 1,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 3,
+          "target": 3
+        },
+        {
+          "c": 0,
+          "r": 4,
+          "target": 3
+        },
+        {
+          "c": 6,
+          "r": 6,
+          "target": 3
+        },
+        {
+          "c": 3,
+          "r": 2,
+          "target": 0
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l135-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l135-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l135-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l135-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 4,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 2,
+          "target": 0
+        },
+        {
+          "c": 2,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l136-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l136-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l136-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l136-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 0,
+          "r": 3,
+          "target": 0
+        },
+        {
+          "c": 3,
+          "r": 3,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l137-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l137-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l137-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l137-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 1,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 3,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 0
+        },
+        {
+          "c": 2,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l138-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l138-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l138-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l138-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 6,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 6,
+          "target": 1
+        },
+        {
+          "c": 0,
+          "r": 0,
+          "target": 0
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l139-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l139-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l139-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l139-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 2,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 2,
+          "target": 1
+        },
+        {
+          "c": 0,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 3
+        },
+        {
+          "c": 3,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 1,
+          "target": 0
+        },
+        {
+          "c": 3,
+          "r": 1,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l140-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l140-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l140-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l140-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 1,
+          "target": 1
+        },
+        {
+          "c": 0,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 5,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 0,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 3
+        },
+        {
+          "c": 4,
+          "r": 6,
+          "target": 3
+        },
+        {
+          "c": 2,
+          "r": 3,
+          "target": 0
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l141-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l141-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l141-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l141-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 1,
+          "target": 3
+        },
+        {
+          "c": 0,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 2,
+          "target": 0
+        },
+        {
+          "c": 6,
+          "r": 2,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l142-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l142-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l142-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l142-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 1,
+          "r": 1,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 5,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 0,
+          "target": 0
+        },
+        {
+          "c": 5,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l143-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l143-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l143-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l143-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 3,
+          "target": 3
+        },
+        {
+          "c": 5,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 0,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 1,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 0,
+          "target": 0
+        },
+        {
+          "c": 4,
+          "r": 1,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l144-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l144-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l144-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l144-king",
+          "type": "king",
+          "pawnDirection": "none"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 3,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 5,
+          "target": 1
+        },
+        {
+          "c": 5,
+          "r": 5,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 2,
+          "target": 0
+        },
+        {
+          "c": 4,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l145-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l145-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l145-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l145-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 2,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 3
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 1,
+          "target": 0
+        },
+        {
+          "c": 3,
+          "r": 6,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l146-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l146-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l146-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l146-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l146-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 0,
+          "target": 3
+        },
+        {
+          "c": 1,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 5,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 0
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l147-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l147-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l147-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l147-pawn-1",
+          "type": "pawn",
+          "pawnDirection": "up"
+        },
+        {
+          "id": "l147-pawn-2",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 5,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 3,
+          "target": 3
+        },
+        {
+          "c": 0,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 4,
+          "target": 0
+        },
+        {
+          "c": 1,
+          "r": 6,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l148-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l148-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l148-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l148-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l148-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 6,
+          "r": 1,
+          "target": 3
+        },
+        {
+          "c": 4,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 5,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 0,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 1,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 1,
+          "target": 0
+        },
+        {
+          "c": 0,
+          "r": 6,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l149-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l149-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l149-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l149-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l149-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 3,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 1,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 0,
+          "target": 0
+        },
+        {
+          "c": 6,
+          "r": 6,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l150-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l150-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l150-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l150-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l150-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 5,
+          "r": 1,
+          "target": 3
+        },
+        {
+          "c": 3,
+          "r": 3,
+          "target": 3
+        },
+        {
+          "c": 5,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 5,
+          "target": 5
+        },
+        {
+          "c": 4,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 5,
+          "target": 0
+        },
+        {
+          "c": 6,
+          "r": 6,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l151-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l151-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l151-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l151-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l151-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 4,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 2,
+          "target": 5
+        },
+        {
+          "c": 5,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 3,
+          "target": 0
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l152-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l152-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l152-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l152-pawn-1",
+          "type": "pawn",
+          "pawnDirection": "up"
+        },
+        {
+          "id": "l152-pawn-2",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 6,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 1,
+          "target": 5
+        },
+        {
+          "c": 4,
+          "r": 1,
+          "target": 1
+        },
+        {
+          "c": 6,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 0,
+          "target": 0
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l153-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l153-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l153-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l153-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l153-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 2,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 0,
+          "r": 3,
+          "target": 3
+        },
+        {
+          "c": 1,
+          "r": 3,
+          "target": 5
+        },
+        {
+          "c": 3,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 1,
+          "target": 0
+        },
+        {
+          "c": 3,
+          "r": 1,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l154-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l154-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l154-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l154-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l154-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 5,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 3,
+          "r": 3,
+          "target": 5
+        },
+        {
+          "c": 3,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 5,
+          "target": 1
+        },
+        {
+          "c": 0,
+          "r": 3,
+          "target": 0
+        },
+        {
+          "c": 0,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l155-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l155-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l155-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l155-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l155-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 3,
+          "r": 1,
+          "target": 3
+        },
+        {
+          "c": 4,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 3,
+          "r": 2,
+          "target": 5
+        },
+        {
+          "c": 5,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 3,
+          "target": 3
+        },
+        {
+          "c": 5,
+          "r": 0,
+          "target": 0
+        },
+        {
+          "c": 2,
+          "r": 1,
+          "target": 0
+        },
+        {
+          "c": 5,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l156-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l156-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l156-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l156-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l156-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l156-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 2,
+          "r": 3,
+          "target": 3
+        },
+        {
+          "c": 3,
+          "r": 3,
+          "target": 5
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 2,
+          "target": 0
+        },
+        {
+          "c": 0,
+          "r": 4,
+          "target": 0
+        },
+        {
+          "c": 2,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l157-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l157-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l157-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l157-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l157-pawn-1",
+          "type": "pawn",
+          "pawnDirection": "up"
+        },
+        {
+          "id": "l157-pawn-2",
+          "type": "pawn",
+          "pawnDirection": "down"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 4,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 5
+        },
+        {
+          "c": 6,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 1,
+          "target": 0
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 0
+        },
+        {
+          "c": 6,
+          "r": 6,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l158-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l158-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l158-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l158-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l158-pawn-1",
+          "type": "pawn",
+          "pawnDirection": "up"
+        },
+        {
+          "id": "l158-pawn-2",
+          "type": "pawn",
+          "pawnDirection": "down"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 1,
+          "target": 3
+        },
+        {
+          "c": 2,
+          "r": 1,
+          "target": 5
+        },
+        {
+          "c": 4,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 2,
+          "target": 0
+        },
+        {
+          "c": 0,
+          "r": 4,
+          "target": 0
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l159-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l159-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l159-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l159-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l159-pawn-1",
+          "type": "pawn",
+          "pawnDirection": "up"
+        },
+        {
+          "id": "l159-pawn-2",
+          "type": "pawn",
+          "pawnDirection": "down"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 4,
+          "r": 1,
+          "target": 5
+        },
+        {
+          "c": 6,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 3
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 0,
+          "r": 0,
+          "target": 0
+        },
+        {
+          "c": 1,
+          "r": 3,
+          "target": 0
+        },
+        {
+          "c": 6,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l160-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l160-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l160-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l160-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l160-pawn-1",
+          "type": "pawn",
+          "pawnDirection": "up"
+        },
+        {
+          "id": "l160-pawn-2",
+          "type": "pawn",
+          "pawnDirection": "down"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 3,
+          "r": 0,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 1,
+          "target": 3
+        },
+        {
+          "c": 3,
+          "r": 2,
+          "target": 3
+        },
+        {
+          "c": 2,
+          "r": 3,
+          "target": 4
+        },
+        {
+          "c": 3,
+          "r": 4,
+          "target": 5
+        },
+        {
+          "c": 5,
+          "r": 4,
+          "target": 3
+        },
+        {
+          "c": 0,
+          "r": 5,
+          "target": 0
+        },
+        {
+          "c": 3,
+          "r": 6,
+          "target": 0
+        },
+        {
+          "c": 5,
+          "r": 6,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l161-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l161-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l161-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l161-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l161-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l161-pawn",
+          "type": "pawn",
+          "pawnDirection": "up"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 3,
+          "r": 0,
+          "target": 3
+        },
+        {
+          "c": 3,
+          "r": 1,
+          "target": 5
+        },
+        {
+          "c": 5,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 1,
+          "target": 1
+        },
+        {
+          "c": 0,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 5,
+          "target": 1
+        },
+        {
+          "c": 0,
+          "r": 0,
+          "target": 0
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 0
+        },
+        {
+          "c": 0,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l162-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l162-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l162-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l162-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l162-pawn-1",
+          "type": "pawn",
+          "pawnDirection": "up"
+        },
+        {
+          "id": "l162-pawn-2",
+          "type": "pawn",
+          "pawnDirection": "down"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 2,
+          "r": 0,
+          "target": 1
+        },
+        {
+          "c": 4,
+          "r": 1,
+          "target": 2
+        },
+        {
+          "c": 5,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 2,
+          "r": 4,
+          "target": 3
+        },
+        {
+          "c": 4,
+          "r": 4,
+          "target": 5
+        },
+        {
+          "c": 6,
+          "r": 4,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 3,
+          "target": 0
+        },
+        {
+          "c": 5,
+          "r": 4,
+          "target": 0
+        },
+        {
+          "c": 6,
+          "r": 5,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l163-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l163-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l163-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l163-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l163-pawn-1",
+          "type": "pawn",
+          "pawnDirection": "up"
+        },
+        {
+          "id": "l163-pawn-2",
+          "type": "pawn",
+          "pawnDirection": "down"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 1,
+          "r": 3,
+          "target": 1
+        },
+        {
+          "c": 3,
+          "r": 3,
+          "target": 4
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 1
+        },
+        {
+          "c": 1,
+          "r": 5,
+          "target": 2
+        },
+        {
+          "c": 3,
+          "r": 5,
+          "target": 5
+        },
+        {
+          "c": 3,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 1,
+          "target": 0
+        },
+        {
+          "c": 4,
+          "r": 1,
+          "target": 0
+        },
+        {
+          "c": 5,
+          "r": 1,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l164-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l164-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l164-rook",
+          "type": "rook",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l164-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l164-pawn-1",
+          "type": "pawn",
+          "pawnDirection": "up"
+        },
+        {
+          "id": "l164-pawn-2",
+          "type": "pawn",
+          "pawnDirection": "down"
+        }
+      ]
+    },
+    {
+      "boardSize": 7,
+      "beacons": [
+        {
+          "c": 0,
+          "r": 2,
+          "target": 1
+        },
+        {
+          "c": 2,
+          "r": 2,
+          "target": 2
+        },
+        {
+          "c": 4,
+          "r": 3,
+          "target": 5
+        },
+        {
+          "c": 6,
+          "r": 3,
+          "target": 2
+        },
+        {
+          "c": 1,
+          "r": 4,
+          "target": 3
+        },
+        {
+          "c": 6,
+          "r": 5,
+          "target": 1
+        },
+        {
+          "c": 1,
+          "r": 6,
+          "target": 2
+        },
+        {
+          "c": 6,
+          "r": 1,
+          "target": 0
+        },
+        {
+          "c": 6,
+          "r": 2,
+          "target": 0
+        },
+        {
+          "c": 6,
+          "r": 6,
+          "target": 0
+        }
+      ],
+      "tray": [
+        {
+          "id": "l165-queen",
+          "type": "queen",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l165-king",
+          "type": "king",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l165-bishop",
+          "type": "bishop",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l165-knight",
+          "type": "knight",
+          "pawnDirection": "none"
+        },
+        {
+          "id": "l165-pawn-1",
+          "type": "pawn",
+          "pawnDirection": "up"
+        },
+        {
+          "id": "l165-pawn-2",
+          "type": "pawn",
+          "pawnDirection": "down"
+        }
+      ]
     }
   ],
   "solutions": [
@@ -7219,6 +10540,1032 @@
       {
         "c": 2,
         "r": 5
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 0
+      },
+      {
+        "c": 0,
+        "r": 0
+      },
+      {
+        "c": 2,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 4
+      },
+      {
+        "c": 3,
+        "r": 5
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 0
+      },
+      {
+        "c": 0,
+        "r": 0
+      },
+      {
+        "c": 3,
+        "r": 4
+      },
+      {
+        "c": 4,
+        "r": 5
+      },
+      {
+        "c": 4,
+        "r": 6
+      }
+    ],
+    [
+      {
+        "c": 0,
+        "r": 2
+      },
+      {
+        "c": 5,
+        "r": 0
+      },
+      {
+        "c": 0,
+        "r": 0
+      },
+      {
+        "c": 3,
+        "r": 4
+      },
+      {
+        "c": 4,
+        "r": 5
+      },
+      {
+        "c": 6,
+        "r": 4
+      }
+    ],
+    [
+      {
+        "c": 0,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 4
+      },
+      {
+        "c": 1,
+        "r": 4
+      }
+    ],
+    [
+      {
+        "c": 6,
+        "r": 6
+      },
+      {
+        "c": 4,
+        "r": 1
+      },
+      {
+        "c": 1,
+        "r": 0
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 5
+      },
+      {
+        "c": 4,
+        "r": 2
+      },
+      {
+        "c": 5,
+        "r": 6
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 5
+      },
+      {
+        "c": 1,
+        "r": 6
+      },
+      {
+        "c": 3,
+        "r": 1
+      }
+    ],
+    [
+      {
+        "c": 2,
+        "r": 3
+      },
+      {
+        "c": 6,
+        "r": 3
+      },
+      {
+        "c": 1,
+        "r": 5
+      },
+      {
+        "c": 3,
+        "r": 6
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 6
+      },
+      {
+        "c": 5,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 3
+      }
+    ],
+    [
+      {
+        "c": 1,
+        "r": 0
+      },
+      {
+        "c": 3,
+        "r": 6
+      },
+      {
+        "c": 3,
+        "r": 5
+      }
+    ],
+    [
+      {
+        "c": 3,
+        "r": 3
+      },
+      {
+        "c": 5,
+        "r": 4
+      },
+      {
+        "c": 1,
+        "r": 1
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 1
+      },
+      {
+        "c": 4,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 6
+      },
+      {
+        "c": 0,
+        "r": 0
+      },
+      {
+        "c": 4,
+        "r": 4
+      },
+      {
+        "c": 4,
+        "r": 6
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 4
+      },
+      {
+        "c": 0,
+        "r": 4
+      },
+      {
+        "c": 5,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 3
+      },
+      {
+        "c": 1,
+        "r": 6
+      },
+      {
+        "c": 5,
+        "r": 4
+      }
+    ],
+    [
+      {
+        "c": 3,
+        "r": 1
+      },
+      {
+        "c": 4,
+        "r": 3
+      },
+      {
+        "c": 5,
+        "r": 5
+      }
+    ],
+    [
+      {
+        "c": 6,
+        "r": 1
+      },
+      {
+        "c": 0,
+        "r": 6
+      },
+      {
+        "c": 3,
+        "r": 4
+      }
+    ],
+    [
+      {
+        "c": 2,
+        "r": 3
+      },
+      {
+        "c": 0,
+        "r": 2
+      },
+      {
+        "c": 1,
+        "r": 6
+      },
+      {
+        "c": 1,
+        "r": 4
+      }
+    ],
+    [
+      {
+        "c": 0,
+        "r": 1
+      },
+      {
+        "c": 5,
+        "r": 0
+      },
+      {
+        "c": 5,
+        "r": 3
+      }
+    ],
+    [
+      {
+        "c": 6,
+        "r": 0
+      },
+      {
+        "c": 0,
+        "r": 5
+      },
+      {
+        "c": 4,
+        "r": 6
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 5
+      },
+      {
+        "c": 2,
+        "r": 1
+      },
+      {
+        "c": 2,
+        "r": 3
+      }
+    ],
+    [
+      {
+        "c": 6,
+        "r": 0
+      },
+      {
+        "c": 4,
+        "r": 1
+      },
+      {
+        "c": 1,
+        "r": 6
+      }
+    ],
+    [
+      {
+        "c": 0,
+        "r": 6
+      },
+      {
+        "c": 1,
+        "r": 4
+      },
+      {
+        "c": 2,
+        "r": 2
+      },
+      {
+        "c": 5,
+        "r": 4
+      }
+    ],
+    [
+      {
+        "c": 1,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 0
+      },
+      {
+        "c": 1,
+        "r": 4
+      },
+      {
+        "c": 1,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 1,
+        "r": 0
+      },
+      {
+        "c": 0,
+        "r": 1
+      },
+      {
+        "c": 3,
+        "r": 1
+      },
+      {
+        "c": 3,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 4
+      },
+      {
+        "c": 3,
+        "r": 0
+      },
+      {
+        "c": 0,
+        "r": 2
+      },
+      {
+        "c": 2,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 6,
+        "r": 3
+      },
+      {
+        "c": 5,
+        "r": 1
+      },
+      {
+        "c": 4,
+        "r": 3
+      },
+      {
+        "c": 1,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 1,
+        "r": 6
+      },
+      {
+        "c": 2,
+        "r": 6
+      },
+      {
+        "c": 2,
+        "r": 5
+      },
+      {
+        "c": 1,
+        "r": 1
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 2
+      },
+      {
+        "c": 3,
+        "r": 5
+      },
+      {
+        "c": 0,
+        "r": 6
+      },
+      {
+        "c": 1,
+        "r": 3
+      }
+    ],
+    [
+      {
+        "c": 3,
+        "r": 0
+      },
+      {
+        "c": 5,
+        "r": 0
+      },
+      {
+        "c": 2,
+        "r": 2
+      },
+      {
+        "c": 1,
+        "r": 1
+      }
+    ],
+    [
+      {
+        "c": 6,
+        "r": 1
+      },
+      {
+        "c": 2,
+        "r": 3
+      },
+      {
+        "c": 1,
+        "r": 4
+      },
+      {
+        "c": 5,
+        "r": 3
+      }
+    ],
+    [
+      {
+        "c": 1,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 4
+      },
+      {
+        "c": 1,
+        "r": 1
+      },
+      {
+        "c": 6,
+        "r": 5
+      }
+    ],
+    [
+      {
+        "c": 2,
+        "r": 5
+      },
+      {
+        "c": 4,
+        "r": 0
+      },
+      {
+        "c": 1,
+        "r": 6
+      },
+      {
+        "c": 4,
+        "r": 1
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 3
+      },
+      {
+        "c": 0,
+        "r": 1
+      },
+      {
+        "c": 4,
+        "r": 5
+      },
+      {
+        "c": 6,
+        "r": 0
+      },
+      {
+        "c": 3,
+        "r": 4
+      }
+    ],
+    [
+      {
+        "c": 3,
+        "r": 0
+      },
+      {
+        "c": 2,
+        "r": 1
+      },
+      {
+        "c": 0,
+        "r": 4
+      },
+      {
+        "c": 4,
+        "r": 3
+      },
+      {
+        "c": 1,
+        "r": 1
+      }
+    ],
+    [
+      {
+        "c": 1,
+        "r": 2
+      },
+      {
+        "c": 5,
+        "r": 3
+      },
+      {
+        "c": 0,
+        "r": 2
+      },
+      {
+        "c": 6,
+        "r": 5
+      },
+      {
+        "c": 1,
+        "r": 5
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 3
+      },
+      {
+        "c": 5,
+        "r": 1
+      },
+      {
+        "c": 6,
+        "r": 2
+      },
+      {
+        "c": 3,
+        "r": 5
+      },
+      {
+        "c": 1,
+        "r": 5
+      }
+    ],
+    [
+      {
+        "c": 3,
+        "r": 5
+      },
+      {
+        "c": 2,
+        "r": 0
+      },
+      {
+        "c": 3,
+        "r": 4
+      },
+      {
+        "c": 5,
+        "r": 6
+      },
+      {
+        "c": 4,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 6
+      },
+      {
+        "c": 3,
+        "r": 1
+      },
+      {
+        "c": 2,
+        "r": 4
+      },
+      {
+        "c": 2,
+        "r": 6
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 2
+      },
+      {
+        "c": 3,
+        "r": 3
+      },
+      {
+        "c": 5,
+        "r": 3
+      },
+      {
+        "c": 4,
+        "r": 3
+      },
+      {
+        "c": 2,
+        "r": 3
+      }
+    ],
+    [
+      {
+        "c": 3,
+        "r": 3
+      },
+      {
+        "c": 6,
+        "r": 1
+      },
+      {
+        "c": 4,
+        "r": 2
+      },
+      {
+        "c": 5,
+        "r": 0
+      },
+      {
+        "c": 2,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 0,
+        "r": 2
+      },
+      {
+        "c": 1,
+        "r": 4
+      },
+      {
+        "c": 4,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 4
+      },
+      {
+        "c": 2,
+        "r": 4
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 5
+      },
+      {
+        "c": 4,
+        "r": 3
+      },
+      {
+        "c": 6,
+        "r": 0
+      },
+      {
+        "c": 1,
+        "r": 4
+      },
+      {
+        "c": 2,
+        "r": 4
+      }
+    ],
+    [
+      {
+        "c": 3,
+        "r": 3
+      },
+      {
+        "c": 4,
+        "r": 2
+      },
+      {
+        "c": 1,
+        "r": 2
+      },
+      {
+        "c": 4,
+        "r": 0
+      },
+      {
+        "c": 2,
+        "r": 0
+      },
+      {
+        "c": 4,
+        "r": 3
+      }
+    ],
+    [
+      {
+        "c": 3,
+        "r": 2
+      },
+      {
+        "c": 2,
+        "r": 2
+      },
+      {
+        "c": 1,
+        "r": 3
+      },
+      {
+        "c": 5,
+        "r": 5
+      },
+      {
+        "c": 3,
+        "r": 5
+      },
+      {
+        "c": 4,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 5
+      },
+      {
+        "c": 1,
+        "r": 6
+      },
+      {
+        "c": 2,
+        "r": 4
+      },
+      {
+        "c": 5,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 1
+      },
+      {
+        "c": 1,
+        "r": 0
+      },
+      {
+        "c": 2,
+        "r": 0
+      },
+      {
+        "c": 1,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 2
+      },
+      {
+        "c": 5,
+        "r": 3
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 4
+      },
+      {
+        "c": 5,
+        "r": 2
+      },
+      {
+        "c": 1,
+        "r": 4
+      },
+      {
+        "c": 2,
+        "r": 2
+      },
+      {
+        "c": 1,
+        "r": 5
+      },
+      {
+        "c": 5,
+        "r": 0
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 3
+      },
+      {
+        "c": 3,
+        "r": 3
+      },
+      {
+        "c": 2,
+        "r": 4
+      },
+      {
+        "c": 1,
+        "r": 2
+      },
+      {
+        "c": 1,
+        "r": 1
+      },
+      {
+        "c": 4,
+        "r": 5
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 1
+      },
+      {
+        "c": 2,
+        "r": 0
+      },
+      {
+        "c": 3,
+        "r": 2
+      },
+      {
+        "c": 1,
+        "r": 3
+      },
+      {
+        "c": 4,
+        "r": 2
+      },
+      {
+        "c": 5,
+        "r": 4
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 2
+      },
+      {
+        "c": 3,
+        "r": 4
+      },
+      {
+        "c": 3,
+        "r": 6
+      },
+      {
+        "c": 6,
+        "r": 2
+      },
+      {
+        "c": 5,
+        "r": 5
+      },
+      {
+        "c": 3,
+        "r": 0
+      }
+    ],
+    [
+      {
+        "c": 4,
+        "r": 5
+      },
+      {
+        "c": 4,
+        "r": 4
+      },
+      {
+        "c": 3,
+        "r": 4
+      },
+      {
+        "c": 5,
+        "r": 4
+      },
+      {
+        "c": 2,
+        "r": 6
+      },
+      {
+        "c": 2,
+        "r": 2
+      }
+    ],
+    [
+      {
+        "c": 5,
+        "r": 4
+      },
+      {
+        "c": 3,
+        "r": 2
+      },
+      {
+        "c": 2,
+        "r": 5
+      },
+      {
+        "c": 3,
+        "r": 5
+      },
+      {
+        "c": 1,
+        "r": 3
+      },
+      {
+        "c": 5,
+        "r": 2
       }
     ]
   ]
