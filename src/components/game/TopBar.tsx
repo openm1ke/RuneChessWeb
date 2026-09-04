@@ -1,5 +1,28 @@
 import { RoundControl } from '../shared/RoundControl';
 
+/** A plain calendar-page glyph, styled to match the app's other round
+ * controls (monochrome, inherits `currentColor`) — the mobile app uses
+ * Material's `Icons.calendar_month_rounded` here; this is a hand-drawn
+ * equivalent since the web build has no icon font. Deliberately not the 📅
+ * emoji: browsers render that as a full-colour glyph with a lot of built-in
+ * padding baked into the character itself, which read as both
+ * off-brand and too small inside the round button. */
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3.25" y="4.75" width="17.5" height="15.5" rx="2.75" />
+      <path d="M3.25 9.5h17.5" />
+      <path d="M8 3v3.25" />
+      <path d="M16 3v3.25" />
+      <circle cx="8" cy="13.5" r="1.05" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="13.5" r="1.05" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="13.5" r="1.05" fill="currentColor" stroke="none" />
+      <circle cx="8" cy="17" r="1.05" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="17" r="1.05" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function TopControls({
   onBack,
   onHint,
@@ -25,7 +48,7 @@ export function TopControls({
         </RoundControl>
         {onCalendar && (
           <RoundControl onClick={onCalendar} size={34} label="Календарь заданий дня">
-            📅
+            <CalendarIcon />
           </RoundControl>
         )}
       </div>
