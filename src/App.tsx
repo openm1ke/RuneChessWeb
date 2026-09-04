@@ -14,6 +14,7 @@ import {
 } from './services/yandexGamesSdk';
 import { ConsentBanner } from './components/shared/ConsentBanner';
 import { AchievementCelebrationOverlay } from './components/shared/AchievementReveal';
+import { DailyChallengeCalendarSheet } from './components/game/DailyChallengeCalendarSheet';
 import { MenuScreen } from './screens/MenuScreen';
 import { LevelSelectScreen } from './screens/LevelSelectScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -23,6 +24,9 @@ import { TutorialCompleteScreen } from './screens/TutorialCompleteScreen';
 import { AchievementsScreen } from './screens/AchievementsScreen';
 import type { LevelAttemptResult } from './game/starRating';
 import { mergeBestStars } from './game/starRating';
+import { dailyChallengeKey, dailyChallengeLevel, type DailyChallengeResult } from './game/dailyChallengeLevels';
+import { computeDailyChallengeStats } from './game/dailyChallengeStats';
+import { DailyReminderService } from './services/dailyReminderService';
 import {
   allAchievements,
   achievementCategory,
@@ -77,12 +81,24 @@ function setLevelSelectAddress(isOpen: boolean): void {
   window.history.replaceState(null, '', address);
 }
 
+const DAILY_DATE_MONTHS = [
+  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+];
+
+/** Short "4 сентября" label for the daily challenge's in-game header — see
+ * `DozorSnapshot.levelLabel`. */
+function dailyDateLabel(date: Date): string {
+  return `${date.getDate()} ${DAILY_DATE_MONTHS[date.getMonth()]}`;
+}
+
 export default function App() {
   const progressRepository = useMemo(() => new ProgressRepository(), []);
   const musicService = useMemo(() => new MusicService(), []);
   const analyticsService = useMemo(() => new AnalyticsService(), []);
   const rewardedAdsService = useMemo(() => new RewardedAdsService(analyticsService), [analyticsService]);
   const engine = useMemo(() => new DozorEngine(), []);
+  const dailyReminderService = useMemo(() => new DailyReminderService(), []);
 
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [unlockedLevels, setUnlockedLevels] = useState<Set<number>>(new Set([0]));
@@ -118,6 +134,16 @@ export default function App() {
   // to the same free toggle tutorial levels already use everywhere — see
   // GameScreen's handling of a missing `rewardedAdsService` prop.
   const [isOnYandexGamesPlatform, setIsOnYandexGamesPlatform] = useState(false);
+
+  const [dailyChallengeHistory, setDailyChallengeHistory] = useState<Map<string, DailyChallengeResult>>(new Map());
+  const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false);
+  const [dailyReminderHour, setDailyReminderHour] = useState(11);
+  const [showDailyCalendar, setShowDailyCalendar] = useState(false);
+  /** The exact local calendar day `openDailyChallenge` generated the
+   * current puzzle for — kept so `handleDailyChallengeSolved` saves under
+   * the same key even if midnight passes mid-attempt. Null whenever
+   * `engine.isDailyChallenge` is false. */
+  const dailyChallengeDateRef = useRef<Date | null>(null);
 
   useEffect(() => {
     musicService.init();
@@ -157,6 +183,29 @@ export default function App() {
     musicService.enabled = snapshot.musicEnabled;
     musicService.volume = snapshot.musicVolume;
     if (snapshot.musicEnabled) void musicService.startMenu();
+    setDailyChallengeHistory(snapshot.dailyChallengeHistory);
+    dailyChallengeHistoryRef.current = snapshot.dailyChallengeHistory;
+    setDailyReminderEnabled(snapshot.dailyReminderEnabled);
+    dailyReminderEnabledRef.current = snapshot.dailyReminderEnabled;
+    setDailyReminderHour(snapshot.dailyReminderHour);
+    dailyReminderHourRef.current = snapshot.dailyReminderHour;
+    rescheduleDailyReminderWatch();
+
+    engine.onDailyChallengeSolved = (result) => {
+      const date = dailyChallengeDateRef.current;
+      if (date == null) return;
+      const key = dailyChallengeKey(date);
+      analyticsService.dailyChallengeCompleted(key, result.stars ?? 0, result.hintUsedCount);
+      if (result.stars == null) return;
+      const isFirstEverCompletion = dailyChallengeHistoryRef.current.size === 0;
+      const nextHistory = progressRepository.saveDailyChallengeResult(dailyChallengeHistoryRef.current, key, {
+        stars: result.stars,
+        hintsUsed: result.hintUsedCount,
+      });
+      dailyChallengeHistoryRef.current = nextHistory;
+      setDailyChallengeHistory(nextHistory);
+      void ensureDailyReminderActive(isFirstEverCompletion);
+    };
 
     engine.onLevelSolved = (levelIndex: number, result: LevelAttemptResult) => {
       analyticsService.levelCompleted(levelIndex, result, levelEntrySourceRef.current);
@@ -251,6 +300,18 @@ export default function App() {
   const achievementUnlockedAtRef = useRef(achievementUnlockedAt);
   const achievementProgressRef = useRef(achievementProgress);
   const levelEntrySourceRef = useRef<LevelEntrySource>('menu_play');
+  const dailyChallengeHistoryRef = useRef(dailyChallengeHistory);
+  const dailyReminderEnabledRef = useRef(dailyReminderEnabled);
+  const dailyReminderHourRef = useRef(dailyReminderHour);
+  useEffect(() => {
+    dailyChallengeHistoryRef.current = dailyChallengeHistory;
+  }, [dailyChallengeHistory]);
+  useEffect(() => {
+    dailyReminderEnabledRef.current = dailyReminderEnabled;
+  }, [dailyReminderEnabled]);
+  useEffect(() => {
+    dailyReminderHourRef.current = dailyReminderHour;
+  }, [dailyReminderHour]);
   useEffect(() => {
     unlockedLevelsRef.current = unlockedLevels;
   }, [unlockedLevels]);
@@ -337,6 +398,57 @@ export default function App() {
     if (newlyUnlocked.some((a) => a.id === extraQueen.id)) setExtraCampaignJustEarned(true);
   };
 
+  /** Recomputes the reminder-check state fresh from the refs every time the
+   * service asks for it — see `DailyReminderService.startWatching`, called
+   * immediately and then every 15 minutes while this tab stays open. */
+  const dailyReminderState = () => {
+    const history = dailyChallengeHistoryRef.current;
+    const today = new Date();
+    const stats = computeDailyChallengeStats({ history, today });
+    const shown = progressRepository.loadDailyReminderShownState();
+    return {
+      enabled: dailyReminderEnabledRef.current,
+      hour: dailyReminderHourRef.current,
+      currentStreak: stats.currentStreak,
+      freezeAvailable: stats.freezeAvailable,
+      solvedToday: history.has(dailyChallengeKey(today)),
+      lastShownDate: shown.lastShownDate,
+      lastMessage: shown.lastMessage,
+      onShown: (shownDate: string, message: string) => progressRepository.saveDailyReminderShownState(shownDate, message),
+    };
+  };
+
+  const rescheduleDailyReminderWatch = (): void => {
+    if (dailyReminderEnabledRef.current) dailyReminderService.startWatching(dailyReminderState);
+    else dailyReminderService.stopWatching();
+  };
+
+  /** Solving the daily challenge is the natural moment to turn reminders on:
+   * on the player's very first-ever completion, silently opt them in (still
+   * overridable from Settings) instead of waiting for them to discover the
+   * toggle. On every later completion, if reminders are already on but the
+   * browser's notification permission has since been revoked, quietly
+   * re-request it. Never touches a player who has explicitly opted out.
+   * Must run synchronously off the solving gesture's own call stack (no
+   * `await` before the permission request) — browsers only honor
+   * `Notification.requestPermission()` from within a real user gesture. */
+  const ensureDailyReminderActive = async (isFirstCompletion: boolean): Promise<void> => {
+    const activating = isFirstCompletion && !dailyReminderEnabledRef.current;
+    if (!activating && !dailyReminderEnabledRef.current) return;
+    if (dailyReminderService.isPermanentlyDenied()) return;
+
+    let granted = dailyReminderService.isGranted();
+    if (!granted) granted = await dailyReminderService.requestPermission();
+    if (!granted) return;
+
+    if (!dailyReminderEnabledRef.current) {
+      dailyReminderEnabledRef.current = true;
+      setDailyReminderEnabled(true);
+      progressRepository.saveDailyReminderSettings({ enabled: true, hour: dailyReminderHourRef.current });
+    }
+    rescheduleDailyReminderWatch();
+  };
+
   // Brackets actual gameplay for the Yandex Games platform's own engagement
   // metrics — distinct from `game_api_pause`/`resume` above, which react to
   // the platform interrupting us, not to our own screen navigation.
@@ -386,6 +498,23 @@ export default function App() {
     void musicService.startMenu();
   };
 
+  /** Starts today's daily-challenge puzzle. `engine.level` simply overrides
+   * to the daily puzzle until `exitDailyChallenge` (or any campaign entry
+   * point, which always clears it) — see `DozorEngine.loadDailyChallenge`. */
+  const openDailyChallenge = () => {
+    setLevelSelectAddress(false);
+    void musicService.stopMenu();
+    const date = new Date();
+    const generated = dailyChallengeLevel(date);
+    dailyChallengeDateRef.current = date;
+    const key = dailyChallengeKey(date);
+    analyticsService.dailyChallengeOpened(key);
+    analyticsService.dailyChallengeStarted(key);
+    engine.loadDailyChallenge(generated.level, generated.solution, dailyDateLabel(date));
+    setScreen('game');
+    void musicService.startGame();
+  };
+
   const openLevelSelect = () => {
     void musicService.stopMenu();
     setLevelSelectAddress(true);
@@ -399,6 +528,14 @@ export default function App() {
 
   const nextLevel = () => {
     setLevelResultAchievement(null);
+    // The daily challenge is a single standalone level, not part of the
+    // campaign's sequence — "ПРОДОЛЖИТЬ" just leaves it rather than
+    // advancing `levelIndex`.
+    if (engine.isDailyChallenge) {
+      dailyChallengeDateRef.current = null;
+      goToMenu();
+      return;
+    }
     const before = engine.levelIndex;
     // Mirrors the mobile app's `_nextLevel()`: the checkpoint is checked
     // BEFORE advancing the engine, and returns early without touching it —
@@ -528,6 +665,38 @@ export default function App() {
     musicService.applyVolume();
   };
 
+  /** Handles the Settings toggle: turning reminders on walks through the
+   * browser's notification-permission dance (request if never asked; if
+   * permanently denied there is no cross-browser API to jump the player to
+   * the site's notification settings the way Android's `openAppSettings`
+   * does, so the toggle simply stays off) before actually persisting
+   * `true`. Must run as a direct continuation of the click event — no
+   * `await` before `requestPermission()` — or the browser silently ignores
+   * the prompt. Turning off is unconditional. */
+  const setDailyReminderEnabledAndSave = async (enabled: boolean) => {
+    if (!enabled) {
+      setDailyReminderEnabled(false);
+      dailyReminderEnabledRef.current = false;
+      progressRepository.saveDailyReminderSettings({ enabled: false, hour: dailyReminderHourRef.current });
+      dailyReminderService.stopWatching();
+      return;
+    }
+    if (dailyReminderService.isPermanentlyDenied()) return;
+    const granted = dailyReminderService.isGranted() ? true : await dailyReminderService.requestPermission();
+    if (!granted) return;
+    setDailyReminderEnabled(true);
+    dailyReminderEnabledRef.current = true;
+    progressRepository.saveDailyReminderSettings({ enabled: true, hour: dailyReminderHourRef.current });
+    rescheduleDailyReminderWatch();
+  };
+
+  const setDailyReminderHourAndSave = (hour: number) => {
+    setDailyReminderHour(hour);
+    dailyReminderHourRef.current = hour;
+    progressRepository.saveDailyReminderSettings({ enabled: dailyReminderEnabledRef.current, hour });
+    if (dailyReminderEnabledRef.current) rescheduleDailyReminderWatch();
+  };
+
   const resetProgress = () => {
     analyticsService.progressResetConfirmed();
     progressRepository.resetProgress();
@@ -552,6 +721,8 @@ export default function App() {
     setTutorialJustEarned(false);
     setMainCampaignJustEarned(false);
     setExtraCampaignJustEarned(false);
+    dailyChallengeHistoryRef.current = new Map();
+    setDailyChallengeHistory(new Map());
     engine.goToLevel(0);
     goToMenu();
   };
@@ -663,6 +834,10 @@ export default function App() {
           onSoundEffectsEnabledChanged={setSoundEffectsEnabledAndSave}
           onProgressReset={resetProgress}
           onBack={goToMenu}
+          dailyReminderEnabled={dailyReminderEnabled}
+          dailyReminderHour={dailyReminderHour}
+          onDailyReminderEnabledChanged={(enabled) => void setDailyReminderEnabledAndSave(enabled)}
+          onDailyReminderHourChanged={setDailyReminderHourAndSave}
         />
       );
     case 'levels':
@@ -678,17 +853,23 @@ export default function App() {
       );
     case 'game':
       return withConsent(
-        <GameScreen
-          engine={engine}
-          onBack={goToMenu}
-          onNextLevel={nextLevel}
-          onSkipLevel={isDev ? skipLevel : undefined}
-          onResetOnboarding={resetOnboardingForDebug}
-          seenOnboardingLevels={seenOnboardingLevels}
-          rewardedAdsService={ADS_AVAILABLE && !isOnYandexGamesPlatform ? rewardedAdsService : undefined}
-          achievement={levelResultAchievement}
-          onAchievementRevealed={playAchievementReveal}
-        />
+        <>
+          <GameScreen
+            engine={engine}
+            onBack={goToMenu}
+            onNextLevel={nextLevel}
+            onSkipLevel={isDev && !engine.isDailyChallenge ? skipLevel : undefined}
+            onResetOnboarding={resetOnboardingForDebug}
+            seenOnboardingLevels={seenOnboardingLevels}
+            rewardedAdsService={ADS_AVAILABLE && !isOnYandexGamesPlatform ? rewardedAdsService : undefined}
+            achievement={levelResultAchievement}
+            onAchievementRevealed={playAchievementReveal}
+            onOpenDailyCalendar={() => setShowDailyCalendar(true)}
+          />
+          {showDailyCalendar && (
+            <DailyChallengeCalendarSheet history={dailyChallengeHistory} onClose={() => setShowDailyCalendar(false)} />
+          )}
+        </>
       );
     case 'menu':
     default:
@@ -698,6 +879,8 @@ export default function App() {
           onLevels={openLevelSelect}
           onSettings={() => setScreen('settings')}
           onAchievements={() => setScreen('achievements')}
+          onDailyChallenge={openDailyChallenge}
+          dailyChallengeSolvedToday={dailyChallengeHistory.has(dailyChallengeKey(new Date()))}
         />
       );
   }

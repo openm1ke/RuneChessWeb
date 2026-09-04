@@ -27,6 +27,7 @@ export function GameScreen({
   rewardedAdsService,
   achievement,
   onAchievementRevealed,
+  onOpenDailyCalendar,
 }: {
   engine: DozorEngine;
   onBack: () => void;
@@ -39,6 +40,9 @@ export function GameScreen({
    * overlay — passed through from `App.tsx`'s achievement bookkeeping. */
   achievement?: AchievementDefinition | null;
   onAchievementRevealed?: () => void;
+  /** Only meaningful (and only rendered as a button) while
+   * `engine.isDailyChallenge` — opens the streak calendar. */
+  onOpenDailyCalendar?: () => void;
 }) {
   const { snapshot } = useDozorEngine(engine);
   const boardRef = useRef<HTMLDivElement>(null!);
@@ -211,8 +215,13 @@ export function GameScreen({
     return (
       <div style={{ position: 'fixed', inset: 0, background: '#030406', overflow: 'hidden' }}>
         <LandscapeGameBackdrop />
-        <TopControls onBack={onBack} onHint={handleHint} hintEnabled={hintEnabled} />
-        <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} />
+        <TopControls
+          onBack={onBack}
+          onHint={handleHint}
+          hintEnabled={hintEnabled}
+          onCalendar={engine.isDailyChallenge ? onOpenDailyCalendar : undefined}
+        />
+        <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} label={snapshot.levelLabel} />
         <Board
           engine={engine}
           snapshot={snapshot}
@@ -255,8 +264,13 @@ export function GameScreen({
     <DesignCanvas background="#05091a">
       <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
         <StaticGameBackdrop />
-        <TopControls onBack={onBack} onHint={handleHint} hintEnabled={hintEnabled} />
-        <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} />
+        <TopControls
+          onBack={onBack}
+          onHint={handleHint}
+          hintEnabled={hintEnabled}
+          onCalendar={engine.isDailyChallenge ? onOpenDailyCalendar : undefined}
+        />
+        <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} label={snapshot.levelLabel} />
         <Board engine={engine} snapshot={snapshot} beamPhase={beamPhase} drag={drag} boardRef={boardRef} />
         <Tray engine={engine} snapshot={snapshot} drag={drag} trayRef={trayRef} />
         <BottomUtilityControls

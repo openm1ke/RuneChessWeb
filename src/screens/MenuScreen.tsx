@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { asset } from '../lib/assetUrl';
@@ -9,17 +9,32 @@ export function MenuScreen({
   onLevels,
   onSettings,
   onAchievements,
+  onDailyChallenge,
+  dailyChallengeSolvedToday = false,
 }: {
   onPlay: () => void;
   onLevels: () => void;
   onSettings: () => void;
   onAchievements: () => void;
+  onDailyChallenge: () => void;
+  /** Whether today's daily challenge already has a saved result — shows a
+   * small checkmark badge on the button instead of a plain empty ring. */
+  dailyChallengeSolvedToday?: boolean;
 }) {
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
 
   if (isLandscape) {
-    return <LandscapeMenuScene onPlay={onPlay} onLevels={onLevels} onSettings={onSettings} onAchievements={onAchievements} />;
+    return (
+      <LandscapeMenuScene
+        onPlay={onPlay}
+        onLevels={onLevels}
+        onSettings={onSettings}
+        onAchievements={onAchievements}
+        onDailyChallenge={onDailyChallenge}
+        dailyChallengeSolvedToday={dailyChallengeSolvedToday}
+      />
+    );
   }
 
   return (
@@ -55,16 +70,26 @@ export function MenuScreen({
         <div style={{ position: 'absolute', top: 126, left: 0, right: 0 }}>
           <MenuBrand orbSize={124} />
         </div>
-        <div style={{ position: 'absolute', top: 388, left: 78, right: 78, height: 104 }}>
+        <div style={{ position: 'absolute', top: 366, left: 78, right: 78, height: 64 }}>
+          <MenuActionButton
+            label="ЗАДАНИЕ ДНЯ"
+            onClick={onDailyChallenge}
+            backgroundAsset="assets/images/menu-button-daily.webp"
+            fontSize={17}
+            letterSpacing={1.8}
+            badge={<DailyChallengeSolvedBadge solved={dailyChallengeSolvedToday} />}
+          />
+        </div>
+        <div style={{ position: 'absolute', top: 442, left: 78, right: 78, height: 104 }}>
           <MenuActionButton label="ИГРАТЬ" onClick={onPlay} prominent />
         </div>
-        <div style={{ position: 'absolute', top: 508, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 558, left: 92, right: 92, height: 72 }}>
           <MenuActionButton label="УРОВНИ" onClick={onLevels} />
         </div>
-        <div style={{ position: 'absolute', top: 594, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 636, left: 92, right: 92, height: 72 }}>
           <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={17} letterSpacing={1.8} />
         </div>
-        <div style={{ position: 'absolute', top: 680, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 714, left: 92, right: 92, height: 72 }}>
           <MenuInfoButton label="ПРАВИЛА" href="how-to-play.html" />
         </div>
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 36, textAlign: 'center' }}>
@@ -104,11 +129,15 @@ function LandscapeMenuScene({
   onLevels,
   onSettings,
   onAchievements,
+  onDailyChallenge,
+  dailyChallengeSolvedToday,
 }: {
   onPlay: () => void;
   onLevels: () => void;
   onSettings: () => void;
   onAchievements: () => void;
+  onDailyChallenge: () => void;
+  dailyChallengeSolvedToday: boolean;
 }) {
   const { width, height } = useViewportSize();
   const panelWidth = Math.min(290, Math.max(210, width * 0.27));
@@ -144,6 +173,16 @@ function LandscapeMenuScene({
         }}
       >
         <MenuBrand orbSize={brandOrbSize} />
+      </div>
+      <div style={{ position: 'absolute', top: panelTop - 4, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 40 }}>
+        <MenuActionButton
+          label="ЗАДАНИЕ ДНЯ"
+          onClick={onDailyChallenge}
+          backgroundAsset="assets/images/menu-button-daily.webp"
+          fontSize={13}
+          letterSpacing={1.4}
+          badge={<DailyChallengeSolvedBadge solved={dailyChallengeSolvedToday} small />}
+        />
       </div>
       <div style={{ position: 'absolute', top: panelTop + 42, left: panelLeft, width: panelWidth, height: 82 }}>
         <MenuActionButton label="ИГРАТЬ" onClick={onPlay} prominent />
@@ -291,6 +330,8 @@ export function MenuActionButton({
   prominent = false,
   fontSize,
   letterSpacing,
+  backgroundAsset: backgroundAssetOverride,
+  badge,
 }: {
   label: string;
   onClick: () => void;
@@ -300,9 +341,18 @@ export function MenuActionButton({
    * a longer label like "ПРОДОЛЖИТЬ" doesn't spill past the frame art. */
   fontSize?: number;
   letterSpacing?: number;
+  /** Overrides the default play/levels-style artwork — used by "ЗАДАНИЕ
+   * ДНЯ", whose distinct purple frame sets it apart from the other menu
+   * entries. Given as a `public/`-relative path, resolved via `asset()`. */
+  backgroundAsset?: string;
+  /** A small status indicator rendered in the button's corner — e.g.
+   * "ЗАДАНИЕ ДНЯ"'s solved-today checkmark. */
+  badge?: ReactNode;
 }) {
   const [pressed, setPressed] = useState(false);
-  const backgroundAsset = asset(prominent ? 'assets/images/menu-button-play.webp' : 'assets/images/menu-button-levels.webp');
+  const backgroundAsset = asset(
+    backgroundAssetOverride ?? (prominent ? 'assets/images/menu-button-play.webp' : 'assets/images/menu-button-levels.webp'),
+  );
   return (
     <button
       type="button"
@@ -343,7 +393,31 @@ export function MenuActionButton({
       >
         {label}
       </span>
+      {badge && <div style={{ position: 'absolute', top: 6, right: 10 }}>{badge}</div>}
     </button>
+  );
+}
+
+/** The small ring-and-checkmark status shown on "ЗАДАНИЕ ДНЯ" — always
+ * present, so its state (grey ring vs. gold checkmark) is the only signal
+ * for whether today's puzzle is already solved. */
+function DailyChallengeSolvedBadge({ solved, small = false }: { solved: boolean; small?: boolean }) {
+  const size = small ? 16 : 20;
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        border: `1.6px solid ${solved ? '#ffd77a' : 'rgba(214,224,255,0.4)'}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(10,16,34,0.55)',
+      }}
+    >
+      {solved && <span style={{ fontSize: size * 0.62, color: '#ffd77a', lineHeight: 1 }}>✓</span>}
+    </div>
   );
 }
 

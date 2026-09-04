@@ -4,24 +4,48 @@ export function TopControls({
   onBack,
   onHint,
   hintEnabled = true,
+  onCalendar,
 }: {
   onBack: () => void;
   onHint: () => void;
   hintEnabled?: boolean;
+  /** Only present while playing the daily challenge — opens the streak
+   * calendar. Stacked below the hint button rather than beside it, so it
+   * never competes for space with a longer hint-button row. */
+  onCalendar?: () => void;
 }) {
   return (
     <div style={{ position: 'absolute', top: 22, left: 20, right: 20, display: 'flex', justifyContent: 'space-between' }}>
       <RoundControl onClick={onBack} label="Назад">
         ‹
       </RoundControl>
-      <RoundControl onClick={onHint} disabled={!hintEnabled} label="Подсказка">
-        💡
-      </RoundControl>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+        <RoundControl onClick={onHint} disabled={!hintEnabled} label="Подсказка">
+          💡
+        </RoundControl>
+        {onCalendar && (
+          <RoundControl onClick={onCalendar} size={34} label="Календарь заданий дня">
+            📅
+          </RoundControl>
+        )}
+      </div>
     </div>
   );
 }
 
-export function TopStatus({ done, total, level }: { done: number; total: number; level: number }) {
+export function TopStatus({
+  done,
+  total,
+  level,
+  label,
+}: {
+  done: number;
+  total: number;
+  level: number;
+  /** Overrides the default "УРОВЕНЬ {level}" text — used for the daily
+   * challenge, which has no meaningful level number of its own. */
+  label?: string;
+}) {
   return (
     <div style={{ position: 'absolute', top: 25, left: 76, right: 76, height: 40, display: 'flex', justifyContent: 'center' }}>
       <div
@@ -37,7 +61,7 @@ export function TopStatus({ done, total, level }: { done: number; total: number;
         }}
       >
         <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.1, color: 'rgba(206,225,255,0.84)' }}>
-          УРОВЕНЬ {level}
+          {label ?? `УРОВЕНЬ ${level}`}
         </span>
         <span style={{ width: 1, height: 14, background: 'rgba(224,168,63,0.4)' }} />
         <span style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--gold)' }}>

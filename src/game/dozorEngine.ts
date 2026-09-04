@@ -1,6 +1,6 @@
 import { campaignLevels, campaignSolutions, FIRST_SCORED_LEVEL_INDEX } from '../data/campaignLevels';
 import { computeAttacks, rayDeltasFor, isInBounds } from './attackRules';
-import type { Beacon, Beam, Cell, Piece, TrayItem } from './models';
+import type { Beacon, Beam, Cell, LevelDefinition, Piece, TrayItem } from './models';
 import { cellKey } from './models';
 import type { LevelAttemptResult } from './starRating';
 import { computeStars } from './starRating';
@@ -17,6 +17,7 @@ export interface DozorSnapshot {
   solved: boolean;
   levelNumber: number;
   levelCount: number;
+  levelLabel: string;
   active: boolean;
   solutionCell: Cell | null;
   hintItem: TrayItem | null;
@@ -62,7 +63,21 @@ export class DozorEngine {
    * itself can be called (1→2, then 2→3 each need their own confirmed ad). */
   bonusStarApplied = false;
 
+  /** Set only while playing the daily challenge (see `loadDailyChallenge`):
+   * overrides `level` and its reference solution without disturbing
+   * `levelIndex`, which keeps pointing at whatever campaign level the
+   * player was last on so returning to the campaign resumes exactly there. */
+  private dailyLevel: LevelDefinition | null = null;
+  private dailySolution: Cell[] | null = null;
+  private dailyDateLabel: string | null = null;
+  get isDailyChallenge(): boolean {
+    return this.dailyLevel != null;
+  }
+
   onLevelSolved: ((levelIndex: number, result: LevelAttemptResult) => void) | null = null;
+  /** The daily-challenge counterpart of `onLevelSolved`, kept separate
+   * because there is no meaningful `levelIndex` to report for it. */
+  onDailyChallengeSolved: ((result: LevelAttemptResult) => void) | null = null;
   onHintUsed: ((levelIndex: number, hintUsedCount: number, viaAd: boolean) => void) | null = null;
   onBonusStarApplied: ((levelIndex: number, starsBefore: number, starsAfter: number) => void) | null = null;
   onLevelReset:
@@ -90,11 +105,35 @@ export class DozorEngine {
     for (const listener of this.listeners) listener();
   }
 
-  get level() {
-    return campaignLevels[this.levelIndex];
+  get level(): LevelDefinition {
+    return this.dailyLevel ?? campaignLevels[this.levelIndex];
   }
   get beacons() {
     return this.level.beacons;
+  }
+
+  /** Starts a daily-challenge puzzle on a clean board — always empty, even
+   * for a day already solved before: reopening it is a deliberate replay
+   * (typically to improve the score), not a resume. `dateLabel` is kept
+   * only to label the header (see `DozorSnapshot.levelLabel`) — the level
+   * and solution themselves must already be generated for it by the caller
+   * (`dailyChallengeLevel`). */
+  loadDailyChallenge(level: LevelDefinition, solution: Cell[], dateLabel: string): void {
+    this.dailyLevel = level;
+    this.dailySolution = solution;
+    this.dailyDateLabel = dateLabel;
+    this.loadLevel();
+    this.notify();
+  }
+
+  /** Leaves daily-challenge mode and returns to whatever campaign level
+   * `levelIndex` still points at. */
+  exitDailyChallenge(): void {
+    this.dailyLevel = null;
+    this.dailySolution = null;
+    this.dailyDateLabel = null;
+    this.loadLevel();
+    this.notify();
   }
 
   private loadLevel(): void {
@@ -115,7 +154,7 @@ export class DozorEngine {
     if (!this.snapshot().solved) return;
     const elapsedSeconds = Math.round((Date.now() - this.attemptStart) / 1000);
     const requiredMoves = this.level.tray.length;
-    const scored = this.levelIndex >= FIRST_SCORED_LEVEL_INDEX;
+    const scored = this.isDailyChallenge || this.levelIndex >= FIRST_SCORED_LEVEL_INDEX;
     const result: LevelAttemptResult = {
       stars: scored
         ? computeStars({
@@ -130,17 +169,28 @@ export class DozorEngine {
       hintUsedCount: this.hintUsedCount,
     };
     this.levelResult = result;
-    this.onLevelSolved?.(this.levelIndex, result);
+    if (this.isDailyChallenge) this.onDailyChallengeSolved?.(result);
+    else this.onLevelSolved?.(this.levelIndex, result);
   }
 
   nextLevel(): void {
     if (this.levelIndex >= campaignLevels.length - 1) return;
+    this.dailyLevel = null;
+    this.dailySolution = null;
+    this.dailyDateLabel = null;
     this.levelIndex++;
     this.loadLevel();
     this.notify();
   }
 
+  /** Opens an unlocked level with a clean board. Always leaves
+   * daily-challenge mode if it was active — every campaign entry point
+   * must, so a stray missed `exitDailyChallenge` call can never leave a
+   * campaign level silently showing the daily puzzle instead. */
   goToLevel(index: number): void {
+    this.dailyLevel = null;
+    this.dailySolution = null;
+    this.dailyDateLabel = null;
     this.levelIndex = Math.min(Math.max(index, 0), campaignLevels.length - 1);
     this.loadLevel();
     this.notify();
@@ -305,8 +355,15 @@ export class DozorEngine {
     if (current == null || currentStars == null || currentStars >= 3) return;
     this.bonusStarApplied = true;
     const starsAfter = currentStars + 1;
-    this.levelResult = { ...current, stars: starsAfter };
-    this.onBonusStarApplied?.(this.levelIndex, currentStars, starsAfter);
+    const updated = { ...current, stars: starsAfter };
+    this.levelResult = updated;
+    // The daily challenge has no `levelIndex` of its own to report a bonus
+    // star against — `onDailyChallengeSolved` already merges into the best
+    // saved result for the day, so reusing it here for the improved result
+    // is correct, not just convenient. `onBonusStarApplied` stays
+    // campaign-only.
+    if (this.isDailyChallenge) this.onDailyChallengeSolved?.(updated);
+    else this.onBonusStarApplied?.(this.levelIndex, currentStars, starsAfter);
     this.notify();
   }
 
@@ -319,8 +376,12 @@ export class DozorEngine {
   }
 
   private hintCell(occ: ReadonlySet<string>, beaconKey: ReadonlySet<string>): Cell | null {
-    if (this.levelIndex >= campaignSolutions.length) return null;
-    const solution = campaignSolutions[this.levelIndex];
+    const solution = this.isDailyChallenge
+      ? this.dailySolution!
+      : this.levelIndex >= campaignSolutions.length
+        ? null
+        : campaignSolutions[this.levelIndex];
+    if (solution == null) return null;
     const originalTray = this.level.tray;
     for (const item of this.tray) {
       const index = originalTray.findIndex((t) => t.id === item.id);
@@ -334,8 +395,13 @@ export class DozorEngine {
   }
 
   private hintItemForCell(cell: Cell | null): TrayItem | null {
-    if (cell == null || this.levelIndex >= campaignSolutions.length) return null;
-    const solution = campaignSolutions[this.levelIndex];
+    if (cell == null) return null;
+    const solution = this.isDailyChallenge
+      ? this.dailySolution!
+      : this.levelIndex >= campaignSolutions.length
+        ? null
+        : campaignSolutions[this.levelIndex];
+    if (solution == null) return null;
     for (const item of this.tray) {
       const index = this.level.tray.findIndex((original) => original.id === item.id);
       if (index < 0 || index >= solution.length) continue;
@@ -448,6 +514,7 @@ export class DozorEngine {
       solved: this.tray.length === 0 && doneCount === this.beacons.length && allPiecesUseful,
       levelNumber: this.levelIndex + 1,
       levelCount: campaignLevels.length,
+      levelLabel: this.isDailyChallenge ? `ЗАДАНИЕ ДНЯ · ${this.dailyDateLabel}` : `УРОВЕНЬ ${this.levelIndex + 1}`,
       active,
       solutionCell,
       hintItem,

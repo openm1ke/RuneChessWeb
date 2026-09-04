@@ -197,6 +197,18 @@ export class AnalyticsService {
     this.goal('achievements_opened', {});
   }
 
+  dailyChallengeOpened(date: string): void {
+    this.goal('daily_challenge_opened', { date });
+  }
+
+  dailyChallengeStarted(date: string): void {
+    this.goal('daily_challenge_started', { date });
+  }
+
+  dailyChallengeCompleted(date: string, stars: number, hintsUsed: number): void {
+    this.goal('daily_challenge_completed', { date, stars, hints_used: hintsUsed });
+  }
+
   achievementViewed(achievementId: string, unlocked: boolean): void {
     this.goal('achievement_viewed', {
       achievement_id: achievementId,

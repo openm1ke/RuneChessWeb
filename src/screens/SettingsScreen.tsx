@@ -13,6 +13,12 @@ interface SettingsProps {
   onSoundEffectsEnabledChanged: (enabled: boolean) => void;
   onProgressReset: () => void;
   onBack: () => void;
+  /** Reminders are an independent local consent from music/sound — see
+   * `DailyReminderCard` and `ProgressRepository`'s daily-reminder keys. */
+  dailyReminderEnabled: boolean;
+  dailyReminderHour: number;
+  onDailyReminderEnabledChanged: (enabled: boolean) => void;
+  onDailyReminderHourChanged: (hour: number) => void;
 }
 
 export function SettingsScreen(props: SettingsProps) {
@@ -51,6 +57,10 @@ function PortraitSettingsScene({
   onSoundEffectsEnabledChanged,
   onBack,
   onResetRequested,
+  dailyReminderEnabled,
+  dailyReminderHour,
+  onDailyReminderEnabledChanged,
+  onDailyReminderHourChanged,
 }: SettingsProps & { onResetRequested: () => void }) {
   return (
     <DesignCanvas>
@@ -61,35 +71,26 @@ function PortraitSettingsScene({
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
           draggable={false}
         />
+        {/* The title scrolls away with the cards instead of sitting in a
+            pinned header, so nothing ever gets clipped at a fixed boundary
+            — only the back button stays pinned, floating above the
+            scrolling content. */}
         <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 156,
-            background: 'linear-gradient(to bottom, #000, transparent)',
-          }}
-        />
-        <div style={{ position: 'absolute', left: 20, right: 20, top: 22, height: 44, display: 'flex', alignItems: 'center' }}>
-          <RoundControl onClick={onBack} label="Назад">
-            ‹
-          </RoundControl>
+          className="dozor-scroll-panel"
+          style={{ position: 'absolute', inset: 0, overflowY: 'auto', padding: '78px 42px 32px' }}
+        >
           <div
             style={{
-              flex: 1,
               textAlign: 'center',
               fontFamily: 'var(--font-display)',
               fontSize: 23,
               letterSpacing: 2.1,
               color: 'var(--gold-bright)',
+              marginBottom: 26,
             }}
           >
             НАСТРОЙКИ
           </div>
-          <div style={{ width: 44 }} />
-        </div>
-        <div style={{ position: 'absolute', top: 200, left: 42, right: 42 }}>
           <MusicSettingsCard
             musicEnabled={musicEnabled}
             musicVolume={musicVolume}
@@ -97,8 +98,21 @@ function PortraitSettingsScene({
             onVolumeChanged={onVolumeChanged}
             soundEffectsEnabled={soundEffectsEnabled}
             onSoundEffectsEnabledChanged={onSoundEffectsEnabledChanged}
-            onResetRequested={onResetRequested}
           />
+          <div style={{ height: 20 }} />
+          <DailyReminderCard
+            enabled={dailyReminderEnabled}
+            hour={dailyReminderHour}
+            onEnabledChanged={onDailyReminderEnabledChanged}
+            onHourChanged={onDailyReminderHourChanged}
+          />
+          <div style={{ height: 20 }} />
+          <ResetProgressCard onResetRequested={onResetRequested} />
+        </div>
+        <div style={{ position: 'absolute', left: 20, top: 22 }}>
+          <RoundControl onClick={onBack} label="Назад">
+            ‹
+          </RoundControl>
         </div>
       </div>
     </DesignCanvas>
@@ -118,6 +132,10 @@ function LandscapeSettingsScene({
   onSoundEffectsEnabledChanged,
   onBack,
   onResetRequested,
+  dailyReminderEnabled,
+  dailyReminderHour,
+  onDailyReminderEnabledChanged,
+  onDailyReminderHourChanged,
 }: SettingsProps & { onResetRequested: () => void }) {
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -134,36 +152,27 @@ function LandscapeSettingsScene({
           background: 'radial-gradient(circle at 50% 45%, rgba(0,0,0,0.15), rgba(0,0,0,0.72))',
         }}
       />
+      {/* The title scrolls away with the cards instead of sitting in a
+          pinned header, so nothing ever gets clipped at a fixed boundary —
+          only the back button stays pinned, floating above the scrolling
+          content. */}
       <div
-        style={{
-          position: 'absolute',
-          top: 24,
-          left: 96,
-          right: 96,
-          textAlign: 'center',
-          fontFamily: 'var(--font-display)',
-          fontSize: 25,
-          letterSpacing: 2.2,
-          color: 'var(--gold-bright)',
-          pointerEvents: 'none',
-        }}
+        className="dozor-scroll-panel"
+        style={{ position: 'absolute', inset: 0, overflowY: 'auto', display: 'flex', justifyContent: 'center' }}
       >
-        НАСТРОЙКИ
-      </div>
-      {/* pointerEvents: 'none' so this full-screen centering wrapper doesn't
-          sit on top of (and swallow clicks on) the back button below it —
-          only the card itself re-enables pointer events. */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        <div style={{ maxWidth: 460, width: '100%', padding: '0 24px', pointerEvents: 'auto' }}>
+        <div style={{ maxWidth: 460, width: '100%', padding: '78px 24px 24px' }}>
+          <div
+            style={{
+              textAlign: 'center',
+              fontFamily: 'var(--font-display)',
+              fontSize: 25,
+              letterSpacing: 2.2,
+              color: 'var(--gold-bright)',
+              marginBottom: 22,
+            }}
+          >
+            НАСТРОЙКИ
+          </div>
           <MusicSettingsCard
             musicEnabled={musicEnabled}
             musicVolume={musicVolume}
@@ -171,12 +180,20 @@ function LandscapeSettingsScene({
             onVolumeChanged={onVolumeChanged}
             soundEffectsEnabled={soundEffectsEnabled}
             onSoundEffectsEnabledChanged={onSoundEffectsEnabledChanged}
-            onResetRequested={onResetRequested}
           />
+          <div style={{ height: 18 }} />
+          <DailyReminderCard
+            enabled={dailyReminderEnabled}
+            hour={dailyReminderHour}
+            onEnabledChanged={onDailyReminderEnabledChanged}
+            onHourChanged={onDailyReminderHourChanged}
+          />
+          <div style={{ height: 18 }} />
+          <ResetProgressCard onResetRequested={onResetRequested} />
         </div>
       </div>
-      {/* Same round back control (and size) as the in-game top bar, rendered
-          after the centering wrapper above so it's never covered by it. */}
+      {/* Rendered after the scroll container above so it's never covered by
+          it. */}
       <div style={{ position: 'absolute', top: 22, left: 20 }}>
         <RoundControl onClick={onBack} label="Назад">
           ‹
@@ -197,11 +214,10 @@ function MusicSettingsCard({
   onVolumeChanged,
   soundEffectsEnabled,
   onSoundEffectsEnabledChanged,
-  onResetRequested,
 }: Pick<
   SettingsProps,
   'musicEnabled' | 'musicVolume' | 'onMusicEnabledChanged' | 'onVolumeChanged' | 'soundEffectsEnabled' | 'onSoundEffectsEnabledChanged'
-> & { onResetRequested: () => void }) {
+>) {
   return (
     <div
       style={{
@@ -289,7 +305,27 @@ function MusicSettingsCard({
         </div>
         <RuneToggle value={soundEffectsEnabled} onChange={onSoundEffectsEnabledChanged} label="Включить звуковые эффекты" />
       </div>
-      <div style={{ height: 24, marginTop: 26, borderTop: '1px solid rgba(207,162,68,0.38)' }} />
+    </div>
+  );
+}
+
+const SETTINGS_CARD_STYLE = {
+  padding: '22px 24px 26px',
+  borderRadius: 22,
+  background: 'linear-gradient(to bottom, rgba(29,49,103,0.96), rgba(12,23,52,0.96))',
+  border: '2px solid #cfa244',
+  boxShadow: '0 14px 26px rgba(0,0,0,0.57)',
+} as const;
+
+/**
+ * Deliberately last on the settings page, separate from `MusicSettingsCard`
+ * — a destructive, irreversible action shouldn't share a card with everyday
+ * toggles, and putting it at the very bottom keeps it out of the way of
+ * controls players actually adjust often.
+ */
+function ResetProgressCard({ onResetRequested }: { onResetRequested: () => void }) {
+  return (
+    <div style={SETTINGS_CARD_STYLE}>
       <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>СБРОС ПРОГРЕССА</div>
       <p style={{ margin: '8px 0 15px', color: '#c6d3ed', fontSize: 13, fontWeight: 700, lineHeight: 1.42 }}>
         Удалить пройденные уровни и звёзды.
@@ -304,6 +340,82 @@ function MusicSettingsCard({
     </div>
   );
 }
+
+/** A local "wake me up" consent, independent of the analytics/ads consent —
+ * exposes a toggle plus an hourly picker that only appears once enabled,
+ * since picking a time for a reminder that won't fire is meaningless
+ * clutter. See `dailyReminderService.ts` for what actually happens once
+ * this is on. */
+function DailyReminderCard({
+  enabled,
+  hour,
+  onEnabledChanged,
+  onHourChanged,
+}: {
+  enabled: boolean;
+  hour: number;
+  onEnabledChanged: (enabled: boolean) => void;
+  onHourChanged: (hour: number) => void;
+}) {
+  return (
+    <div style={SETTINGS_CARD_STYLE}>
+      <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>ЗАДАНИЕ ДНЯ</div>
+      <div style={{ height: 16 }} />
+      <div
+        style={{
+          padding: '14px 14px 14px 16px',
+          borderRadius: 14,
+          background: 'rgba(255,255,255,0.12)',
+          border: '1.2px solid rgba(207,162,68,0.35)',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 12,
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 0.4, color: 'var(--gold-bright)' }}>
+            Напоминать о задании дня
+          </div>
+          <div style={{ marginTop: 5, fontSize: 12.5, lineHeight: 1.4, fontWeight: 700, color: '#c6d3ed' }}>
+            Уведомление в браузере, если сегодняшнее задание ещё не решено. Работает, пока вкладка открыта.
+          </div>
+        </div>
+        <RuneToggle value={enabled} onChange={onEnabledChanged} label="Напоминать о задании дня" />
+      </div>
+      {enabled && (
+        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: '#d6e4ff' }}>Время напоминания</span>
+          <select
+            value={hour}
+            onChange={(e) => onHourChanged(Number(e.target.value))}
+            aria-label="Время напоминания"
+            style={{
+              padding: '8px 10px',
+              borderRadius: 10,
+              border: '1.2px solid rgba(207,162,68,0.6)',
+              background: 'rgba(10,16,34,0.6)',
+              color: 'var(--gold-bright)',
+              fontFamily: 'var(--font-display)',
+              fontSize: 14,
+              cursor: 'pointer',
+            }}
+          >
+            {REMINDER_HOURS.map((h) => (
+              <option key={h} value={h} style={{ background: '#0b1530', color: '#ffe2a4' }}>
+                {`${String(h).padStart(2, '0')}:00`}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Hourly picker, 08:00 through 22:00 — the earlier/later hours of the day
+ * are rarely useful for a "did you play today" nudge, so the range is
+ * deliberately narrower than the full 0-23. */
+const REMINDER_HOURS = Array.from({ length: 15 }, (_, i) => 8 + i);
 
 function ResetProgressConfirmation({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
   return (

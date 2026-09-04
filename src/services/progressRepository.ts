@@ -1,6 +1,7 @@
 import { campaignLevels } from '../data/campaignLevels';
 import { FIRST_SCORED_LEVEL_INDEX } from '../game/dozorEngine';
 import type { AchievementProgressState, StreakState } from '../game/achievementProgress';
+import type { DailyChallengeResult } from '../game/dailyChallengeLevels';
 
 export interface ProgressSnapshot {
   unlockedLevels: Set<number>;
@@ -14,6 +15,9 @@ export interface ProgressSnapshot {
   analyticsConsent: boolean | null;
   achievementUnlockedAt: Map<string, string>;
   achievementProgress: AchievementProgressState;
+  dailyChallengeHistory: Map<string, DailyChallengeResult>;
+  dailyReminderEnabled: boolean;
+  dailyReminderHour: number;
 }
 
 const KEYS = {
@@ -30,7 +34,14 @@ const KEYS = {
   achievementNoHintLevels: 'dozor.achievement_no_hint_levels_v1',
   achievementCleanStreak: 'dozor.achievement_clean_streak_v1',
   achievementPerfectStreak: 'dozor.achievement_perfect_streak_v1',
+  dailyChallengeHistory: 'dozor.daily_challenge_history_v1',
+  dailyReminderEnabled: 'dozor.daily_reminder_enabled',
+  dailyReminderHour: 'dozor.daily_reminder_hour',
+  dailyReminderLastShownDate: 'dozor.daily_reminder_last_shown_date',
+  dailyReminderLastMessage: 'dozor.daily_reminder_last_message',
 } as const;
+
+const DEFAULT_DAILY_REMINDER_HOUR = 11;
 
 function readStreak(key: string): StreakState {
   try {
@@ -169,6 +180,28 @@ export class ProgressRepository {
       pendingPerfectWasNext: false,
     };
 
+    const dailyChallengeHistory = new Map<string, DailyChallengeResult>();
+    const rawDailyHistory = readJson<Record<string, unknown>>(KEYS.dailyChallengeHistory);
+    if (rawDailyHistory != null) {
+      for (const [key, value] of Object.entries(rawDailyHistory)) {
+        if (
+          value != null &&
+          typeof value === 'object' &&
+          typeof (value as { stars?: unknown }).stars === 'number' &&
+          typeof (value as { hintsUsed?: unknown }).hintsUsed === 'number'
+        ) {
+          const v = value as { stars: number; hintsUsed: number };
+          dailyChallengeHistory.set(key, { stars: v.stars, hintsUsed: v.hintsUsed });
+        }
+      }
+    }
+    const dailyReminderEnabled = readJson<boolean>(KEYS.dailyReminderEnabled) ?? false;
+    const storedReminderHour = readJson<number>(KEYS.dailyReminderHour);
+    const dailyReminderHour =
+      storedReminderHour != null && Number.isInteger(storedReminderHour) && storedReminderHour >= 0 && storedReminderHour <= 23
+        ? storedReminderHour
+        : DEFAULT_DAILY_REMINDER_HOUR;
+
     return {
       unlockedLevels: unlocked,
       highestLevel: highest,
@@ -181,6 +214,9 @@ export class ProgressRepository {
       analyticsConsent,
       achievementUnlockedAt,
       achievementProgress,
+      dailyChallengeHistory,
+      dailyReminderEnabled,
+      dailyReminderHour,
     };
   }
 
@@ -238,9 +274,46 @@ export class ProgressRepository {
     removeValue(KEYS.achievementNoHintLevels);
     removeValue(KEYS.achievementCleanStreak);
     removeValue(KEYS.achievementPerfectStreak);
+    removeValue(KEYS.dailyChallengeHistory);
   }
 
   saveAnalyticsConsent(consent: boolean): void {
     writeJson(KEYS.analyticsConsent, consent);
+  }
+
+  /** Saves `date`'s daily-challenge result, keyed by its local calendar day
+   * — never by any level index, since the daily challenge is not part of
+   * the campaign array. The best of any two attempts for the same day wins,
+   * mirroring `mergeBestStars`'s never-downgrade rule for campaign levels. */
+  saveDailyChallengeResult(
+    history: Map<string, DailyChallengeResult>,
+    key: string,
+    result: DailyChallengeResult,
+  ): Map<string, DailyChallengeResult> {
+    const existing = history.get(key);
+    const next = existing == null || existing.stars < result.stars ? new Map(history).set(key, result) : history;
+    if (next !== history) {
+      const payload: Record<string, DailyChallengeResult> = {};
+      for (const [k, v] of next) payload[k] = v;
+      writeJson(KEYS.dailyChallengeHistory, payload);
+    }
+    return next;
+  }
+
+  saveDailyReminderSettings(args: { enabled: boolean; hour: number }): void {
+    writeJson(KEYS.dailyReminderEnabled, args.enabled);
+    writeJson(KEYS.dailyReminderHour, args.hour);
+  }
+
+  loadDailyReminderShownState(): { lastShownDate: string | null; lastMessage: string | null } {
+    return {
+      lastShownDate: readJson<string>(KEYS.dailyReminderLastShownDate),
+      lastMessage: readJson<string>(KEYS.dailyReminderLastMessage),
+    };
+  }
+
+  saveDailyReminderShownState(shownDate: string, message: string): void {
+    writeJson(KEYS.dailyReminderLastShownDate, shownDate);
+    writeJson(KEYS.dailyReminderLastMessage, message);
   }
 }
