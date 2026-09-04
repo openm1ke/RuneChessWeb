@@ -393,7 +393,18 @@ export function MenuActionButton({
       >
         {label}
       </span>
-      {badge && <div style={{ position: 'absolute', top: 6, right: 10 }}>{badge}</div>}
+      {badge && (
+        // Percentages, not px: "ЗАДАНИЕ ДНЯ"'s frame art has a diagonally
+        // chamfered top-right corner (measured ~8% of the button's width /
+        // ~27% of its height), so a fixed-pixel offset sits half outside
+        // the drawn frame at some box sizes — a plain px inset only worked
+        // by coincidence at one particular button width/height. Percentages
+        // track the frame's own corner cut correctly at both the portrait
+        // and landscape button sizes, since the art is stretched to the box
+        // uniformly per axis (independent x/y scaling preserves fractional
+        // position).
+        <div style={{ position: 'absolute', top: '27%', right: '9%' }}>{badge}</div>
+      )}
     </button>
   );
 }
