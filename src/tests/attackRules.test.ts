@@ -56,21 +56,16 @@ describe('computeAttacks', () => {
     expect(hits.length).toBe(3);
   });
 
-  it('pawn (up) attacks only its two forward diagonals, never straight ahead', () => {
-    const hits = computeAttacks({ type: 'pawn', c: 2, r: 2, pawnDirection: 'up', occupied: new Set() });
+  it('pawn attacks only its two forward diagonals towards the top of the board, never straight ahead', () => {
+    const hits = computeAttacks({ type: 'pawn', c: 2, r: 2, occupied: new Set() });
     expect(hits).toEqual(expect.arrayContaining([{ c: 1, r: 1 }, { c: 3, r: 1 }]));
     expect(hits).not.toContainEqual({ c: 2, r: 1 });
     expect(hits.length).toBe(2);
   });
 
-  it('pawn (down) attacks the opposite forward diagonals', () => {
-    const hits = computeAttacks({ type: 'pawn', c: 2, r: 2, pawnDirection: 'down', occupied: new Set() });
-    expect(hits).toEqual(expect.arrayContaining([{ c: 1, r: 3 }, { c: 3, r: 3 }]));
-  });
-
   it('pawn is never blocked by an occupied diagonal cell', () => {
     const occupied = new Set(['1,1']);
-    const hits = computeAttacks({ type: 'pawn', c: 2, r: 2, pawnDirection: 'up', occupied });
+    const hits = computeAttacks({ type: 'pawn', c: 2, r: 2, occupied });
     expect(hits).toContainEqual({ c: 1, r: 1 });
   });
 

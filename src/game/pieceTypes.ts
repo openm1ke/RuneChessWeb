@@ -12,8 +12,10 @@ export const ALL_PIECE_TYPES: readonly PieceType[] = [
   'pawn',
 ];
 
-/** Forward-attack direction for a pawn. The campaign only ever uses `up`. */
-export type PawnDirection = 'up' | 'down';
+/** Forward-attack direction for a pawn. A pawn only ever attacks its two
+ * forward diagonals towards smaller row indices (the top of the board) —
+ * never backward or sideways — so `up` is the only value. */
+export type PawnDirection = 'up';
 
 export interface PieceSkin {
   color: string;

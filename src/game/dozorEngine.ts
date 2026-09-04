@@ -151,7 +151,6 @@ export class DozorEngine {
       type: p.type,
       c: p.c,
       r: p.r,
-      pawnDirection: p.pawnDirection,
       occupied: occ,
       boardN: this.level.boardSize,
     });

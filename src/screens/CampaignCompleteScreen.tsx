@@ -29,10 +29,12 @@ interface CampaignCompleteProps {
   onSecondary?: () => void;
   /** The achievement tied to this checkpoint (e.g. "Хранитель короны" for
    * finishing the main campaign, "Владыка рун" for finishing everything),
-   * shown revealing inline — mirrors the mobile app's inline reveal on this
-   * screen, which always shows the relevant trophy here regardless of
-   * whether it's actually unlocked yet (`animateAchievement` only controls
-   * whether the reveal-from-locked animation plays right now). */
+   * shown revealing inline. Pass `null`/`undefined` — not the definition —
+   * when it isn't actually unlocked yet: finishing this checkpoint (every
+   * level touched) doesn't imply its stricter star/streak condition was
+   * met, so the caller must check `achievementUnlockedAt` first.
+   * `animateAchievement` only controls whether the reveal-from-locked
+   * animation plays for an already-passed achievement. */
   achievement?: AchievementDefinition | null;
   animateAchievement?: boolean;
   onAchievementRevealed?: () => void;

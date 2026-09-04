@@ -585,7 +585,7 @@ export default function App() {
     case 'campaignComplete':
       return withConsent(
         <CampaignCompleteScreen
-          achievement={extraQueen}
+          achievement={achievementUnlockedAt.has(extraQueen.id) ? extraQueen : null}
           animateAchievement={extraCampaignJustEarned}
           onAchievementRevealed={playAchievementReveal}
           onLevels={() => {
@@ -608,7 +608,7 @@ export default function App() {
           subtitle="Новая кампания с полем 7×7 открыта."
           primaryLabel="ПРОДОЛЖИТЬ"
           onPrimary={continueAfterMainCampaign}
-          achievement={mainKing}
+          achievement={achievementUnlockedAt.has(mainKing.id) ? mainKing : null}
           animateAchievement={mainCampaignJustEarned}
           onAchievementRevealed={playAchievementReveal}
           onLevels={() => {

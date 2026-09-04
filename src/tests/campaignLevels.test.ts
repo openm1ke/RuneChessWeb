@@ -50,7 +50,6 @@ describe('campaign level data', () => {
           type: item.type,
           c: cell.c,
           r: cell.r,
-          pawnDirection: item.pawnDirection,
           occupied,
           boardN: level.boardSize,
         });

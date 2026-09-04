@@ -1,6 +1,6 @@
 import type { Cell } from './models';
 import { cellKey } from './models';
-import type { PawnDirection, PieceType } from './pieceTypes';
+import type { PieceType } from './pieceTypes';
 
 /** Default board side — the original campaign's 6×6 board. The bonus
  * campaign's 7×7 levels pass their own `boardN` explicitly wherever it
@@ -60,7 +60,6 @@ export interface ComputeAttacksArgs {
   type: PieceType;
   c: number;
   r: number;
-  pawnDirection?: PawnDirection;
   occupied: ReadonlySet<string>;
   boardN?: number;
 }
@@ -71,14 +70,14 @@ export interface ComputeAttacksArgs {
  *   occupied cell;
  * - knight jumps to its eight L-shaped cells, ignoring `occupied` entirely;
  * - king attacks its eight neighbours, also unblockable;
- * - pawn attacks its two forward diagonals (per `pawnDirection`), never the
- *   cell directly ahead, and is likewise never blocked.
+ * - pawn attacks its two forward diagonals towards the top of the board
+ *   (never backward, sideways, or the cell directly ahead), and is
+ *   likewise never blocked.
  */
 export function computeAttacks({
   type,
   c,
   r,
-  pawnDirection,
   occupied,
   boardN = BOARD_N,
 }: ComputeAttacksArgs): Cell[] {
@@ -100,7 +99,9 @@ export function computeAttacks({
       }
       break;
     case 'pawn': {
-      const dr = pawnDirection === 'up' ? -1 : 1;
+      // Always attacks towards the top of the board (smaller row indices) —
+      // never backward or sideways. See `PawnDirection`'s doc comment.
+      const dr = -1;
       for (const dc of [-1, 1]) {
         const cell = { c: c + dc, r: r + dr };
         if (isInBounds(cell.c, cell.r, boardN)) out.push(cell);
