@@ -258,7 +258,13 @@ function LevelGrid({
       {Array.from({ length: count }, (_, localIndex) => {
         const index = start + localIndex;
         const unlocked = !locked && unlockedLevels.has(index);
-        const completed = unlocked && index < highestUnlocked;
+        // `highestUnlocked` is the frontier index unlocked by finishing its
+        // predecessor, so `index < highestUnlocked` normally means "this
+        // level has been surpassed" — completed. But the very last campaign
+        // level has no successor to unlock, so that frontier never advances
+        // past it; falling back to a recorded star result catches that case
+        // without depending on the frontier.
+        const completed = unlocked && (index < highestUnlocked || levelStars.get(index) != null);
         return (
           <LevelTile
             key={index}
