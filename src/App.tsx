@@ -138,7 +138,13 @@ export default function App() {
   const [dailyChallengeHistory, setDailyChallengeHistory] = useState<Map<string, DailyChallengeResult>>(new Map());
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false);
   const [dailyReminderHour, setDailyReminderHour] = useState(11);
-  const [showDailyCalendar, setShowDailyCalendar] = useState(false);
+  // 'view' = opened from the in-game calendar icon, closing just closes it;
+  // 'exit' = opened by "ПРОДОЛЖИТЬ" after solving, closing also leaves the
+  // daily challenge (see `nextLevel`). Two different call sites triggering
+  // the same sheet with different continuations, not a single ambiguous
+  // flag — mirrors the mobile app's two separate call sites for the same
+  // dialog.
+  const [dailyCalendarMode, setDailyCalendarMode] = useState<'view' | 'exit' | null>(null);
   /** The exact local calendar day `openDailyChallenge` generated the
    * current puzzle for — kept so `handleDailyChallengeSolved` saves under
    * the same key even if midnight passes mid-attempt. Null whenever
@@ -529,11 +535,15 @@ export default function App() {
   const nextLevel = () => {
     setLevelResultAchievement(null);
     // The daily challenge is a single standalone level, not part of the
-    // campaign's sequence — "ПРОДОЛЖИТЬ" just leaves it rather than
-    // advancing `levelIndex`.
+    // campaign's sequence — "ПРОДОЛЖИТЬ" doesn't advance `levelIndex`. It
+    // opens the streak calendar instead of leaving immediately: solving
+    // today's puzzle is exactly the moment a player wants to see their
+    // streak move, and it's the same calendar the in-game icon already
+    // opens (see `dailyCalendarMode`'s 'view' case below) — closing it is
+    // what actually leaves.
     if (engine.isDailyChallenge) {
       dailyChallengeDateRef.current = null;
-      goToMenu();
+      setDailyCalendarMode('exit');
       return;
     }
     const before = engine.levelIndex;
@@ -864,10 +874,17 @@ export default function App() {
             rewardedAdsService={ADS_AVAILABLE && !isOnYandexGamesPlatform ? rewardedAdsService : undefined}
             achievement={levelResultAchievement}
             onAchievementRevealed={playAchievementReveal}
-            onOpenDailyCalendar={() => setShowDailyCalendar(true)}
+            onOpenDailyCalendar={() => setDailyCalendarMode('view')}
           />
-          {showDailyCalendar && (
-            <DailyChallengeCalendarSheet history={dailyChallengeHistory} onClose={() => setShowDailyCalendar(false)} />
+          {dailyCalendarMode && (
+            <DailyChallengeCalendarSheet
+              history={dailyChallengeHistory}
+              onClose={() => {
+                const wasExiting = dailyCalendarMode === 'exit';
+                setDailyCalendarMode(null);
+                if (wasExiting) goToMenu();
+              }}
+            />
           )}
         </>
       );

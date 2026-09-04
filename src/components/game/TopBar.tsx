@@ -1,5 +1,19 @@
 import { RoundControl } from '../shared/RoundControl';
 
+/** A rounded lightbulb outline — a hand-drawn stand-in for the mobile app's
+ * `Icons.lightbulb_outline_rounded`, since the web build has no icon font.
+ * Deliberately not the 💡 emoji, for the same reason as `CalendarIcon`:
+ * full-colour, padded, off-brand next to this app's flat gold controls. */
+function LightbulbIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 17.5h6" />
+      <path d="M9.75 20.25h4.5" />
+      <path d="M12 2.75a6.25 6.25 0 0 0-3.5 11.42c.62.42 1 1.13 1 1.9v.63h5v-.63c0-.77.38-1.48 1-1.9A6.25 6.25 0 0 0 12 2.75Z" />
+    </svg>
+  );
+}
+
 /** A plain calendar-page glyph, styled to match the app's other round
  * controls (monochrome, inherits `currentColor`) — the mobile app uses
  * Material's `Icons.calendar_month_rounded` here; this is a hand-drawn
@@ -44,7 +58,7 @@ export function TopControls({
       </RoundControl>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
         <RoundControl onClick={onHint} disabled={!hintEnabled} label="Подсказка">
-          💡
+          <LightbulbIcon />
         </RoundControl>
         {onCalendar && (
           <RoundControl onClick={onCalendar} label="Календарь заданий дня">

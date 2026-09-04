@@ -43,10 +43,24 @@ describe('pickReminderMessage', () => {
     const total = 200;
     for (let i = 0; i < total; i++) {
       const message = pickReminderMessage({ currentStreak: 10, freezeAvailable: true, random });
-      if (!/стрик|день|дня|дней/i.test(message) || /ждёт вас|уже готово|уже здесь|не решён/i.test(message)) {
-        neutralCount++;
-      }
+      // Every streak/risk message mentions the streak itself, the freeze,
+      // consecutive-day wording, or the streak resetting — a plain neutral
+      // nudge never does, even though "день/дня" alone isn't a reliable
+      // signal (several neutral texts say things like "головоломка дня").
+      if (!/стрик|фриз|подряд|обнул/i.test(message)) neutralCount++;
     }
     expect(neutralCount).toBeGreaterThan(total / 2);
+  });
+
+  it('has at least 20 distinct messages across every state, so a player '
+    + 'who plays for weeks does not see the same handful on repeat', () => {
+    const random = seededRandom(23);
+    const seen = new Set<string>();
+    for (let i = 0; i < 300; i++) {
+      seen.add(pickReminderMessage({ currentStreak: 9, freezeAvailable: false, random }));
+      seen.add(pickReminderMessage({ currentStreak: 9, freezeAvailable: true, random }));
+      seen.add(pickReminderMessage({ currentStreak: 0, freezeAvailable: true, random }));
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(20);
   });
 });
