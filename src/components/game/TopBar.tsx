@@ -47,7 +47,7 @@ export function TopControls({
           💡
         </RoundControl>
         {onCalendar && (
-          <RoundControl onClick={onCalendar} size={34} label="Календарь заданий дня">
+          <RoundControl onClick={onCalendar} label="Календарь заданий дня">
             <CalendarIcon />
           </RoundControl>
         )}

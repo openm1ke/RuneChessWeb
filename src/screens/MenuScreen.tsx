@@ -70,7 +70,7 @@ export function MenuScreen({
         <div style={{ position: 'absolute', top: 126, left: 0, right: 0 }}>
           <MenuBrand orbSize={124} />
         </div>
-        <div style={{ position: 'absolute', top: 366, left: 78, right: 78, height: 64 }}>
+        <div style={{ position: 'absolute', top: 366, left: 78, right: 78, height: 72 }}>
           <MenuActionButton
             label="ЗАДАНИЕ ДНЯ"
             onClick={onDailyChallenge}
@@ -80,16 +80,16 @@ export function MenuScreen({
             badge={<DailyChallengeSolvedBadge solved={dailyChallengeSolvedToday} />}
           />
         </div>
-        <div style={{ position: 'absolute', top: 442, left: 78, right: 78, height: 104 }}>
+        <div style={{ position: 'absolute', top: 450, left: 78, right: 78, height: 104 }}>
           <MenuActionButton label="ИГРАТЬ" onClick={onPlay} prominent />
         </div>
-        <div style={{ position: 'absolute', top: 558, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 566, left: 92, right: 92, height: 72 }}>
           <MenuActionButton label="УРОВНИ" onClick={onLevels} />
         </div>
-        <div style={{ position: 'absolute', top: 636, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 644, left: 92, right: 92, height: 72 }}>
           <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={17} letterSpacing={1.8} />
         </div>
-        <div style={{ position: 'absolute', top: 714, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 722, left: 92, right: 92, height: 72 }}>
           <MenuInfoButton label="ПРАВИЛА" href="how-to-play.html" />
         </div>
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 36, textAlign: 'center' }}>
@@ -174,7 +174,7 @@ function LandscapeMenuScene({
       >
         <MenuBrand orbSize={brandOrbSize} />
       </div>
-      <div style={{ position: 'absolute', top: panelTop - 4, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 40 }}>
+      <div style={{ position: 'absolute', top: panelTop - 4, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
         <MenuActionButton
           label="ЗАДАНИЕ ДНЯ"
           onClick={onDailyChallenge}
@@ -184,13 +184,13 @@ function LandscapeMenuScene({
           badge={<DailyChallengeSolvedBadge solved={dailyChallengeSolvedToday} small />}
         />
       </div>
-      <div style={{ position: 'absolute', top: panelTop + 42, left: panelLeft, width: panelWidth, height: 82 }}>
+      <div style={{ position: 'absolute', top: panelTop + 63, left: panelLeft, width: panelWidth, height: 82 }}>
         <MenuActionButton label="ИГРАТЬ" onClick={onPlay} prominent />
       </div>
       <div
         style={{
           position: 'absolute',
-          top: panelTop + 136,
+          top: panelTop + 150,
           left: panelLeft + panelWidth * 0.08,
           width: panelWidth * 0.84,
           height: 62,
@@ -198,7 +198,7 @@ function LandscapeMenuScene({
       >
         <MenuActionButton label="УРОВНИ" onClick={onLevels} />
       </div>
-      <div style={{ position: 'absolute', top: panelTop + 210, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
+      <div style={{ position: 'absolute', top: panelTop + 217, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
         <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={16} letterSpacing={1.4} />
       </div>
       <div style={{ position: 'absolute', top: panelTop + 284, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
@@ -417,20 +417,24 @@ export function MenuActionButton({
  * for whether today's puzzle is already solved. */
 function DailyChallengeSolvedBadge({ solved, small = false }: { solved: boolean; small?: boolean }) {
   const size = small ? 16 : 20;
+  // The checkmark itself is always drawn, not just the ring — an unsolved
+  // day shows a dim grey ring with a dim grey checkmark, a solved day shows
+  // both in gold. Only the color changes with state.
+  const color = solved ? '#ffd77a' : 'rgba(214,224,255,0.4)';
   return (
     <div
       style={{
         width: size,
         height: size,
         borderRadius: '50%',
-        border: `1.6px solid ${solved ? '#ffd77a' : 'rgba(214,224,255,0.4)'}`,
+        border: `1.6px solid ${color}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         background: 'rgba(10,16,34,0.55)',
       }}
     >
-      {solved && <span style={{ fontSize: size * 0.62, color: '#ffd77a', lineHeight: 1 }}>✓</span>}
+      <span style={{ fontSize: size * 0.62, color, lineHeight: 1 }}>✓</span>
     </div>
   );
 }
