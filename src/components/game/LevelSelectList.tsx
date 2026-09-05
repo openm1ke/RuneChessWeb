@@ -35,6 +35,7 @@ export function LevelSelectList({
   onLevelChosen,
   columns,
   aspectRatio = 1,
+  gutter,
 }: {
   unlockedLevels: Set<number>;
   highestUnlocked: number;
@@ -44,6 +45,11 @@ export function LevelSelectList({
   onLevelChosen: (index: number) => void;
   columns: number;
   aspectRatio?: number;
+  /** The panel's horizontal padding, which it gives up on the right so this
+   * scroller can reach the panel border. The bar is then drawn on the edge,
+   * matching the achievements panel, and this padding holds the tiles off it
+   * from the inside. */
+  gutter: number;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const currentTileRef = useRef<HTMLButtonElement>(null);
@@ -121,7 +127,9 @@ export function LevelSelectList({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      <ProgressSummary progress={progress} compact />
+      <div style={{ paddingRight: gutter }}>
+        <ProgressSummary progress={progress} compact />
+      </div>
       <div style={{ height: 12 }} />
       <div
         ref={scrollerRef}
@@ -129,7 +137,7 @@ export function LevelSelectList({
         // Keeps the tiles clear of the scrollbar, which is drawn at this
         // element's own edge — without it the right-hand column of the grid
         // sits directly against the bar.
-        style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: 10 }}
+        style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: gutter }}
       >
         <SectionTitle label="ОБУЧЕНИЕ · 5 УРОВНЕЙ" />
         {/* A centred wrap rather than a grid: five tiles across three columns

@@ -75,7 +75,7 @@ export function LevelSelectScreen(props: LevelSelectProps) {
             background: 'rgba(11,23,51,0.9)',
             border: '1.5px solid rgba(216,165,55,0.85)',
             boxShadow: '0 8px 18px rgba(0,0,0,0.6)',
-            padding: 16,
+            padding: '16px 0 16px 16px',
             display: 'flex',
             flexDirection: 'column',
           }}
@@ -88,6 +88,7 @@ export function LevelSelectScreen(props: LevelSelectProps) {
             progress={progress}
             onLevelChosen={onLevelChosen}
             columns={3}
+            gutter={16}
           />
         </div>
       </div>
@@ -155,7 +156,7 @@ function LandscapeLevelSelectScene({
           background: 'rgba(11,23,51,0.91)',
           border: '1.5px solid rgba(216,165,55,0.85)',
           boxShadow: '0 8px 18px rgba(0,0,0,0.6)',
-          padding: '10px 18px 14px',
+          padding: '10px 0 14px 18px',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -169,6 +170,7 @@ function LandscapeLevelSelectScene({
           onLevelChosen={onLevelChosen}
           columns={columns}
           aspectRatio={1.32}
+          gutter={18}
         />
       </div>
     </div>
