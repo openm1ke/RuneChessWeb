@@ -904,6 +904,7 @@ export default function App() {
           onLevels={openLevelSelect}
           onSettings={() => setScreen('settings')}
           onAchievements={() => setScreen('achievements')}
+          currentLevel={highestLevel + 1}
           onDailyChallenge={openDailyChallenge}
           dailyChallengeSolvedToday={dailyChallengeHistory.has(dailyChallengeKey(new Date()))}
         />

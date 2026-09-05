@@ -11,12 +11,15 @@ export function MenuScreen({
   onAchievements,
   onDailyChallenge,
   dailyChallengeSolvedToday = false,
+  currentLevel,
 }: {
   onPlay: () => void;
   onLevels: () => void;
   onSettings: () => void;
   onAchievements: () => void;
   onDailyChallenge: () => void;
+  /** 1-based number of the level "ИГРАТЬ" opens, shown under it. */
+  currentLevel: number;
   /** Whether today's daily challenge already has a saved result — shows a
    * small checkmark badge on the button instead of a plain empty ring. */
   dailyChallengeSolvedToday?: boolean;
@@ -33,6 +36,7 @@ export function MenuScreen({
         onAchievements={onAchievements}
         onDailyChallenge={onDailyChallenge}
         dailyChallengeSolvedToday={dailyChallengeSolvedToday}
+        currentLevel={currentLevel}
       />
     );
   }
@@ -81,22 +85,27 @@ export function MenuScreen({
           />
         </div>
         <div style={{ position: 'absolute', top: 450, left: 78, right: 78, height: 104 }}>
-          <MenuActionButton label="ИГРАТЬ" onClick={onPlay} prominent />
+          <MenuActionButton
+            label="ИГРАТЬ"
+            subtitle={`УРОВЕНЬ ${currentLevel}`}
+            onClick={onPlay}
+            prominent
+          />
         </div>
-        <div style={{ position: 'absolute', top: 566, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 584, left: 92, right: 92, height: 72 }}>
           <MenuActionButton label="УРОВНИ" onClick={onLevels} />
         </div>
-        <div style={{ position: 'absolute', top: 644, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 668, left: 92, right: 92, height: 72 }}>
           <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={17} letterSpacing={1.8} />
-        </div>
-        <div style={{ position: 'absolute', top: 722, left: 92, right: 92, height: 72 }}>
-          <MenuInfoButton label="ПРАВИЛА" href="how-to-play.html" />
         </div>
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 36, textAlign: 'center' }}>
           <MenuFooterLinks />
         </div>
-        <div style={{ position: 'absolute', top: 24, right: 24 }}>
-          <MenuSettingsButton onClick={onSettings} />
+        {/* Rules are read once, so they sit with settings rather than
+            taking a slot equal to the sections a player comes back to. */}
+        <div style={{ position: 'absolute', top: 24, right: 24, display: 'flex', gap: 12 }}>
+          <MenuIconButton label="Правила" href="how-to-play.html" glyph="📖" />
+          <MenuIconButton label="Настройки" onClick={onSettings} glyph="⚙" />
         </div>
         <div
           style={{
@@ -131,6 +140,7 @@ function LandscapeMenuScene({
   onAchievements,
   onDailyChallenge,
   dailyChallengeSolvedToday,
+  currentLevel,
 }: {
   onPlay: () => void;
   onLevels: () => void;
@@ -138,6 +148,7 @@ function LandscapeMenuScene({
   onAchievements: () => void;
   onDailyChallenge: () => void;
   dailyChallengeSolvedToday: boolean;
+  currentLevel: number;
 }) {
   const { width, height } = useViewportSize();
   const panelWidth = Math.min(290, Math.max(210, width * 0.27));
@@ -185,12 +196,17 @@ function LandscapeMenuScene({
         />
       </div>
       <div style={{ position: 'absolute', top: panelTop + 63, left: panelLeft, width: panelWidth, height: 82 }}>
-        <MenuActionButton label="ИГРАТЬ" onClick={onPlay} prominent />
+        <MenuActionButton
+          label="ИГРАТЬ"
+          subtitle={`УРОВЕНЬ ${currentLevel}`}
+          onClick={onPlay}
+          prominent
+        />
       </div>
       <div
         style={{
           position: 'absolute',
-          top: panelTop + 150,
+          top: panelTop + 173,
           left: panelLeft + panelWidth * 0.08,
           width: panelWidth * 0.84,
           height: 62,
@@ -198,14 +214,12 @@ function LandscapeMenuScene({
       >
         <MenuActionButton label="УРОВНИ" onClick={onLevels} />
       </div>
-      <div style={{ position: 'absolute', top: panelTop + 217, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
+      <div style={{ position: 'absolute', top: panelTop + 240, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
         <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={16} letterSpacing={1.4} />
       </div>
-      <div style={{ position: 'absolute', top: panelTop + 284, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
-        <MenuInfoButton label="ПРАВИЛА" href="how-to-play.html" />
-      </div>
-      <div style={{ position: 'absolute', top: 18, right: 24 }}>
-        <MenuSettingsButton onClick={onSettings} />
+      <div style={{ position: 'absolute', top: 18, right: 24, display: 'flex', gap: 12 }}>
+        <MenuIconButton label="Правила" href="how-to-play.html" glyph="📖" />
+        <MenuIconButton label="Настройки" onClick={onSettings} glyph="⚙" />
       </div>
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 28, textAlign: 'center' }}>
         <MenuFooterLinks />
@@ -269,42 +283,6 @@ function MenuFooterLinks() {
   );
 }
 
-function MenuInfoButton({ label, href }: { label: string; href: string }) {
-  const backgroundAsset = asset('assets/images/menu-button-levels.webp');
-  return (
-    <a
-      href={asset(href)}
-      onPointerDown={playNavigationPress}
-      onClick={playNavigationRelease}
-      style={{
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        height: '100%',
-        border: 'none',
-        color: 'var(--gold-bright)',
-        background: 'transparent',
-        fontFamily: 'var(--font-body)',
-        fontSize: 19,
-        fontWeight: 900,
-        letterSpacing: 2.1,
-        textDecoration: 'none',
-        textShadow: '0 2px 3px rgba(0,0,0,0.66)',
-      }}
-    >
-      <img src={backgroundAsset} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} draggable={false} />
-      <span style={{ position: 'relative' }}>{label}</span>
-    </a>
-  );
-}
-
-/**
- * The mark intentionally reuses the game's existing queen-orb artwork.
- * Its circular crop lets the orb sit directly on the scene rather than
- * carrying the original icon's square background into the menu.
- */
 function MenuBrand({ orbSize }: { orbSize: number }) {
   const height = orbSize * 1.48 * (660 / 560);
   const width = height * (1200 / 660);
@@ -326,6 +304,7 @@ function MenuBrand({ orbSize }: { orbSize: number }) {
 
 export function MenuActionButton({
   label,
+  subtitle,
   onClick,
   prominent = false,
   fontSize,
@@ -334,6 +313,10 @@ export function MenuActionButton({
   badge,
 }: {
   label: string;
+  /** A quiet second line under the label. "ИГРАТЬ" alone never said what it
+   * would open — the one button the whole screen is built around was the
+   * only one that did not answer "what happens next". */
+  subtitle?: string;
   onClick: () => void;
   prominent?: boolean;
   /** Overrides the default size — used where the button is narrower than
@@ -382,16 +365,40 @@ export function MenuActionButton({
       <span
         style={{
           position: 'relative',
-          fontFamily: 'var(--font-body)',
-          color: 'var(--gold-bright)',
-          fontSize: fontSize ?? (prominent ? 26 : 19),
-          fontWeight: 900,
-          letterSpacing: letterSpacing ?? (prominent ? 2.7 : 2.1),
-          textShadow: '0 2px 3px rgba(0,0,0,0.66)',
-          whiteSpace: 'nowrap',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 2,
         }}
       >
-        {label}
+        <span
+          style={{
+            fontFamily: 'var(--font-body)',
+            color: 'var(--gold-bright)',
+            fontSize: fontSize ?? (prominent ? 26 : 19),
+            fontWeight: 900,
+            letterSpacing: letterSpacing ?? (prominent ? 2.7 : 2.1),
+            textShadow: '0 2px 3px rgba(0,0,0,0.66)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {label}
+        </span>
+        {subtitle && (
+          <span
+            style={{
+              fontFamily: 'var(--font-body)',
+              color: 'rgba(255,226,164,0.78)',
+              fontSize: 12,
+              fontWeight: 800,
+              letterSpacing: 1.2,
+              textShadow: '0 2px 3px rgba(0,0,0,0.66)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {subtitle}
+          </span>
+        )}
       </span>
       {badge && (
         // Right inset is a percentage, not px: "ЗАДАНИЕ ДНЯ"'s frame art has
@@ -412,59 +419,88 @@ export function MenuActionButton({
   );
 }
 
-/** The small ring-and-checkmark status shown on "ЗАДАНИЕ ДНЯ" — always
- * present, so its state (grey ring vs. gold checkmark) is the only signal
- * for whether today's puzzle is already solved. */
+/** Shown on "ЗАДАНИЕ ДНЯ" only once today is solved. It used to be one
+ * ring-and-checkmark in two opacities, and the dim one read as a disabled
+ * control rather than "today is still open" — nothing at all says that
+ * better, and a gold tick then reads as an answer rather than a state. */
 function DailyChallengeSolvedBadge({ solved, small = false }: { solved: boolean; small?: boolean }) {
+  if (!solved) return null;
   const size = small ? 16 : 20;
-  // The checkmark itself is always drawn, not just the ring — an unsolved
-  // day shows a dim grey ring with a dim grey checkmark, a solved day shows
-  // both in gold. Only the color changes with state.
-  const color = solved ? '#ffd77a' : 'rgba(214,224,255,0.4)';
   return (
     <div
       style={{
         width: size,
         height: size,
         borderRadius: '50%',
-        border: `1.6px solid ${color}`,
+        border: '1.6px solid #ffd77a',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         background: 'rgba(10,16,34,0.55)',
+        color: '#ffd77a',
+        fontSize: size * 0.62,
+        lineHeight: 1,
       }}
     >
-      <span style={{ fontSize: size * 0.62, color, lineHeight: 1 }}>✓</span>
+      ✓
     </div>
   );
 }
 
-function MenuSettingsButton({ onClick }: { onClick: () => void }) {
+function MenuIconButton({
+  label,
+  glyph,
+  onClick,
+  href,
+}: {
+  label: string;
+  glyph: string;
+  onClick?: () => void;
+  href?: string;
+}) {
+  const style = {
+    width: 48,
+    height: 48,
+    borderRadius: '50%',
+    background: 'rgba(18,32,68,0.85)',
+    border: '1.7px solid rgba(216,165,55,0.85)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.53)',
+    color: 'var(--gold)',
+    fontSize: 24,
+    lineHeight: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    textDecoration: 'none',
+  } as const;
+
+  if (href) {
+    return (
+      <a
+        href={asset(href)}
+        aria-label={label}
+        onPointerDown={playNavigationPress}
+        onClick={playNavigationRelease}
+        style={style}
+      >
+        {glyph}
+      </a>
+    );
+  }
   return (
     <button
       type="button"
       onPointerDown={playNavigationPress}
       onClick={() => {
         playNavigationRelease();
-        onClick();
+        onClick?.();
       }}
-      aria-label="Настройки"
-      style={{
-        width: 48,
-        height: 48,
-        borderRadius: '50%',
-        background: 'rgba(18,32,68,0.85)',
-        border: '1.7px solid rgba(216,165,55,0.85)',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.53)',
-        color: 'var(--gold)',
-        fontSize: 30,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-      }}
+      aria-label={label}
+      style={style}
     >
-      ⚙
+      {glyph}
     </button>
   );
 }
+
