@@ -167,27 +167,114 @@ export function LevelResultOverlay({
                 ))}
               </div>
               <div style={{ height: 14 }} />
-              <div
-                style={{
-                  opacity: phase(captionWindow[0], captionWindow[1]),
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: 'var(--text-soft)',
-                }}
-              >
-                {CAPTIONS[result.stars]}
-              </div>
+              {!bonusStarOffered && (
+                <div
+                  style={{
+                    opacity: phase(captionWindow[0], captionWindow[1]),
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: 'var(--text-soft)',
+                  }}
+                >
+                  {CAPTIONS[result.stars]}
+                </div>
+              )}
             </>
           ) : (
             <div style={{ height: 6 }} />
           )}
           <div style={{ height: 20 }} />
-          <div style={{ opacity: phase(buttonWindow[0], buttonWindow[1]) }}>
+          <div
+            style={{
+              opacity: phase(buttonWindow[0], buttonWindow[1]),
+              // One shared width for everything stacked here. Left to
+              // themselves these controls size to their own labels, which
+              // made "ПРОДОЛЖИТЬ" and the ad offer different widths for no
+              // reason the player could read as meaning anything.
+              width: 248,
+              maxWidth: '100%',
+              margin: '0 auto',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {bonusStarOffered && (
+              <button
+                type="button"
+                disabled={!bonusStarEnabled}
+                onClick={onBonusStarRequested}
+                aria-label="Получить звезду за просмотр рекламы"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 11,
+                  minHeight: 56,
+                  marginBottom: 14,
+                  padding: '10px 14px 10px 12px',
+                  borderRadius: 14,
+                  border: '1.6px solid rgba(207,162,68,0.54)',
+                  background: 'rgba(255,215,122,0.12)',
+                  textAlign: 'left',
+                  cursor: bonusStarEnabled ? 'pointer' : 'default',
+                  animation: bonusStarEnabled
+                    ? 'bonus-star-offer-glow 2.4s ease-in-out infinite'
+                    : undefined,
+                }}
+              >
+                <span
+                  style={{
+                    flex: '0 0 auto',
+                    width: 34,
+                    height: 34,
+                    borderRadius: '50%',
+                    background: 'rgba(255,215,122,0.18)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 19,
+                    color: 'var(--gold-bright)',
+                  }}
+                  aria-hidden="true"
+                >
+                  ★
+                </span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontSize: 14,
+                      fontWeight: 800,
+                      letterSpacing: 0.3,
+                      color: 'var(--gold-bright)',
+                    }}
+                  >
+                    Получить звезду
+                  </span>
+                  <span
+                    style={{
+                      display: 'block',
+                      marginTop: 2,
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      color: 'var(--text-soft)',
+                    }}
+                  >
+                    {bonusStarEnabled ? 'Ролик, ~30 секунд' : 'Готовим ролик…'}
+                  </span>
+                </span>
+                <span
+                  style={{ flex: '0 0 auto', fontSize: 18, color: 'rgba(255,215,122,0.78)' }}
+                  aria-hidden="true"
+                >
+                  {bonusStarEnabled ? '▶' : '…'}
+                </span>
+              </button>
+            )}
             <button
               type="button"
               onClick={handleContinue}
               style={{
-                padding: '10px 30px',
+                height: 48,
                 borderRadius: 14,
                 border: '2.5px solid var(--gold)',
                 background: 'linear-gradient(var(--success-a), var(--success-b))',
@@ -202,48 +289,25 @@ export function LevelResultOverlay({
               ПРОДОЛЖИТЬ
             </button>
             {result.stars != null && result.stars < 3 && (
-              <div style={{ marginTop: 10 }}>
-                <button
-                  type="button"
-                  onClick={onRetry}
-                  style={{
-                    padding: '8px 22px',
-                    borderRadius: 12,
-                    border: '1.3px solid rgba(255,226,164,0.5)',
-                    background: 'rgba(255,255,255,0.08)',
-                    color: 'var(--gold-bright)',
-                    fontSize: 12,
-                    fontWeight: 800,
-                    letterSpacing: 1.3,
-                    cursor: 'pointer',
-                  }}
-                >
-                  ПРОЙТИ ЕЩЁ РАЗ
-                </button>
-              </div>
-            )}
-            {bonusStarOffered && (
-              <div style={{ marginTop: 10 }}>
-                <button
-                  type="button"
-                  disabled={!bonusStarEnabled}
-                  onClick={onBonusStarRequested}
-                  style={{
-                    padding: '8px 22px',
-                    borderRadius: 12,
-                    border: '1.3px solid rgba(255,226,164,0.6)',
-                    background: 'linear-gradient(to bottom, rgba(224,168,63,0.28), rgba(224,168,63,0.1))',
-                    color: 'var(--gold-bright)',
-                    fontSize: 12,
-                    fontWeight: 800,
-                    letterSpacing: 1.1,
-                    cursor: bonusStarEnabled ? 'pointer' : 'default',
-                    opacity: bonusStarEnabled ? 1 : 0.5,
-                  }}
-                >
-                  🎬 ЗВЕЗДА ЗА РЕКЛАМУ
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={onRetry}
+                style={{
+                  height: 40,
+                  marginTop: 12,
+                  border: 'none',
+                  background: 'transparent',
+                  color: 'rgba(255,226,164,0.72)',
+                  fontSize: 13,
+                  fontWeight: 800,
+                  letterSpacing: 0.6,
+                  textDecoration: 'underline',
+                  textDecorationColor: 'rgba(255,226,164,0.35)',
+                  cursor: 'pointer',
+                }}
+              >
+                Пройти ещё раз
+              </button>
             )}
           </div>
         </div>

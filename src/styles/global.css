@@ -107,3 +107,18 @@ img {
 .dozor-scroll-panel::-webkit-scrollbar-thumb:hover {
   background: var(--gold);
 }
+
+/* Idle pulse on the level-result bonus-star offer. The mobile app drives the
+   same effect from a repeating AnimationController; here CSS owns it so the
+   overlay's own rAF loop stays about the reveal sequence. */
+@keyframes bonus-star-offer-glow {
+  0%,
+  100% {
+    border-color: rgba(207, 162, 68, 0.54);
+    box-shadow: 0 0 12px rgba(255, 215, 122, 0.1);
+  }
+  50% {
+    border-color: rgba(255, 215, 122, 1);
+    box-shadow: 0 0 20px rgba(255, 215, 122, 0.26);
+  }
+}
