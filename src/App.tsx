@@ -215,7 +215,12 @@ export default function App() {
     };
 
     engine.onLevelSolved = (levelIndex: number, result: LevelAttemptResult) => {
-      analyticsService.levelCompleted(levelIndex, result, levelEntrySourceRef.current);
+      analyticsService.levelCompleted(
+        levelIndex,
+        levelIndex < FIRST_SCORED_LEVEL_INDEX,
+        result,
+        levelEntrySourceRef.current,
+      );
       if (result.stars == null) return;
 
       const newProgress = recordLevelSolved(finalizePending(achievementProgressRef.current), levelIndex, result);
@@ -499,7 +504,20 @@ export default function App() {
     void musicService.startGame();
   };
 
+  /** Reports the attempt the player is walking away from, if any. Called
+   * from every exit out of the board — see `AnalyticsService.levelAbandoned`
+   * for why the count alone was not enough. */
+  const reportAbandonedLevel = () => {
+    if (screen !== 'game' || engine.levelResult != null || engine.isDailyChallenge) return;
+    analyticsService.levelAbandoned(
+      engine.levelIndex,
+      engine.levelIndex < FIRST_SCORED_LEVEL_INDEX,
+      engine.attemptMetrics,
+    );
+  };
+
   const goToMenu = () => {
+    reportAbandonedLevel();
     void musicService.stopGame();
     setScreen('menu');
     void musicService.startMenu();
@@ -523,6 +541,7 @@ export default function App() {
   };
 
   const openLevelSelect = () => {
+    reportAbandonedLevel();
     void musicService.stopMenu();
     setLevelSelectAddress(true);
     setScreen('levels');
@@ -741,7 +760,10 @@ export default function App() {
   const setAnalyticsConsentAndSave = (consent: boolean) => {
     setAnalyticsConsent(consent);
     progressRepository.saveAnalyticsConsent(consent);
+    // Withdrawing has to take effect now, not on the next page load — see
+    // `AnalyticsService.disable`.
     if (consent) analyticsService.enable();
+    else analyticsService.disable();
   };
 
   const withConsent = (content: React.ReactNode) => (
@@ -855,6 +877,8 @@ export default function App() {
           dailyReminderHour={dailyReminderHour}
           onDailyReminderEnabledChanged={(enabled) => void setDailyReminderEnabledAndSave(enabled)}
           onDailyReminderHourChanged={setDailyReminderHourAndSave}
+          analyticsConsent={analyticsConsent}
+          onAnalyticsConsentChanged={setAnalyticsConsentAndSave}
         />
       );
     case 'levels':
@@ -883,6 +907,7 @@ export default function App() {
             achievement={levelResultAchievement}
             onAchievementRevealed={playAchievementReveal}
             onOpenDailyCalendar={() => setDailyCalendarMode('view')}
+            onBonusStarOffered={() => analyticsService.adOfferShown('bonus_star')}
           />
           {dailyCalendarMode && (
             <DailyChallengeCalendarSheet

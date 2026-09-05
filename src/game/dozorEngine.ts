@@ -53,6 +53,16 @@ export class DozorEngine {
   hint = false;
 
   private attemptStart = Date.now();
+
+  /** How the current attempt is going, for an abandonment report — the
+   * attempt's own clock is private, so a caller cannot assemble this. */
+  get attemptMetrics(): { elapsedSeconds: number; moveCount: number; hintUsedCount: number } {
+    return {
+      elapsedSeconds: Math.round((Date.now() - this.attemptStart) / 1000),
+      moveCount: this.moveCount,
+      hintUsedCount: this.hintUsedCount,
+    };
+  }
   moveCount = 0;
   hintUsedCount = 0;
   levelResult: LevelAttemptResult | null = null;

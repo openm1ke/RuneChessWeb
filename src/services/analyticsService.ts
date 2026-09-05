@@ -24,6 +24,19 @@ declare global {
 export class AnalyticsService {
   private enabled = false;
 
+  /** Stops reporting immediately. The Metrica tag stays loaded — there is no
+   * API to unload it — but it only ever receives what this service sends, and
+   * after this it receives nothing. The player's stored choice keeps it from
+   * being initialised at all on the next load.
+   *
+   * Withdrawing consent has to be as easy as giving it, and until this
+   * existed there was no way back: `enable` was one-way, so the counter kept
+   * firing goals for the rest of the session no matter what the player chose
+   * afterwards. */
+  disable(): void {
+    this.enabled = false;
+  }
+
   enable(): void {
     if (this.enabled || import.meta.env.DEV || typeof window === 'undefined') return;
     this.enabled = true;
@@ -65,12 +78,20 @@ export class AnalyticsService {
     });
   }
 
-  levelCompleted(levelIndex: number, result: LevelAttemptResult, entrySource: LevelEntrySource): void {
+  levelCompleted(
+    levelIndex: number,
+    isTutorial: boolean,
+    result: LevelAttemptResult,
+    entrySource: LevelEntrySource,
+  ): void {
     const levelNumber = levelIndex + 1;
     this.goal('level_completed', {
       level: levelNumber,
-      is_tutorial: result.stars == null,
-      stars: result.stars ?? 0,
+      is_tutorial: isTutorial,
+      // Omitted rather than sent as 0 for an unscored tutorial level, which
+      // is what the mobile app does: a zero would drag every average over
+      // this goal down, and "no score" is not a score of nothing.
+      ...(result.stars == null ? {} : { stars: result.stars }),
       elapsed_seconds: result.elapsedSeconds,
       moves: result.moveCount,
       hints_used: result.hintUsedCount,
@@ -124,6 +145,24 @@ export class AnalyticsService {
     });
   }
 
+  /** Left a level without solving it. `started` minus `completed` gives the
+   * count, but not where people give up — how far in, after how many moves,
+   * with or without a hint. For a puzzle game that is where the difficulty
+   * spikes show themselves. */
+  levelAbandoned(
+    levelIndex: number,
+    isTutorial: boolean,
+    metrics: { elapsedSeconds: number; moveCount: number; hintUsedCount: number },
+  ): void {
+    this.goal('level_abandoned', {
+      level: levelIndex + 1,
+      is_tutorial: isTutorial,
+      elapsed_seconds: metrics.elapsedSeconds,
+      moves: metrics.moveCount,
+      hints_used: metrics.hintUsedCount,
+    });
+  }
+
   tutorialCompleted(): void {
     this.goal('tutorial_completed', {});
   }
@@ -140,6 +179,14 @@ export class AnalyticsService {
   // the same funnel definitions (ad_requested → ad_shown → ad_rewarded →
   // hint_used/bonus_star_granted) apply to both. `placement` is always
   // 'extra_hint' or 'bonus_star'.
+
+  /** The player was *shown* the offer, before any decision. Without it the
+   * rewarded funnel starts at `ad_requested` and there is no way to tell how
+   * many people saw the offer and ignored it — which is the whole question
+   * when the offer's presentation changes. */
+  adOfferShown(placement: string): void {
+    this.goal('ad_offer_shown', { placement });
+  }
 
   adRequested(placement: string): void {
     this.goal('ad_requested', { placement });
@@ -205,8 +252,18 @@ export class AnalyticsService {
     this.goal('daily_challenge_started', { date });
   }
 
-  dailyChallengeCompleted(date: string, stars: number, hintsUsed: number): void {
-    this.goal('daily_challenge_completed', { date, stars, hints_used: hintsUsed });
+  dailyChallengeCompleted(
+    date: string,
+    stars: number,
+    hintsUsed: number,
+    streakLength?: number,
+  ): void {
+    this.goal('daily_challenge_completed', {
+      date,
+      stars,
+      hints_used: hintsUsed,
+      ...(streakLength == null ? {} : { streak_length: streakLength }),
+    });
   }
 
   achievementViewed(achievementId: string, unlocked: boolean): void {

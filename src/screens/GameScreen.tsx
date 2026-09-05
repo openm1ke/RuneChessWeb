@@ -20,6 +20,7 @@ const isDev = import.meta.env.DEV;
 export function GameScreen({
   engine,
   onBack,
+  onBonusStarOffered,
   onNextLevel,
   onSkipLevel,
   onResetOnboarding,
@@ -31,6 +32,10 @@ export function GameScreen({
 }: {
   engine: DozorEngine;
   onBack: () => void;
+  /** Fired once per attempt, the first time the bonus-star offer is actually
+   * put in front of the player — the step the rewarded funnel was missing.
+   * See `AnalyticsService.adOfferShown`. */
+  onBonusStarOffered?: () => void;
   onNextLevel: () => void;
   onSkipLevel?: () => void;
   onResetOnboarding?: () => void;
@@ -88,6 +93,17 @@ export function GameScreen({
     engine.levelResult?.stars != null &&
     engine.levelResult.stars < 3 &&
     engine.hintUsedCount === 0;
+  const bonusStarOfferReported = useRef(false);
+  useEffect(() => {
+    if (!bonusStarOffered) {
+      bonusStarOfferReported.current = false;
+      return;
+    }
+    if (bonusStarOfferReported.current) return;
+    bonusStarOfferReported.current = true;
+    onBonusStarOffered?.();
+  }, [bonusStarOffered, onBonusStarOffered]);
+
   const requestBonusStar = () => {
     if (!rewardedAdsService || bonusStarState === 'loading') return;
     void rewardedAdsService.show('bonusStar').then(() => {

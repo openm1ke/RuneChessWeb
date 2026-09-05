@@ -20,6 +20,9 @@ interface SettingsProps {
   dailyReminderHour: number;
   onDailyReminderEnabledChanged: (enabled: boolean) => void;
   onDailyReminderHourChanged: (hour: number) => void;
+  /** Null while the player has not answered the consent banner yet. */
+  analyticsConsent: boolean | null;
+  onAnalyticsConsentChanged: (consent: boolean) => void;
 }
 
 export function SettingsScreen(props: SettingsProps) {
@@ -62,6 +65,8 @@ function PortraitSettingsScene({
   dailyReminderHour,
   onDailyReminderEnabledChanged,
   onDailyReminderHourChanged,
+  analyticsConsent,
+  onAnalyticsConsentChanged,
 }: SettingsProps & { onResetRequested: () => void }) {
   return (
     <DesignCanvas>
@@ -108,6 +113,11 @@ function PortraitSettingsScene({
             onHourChanged={onDailyReminderHourChanged}
           />
           <div style={{ height: 20 }} />
+          <PrivacyCard
+            analyticsConsent={analyticsConsent}
+            onAnalyticsConsentChanged={onAnalyticsConsentChanged}
+          />
+          <div style={{ height: 20 }} />
           <ResetProgressCard onResetRequested={onResetRequested} />
         </div>
         <div style={{ position: 'absolute', left: 20, top: 22 }}>
@@ -137,6 +147,8 @@ function LandscapeSettingsScene({
   dailyReminderHour,
   onDailyReminderEnabledChanged,
   onDailyReminderHourChanged,
+  analyticsConsent,
+  onAnalyticsConsentChanged,
 }: SettingsProps & { onResetRequested: () => void }) {
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -188,6 +200,11 @@ function LandscapeSettingsScene({
             hour={dailyReminderHour}
             onEnabledChanged={onDailyReminderEnabledChanged}
             onHourChanged={onDailyReminderHourChanged}
+          />
+          <div style={{ height: 18 }} />
+          <PrivacyCard
+            analyticsConsent={analyticsConsent}
+            onAnalyticsConsentChanged={onAnalyticsConsentChanged}
           />
           <div style={{ height: 18 }} />
           <ResetProgressCard onResetRequested={onResetRequested} />
@@ -338,6 +355,56 @@ function ResetProgressCard({ onResetRequested }: { onResetRequested: () => void 
       >
         СБРОСИТЬ ДОСТИЖЕНИЯ
       </button>
+    </div>
+  );
+}
+
+/** The analytics consent, changeable at any time.
+ *
+ * There was no way back before this card existed: the banner asked once, and
+ * `AnalyticsService.enable()` was one-way, so a player who changed their mind
+ * had only a button buried in privacy.html — which took effect on the next
+ * page load and nowhere told them so. The privacy page even promised a
+ * "Настройки → Конфиденциальность" section that the web build did not have.
+ * Withdrawing has to be as easy as granting. */
+function PrivacyCard({
+  analyticsConsent,
+  onAnalyticsConsentChanged,
+}: {
+  analyticsConsent: boolean | null;
+  onAnalyticsConsentChanged: (consent: boolean) => void;
+}) {
+  return (
+    <div style={SETTINGS_CARD_STYLE}>
+      <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>
+        КОНФИДЕНЦИАЛЬНОСТЬ
+      </div>
+      <div style={{ height: 16 }} />
+      <div
+        style={{
+          padding: '14px 14px 14px 16px',
+          borderRadius: 14,
+          background: 'rgba(255,255,255,0.12)',
+          border: '1.2px solid rgba(207,162,68,0.35)',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 12,
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 0.4, color: 'var(--gold-bright)' }}>
+            Аналитика
+          </div>
+          <div style={{ marginTop: 5, fontSize: 12.5, lineHeight: 1.4, fontWeight: 700, color: '#c6d3ed' }}>
+            Помогать улучшать игру: отправлять обезличенные сведения об использовании уровней и функций.
+          </div>
+        </div>
+        <RuneToggle
+          value={analyticsConsent === true}
+          onChange={onAnalyticsConsentChanged}
+          label="Аналитика"
+        />
+      </div>
     </div>
   );
 }
