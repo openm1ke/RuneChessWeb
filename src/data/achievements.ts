@@ -196,16 +196,31 @@ export function unlockedIds({
   return unlocked;
 }
 
-function fraction(value: number, target: number): number {
+/** How far along one achievement is, as the counter its condition is
+ * actually written in. The bar and the label beside it are both derived
+ * from this one answer, so they cannot drift apart — and "8 из 50" tells a
+ * player what is left in a way "16%" never did. */
+export interface AchievementProgressCount {
+  done: number;
+  target: number;
+}
+
+export function progressFraction({ done, target }: AchievementProgressCount): number {
   if (target <= 0) return 1;
-  return Math.min(1, Math.max(0, value / target));
+  return Math.min(1, Math.max(0, done / target));
+}
+
+/** Null for a yes/no condition, where "0 из 1" would say less than the bar
+ * already does. */
+export function progressLabel({ done, target }: AchievementProgressCount): string | null {
+  return target <= 1 ? null : `${done} из ${target}`;
 }
 
 /** Fraction (0..1) of the way towards `id`'s condition, for the progress
  * bar on the achievements screen. Callers are responsible for clamping an
  * already-unlocked achievement to 1 themselves (an unlocked trophy always
  * shows full regardless of a streak later breaking). */
-export function progressFor(
+export function progressCountFor(
   id: string,
   {
     tutorialComplete,
@@ -222,42 +237,50 @@ export function progressFor(
     cleanStreakLength: number;
     perfectStreakLength: number;
   },
-): number {
+): AchievementProgressCount {
   const perfectCount = perfectLevelCount(levelStars);
   switch (id) {
     case trainingPawn.id:
-      return tutorialComplete ? 1 : 0;
+      return { done: tutorialComplete ? 1 : 0, target: 1 };
     case fiftyRook.id:
-      return fraction(perfectCount, 50);
+      return { done: perfectCount, target: 50 };
     case hundredBishop.id:
-      return fraction(perfectCount, 100);
+      return { done: perfectCount, target: 100 };
     case mainKing.id: {
       let done = 0;
       for (let offset = 0; offset < mainCampaignScoredLevelCount; offset++) {
         if (levelStars.get(firstScoredLevelIndex + offset) === 3) done++;
       }
-      return fraction(done, mainCampaignScoredLevelCount);
+      return { done, target: mainCampaignScoredLevelCount };
     }
     case extraQueen.id:
-      return fraction(perfectStreakLength, 100);
+      return { done: perfectStreakLength, target: 100 };
     case coinZero.id:
-      return hintedLevelsCount >= 1 ? 1 : 0;
+      return { done: hintedLevelsCount >= 1 ? 1 : 0, target: 1 };
     case coinOne.id:
-      return fraction(hintedLevelsCount, 50);
+      return { done: hintedLevelsCount, target: 50 };
     case coinTwo.id:
-      return fraction(noHintLevelsCount, 50);
+      return { done: noHintLevelsCount, target: 50 };
     case coinThree.id:
-      return fraction(cleanStreakLength, 50);
+      return { done: cleanStreakLength, target: 50 };
     case coinFour.id:
-      return fraction(cleanStreakLength, 100);
+      return { done: cleanStreakLength, target: 100 };
     case coinFive.id: {
       let done = 0;
       for (let offset = 0; offset < totalScoredLevelCount; offset++) {
         if (levelStars.get(firstScoredLevelIndex + offset) === 3) done++;
       }
-      return fraction(done, totalScoredLevelCount);
+      return { done, target: totalScoredLevelCount };
     }
     default:
-      return 0;
+      return { done: 0, target: 1 };
   }
+}
+
+/** Kept for callers that only need the bar's width. */
+export function progressFor(
+  id: string,
+  args: Parameters<typeof progressCountFor>[1],
+): number {
+  return progressFraction(progressCountFor(id, args));
 }

@@ -22,6 +22,7 @@ import { GameScreen } from './screens/GameScreen';
 import { CampaignCompleteScreen } from './screens/CampaignCompleteScreen';
 import { TutorialCompleteScreen } from './screens/TutorialCompleteScreen';
 import { AchievementsScreen } from './screens/AchievementsScreen';
+import { gameProgressFrom } from './game/gameProgress';
 import type { LevelAttemptResult } from './game/starRating';
 import { mergeBestStars } from './game/starRating';
 import { dailyChallengeKey, dailyChallengeLevel, type DailyChallengeResult } from './game/dailyChallengeLevels';
@@ -762,6 +763,11 @@ export default function App() {
     </>
   );
 
+  // The one place "how far am I" is computed. The level list and the
+  // achievements screen used to work it out themselves and disagreed — see
+  // .
+  const progress = gameProgressFrom({ unlockedLevels, highestUnlocked: highestLevel, levelStars });
+
   switch (screen) {
     case 'campaignComplete':
       return withConsent(
@@ -825,6 +831,7 @@ export default function App() {
     case 'achievements':
       return withConsent(
         <AchievementsScreen
+          progress={progress}
           tutorialComplete={tutorialComplete}
           levelStars={levelStars}
           achievementProgress={achievementProgress}
@@ -857,6 +864,7 @@ export default function App() {
           highestUnlocked={highestLevel}
           tutorialComplete={tutorialComplete}
           levelStars={levelStars}
+          progress={progress}
           onBack={closeLevelSelect}
           onLevelChosen={(levelIndex) => goToGame(levelIndex, 'level_select')}
         />

@@ -5,16 +5,23 @@ import { AchievementReveal } from '../components/shared/AchievementReveal';
 import { useViewportSize } from '../components/game/useViewportSize';
 import {
   allAchievements,
-  perfectLevelCount,
-  progressFor,
-  totalScoredLevelCount,
+  progressCountFor,
+  progressFraction,
+  progressLabel,
   unlockedIds,
   type AchievementDefinition,
+  type AchievementProgressCount,
 } from '../data/achievements';
+import { ProgressSummary } from '../components/shared/ProgressSummary';
+import type { GameProgress } from '../game/gameProgress';
 import type { AchievementProgressState } from '../game/achievementProgress';
 import { asset } from '../lib/assetUrl';
 
 interface AchievementsProps {
+  /** Shared with the level list so both screens quote the same numbers —
+   * this panel used to count only three-star levels while calling them
+   * "пройдено". See `GameProgress`. */
+  progress: GameProgress;
   tutorialComplete: boolean;
   levelStars: Map<number, number>;
   achievementProgress: AchievementProgressState;
@@ -37,13 +44,18 @@ export function AchievementsScreen(props: AchievementsProps) {
     perfectStreakLength: props.achievementProgress.perfectStreak.length,
   };
   const unlocked = unlockedIds(conditionArgs);
-  const perfectLevels = perfectLevelCount(props.levelStars);
-  const totalStars = [...props.levelStars.values()].reduce((sum, stars) => sum + stars, 0);
+
+  /** Live progress towards an achievement's condition, as the counter the
+   * condition is written in. Null once unlocked: a bar pinned at 100% beside
+   * a trophy already labelled ПОЛУЧЕНО is the third way of saying the same
+   * thing, and the earned art carries it better. */
+  const progressOf = (id: string): AchievementProgressCount | null =>
+    unlocked.has(id) ? null : progressCountFor(id, conditionArgs);
 
   const grid = (
     <AchievementGrid
       unlocked={unlocked}
-      conditionArgs={conditionArgs}
+      progressOf={progressOf}
       onSelect={(achievement) => {
         setSelected(achievement);
         props.onAchievementViewed?.(achievement.id, unlocked.has(achievement.id));
@@ -51,7 +63,22 @@ export function AchievementsScreen(props: AchievementsProps) {
     />
   );
   const stats = (
-    <ProgressPanel unlockedCount={unlocked.size} perfectLevels={perfectLevels} totalStars={totalStars} />
+    <>
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 900,
+          letterSpacing: 1,
+          color: 'var(--gold)',
+          marginBottom: 8,
+        }}
+      >
+        {unlocked.size} ИЗ {allAchievements.length} ПОЛУЧЕНО
+      </div>
+      <div style={{ marginBottom: 14 }}>
+        <ProgressSummary progress={props.progress} />
+      </div>
+    </>
   );
 
   return (
@@ -66,7 +93,7 @@ export function AchievementsScreen(props: AchievementsProps) {
           achievement={selected}
           unlocked={unlocked.has(selected.id)}
           unlockedAt={props.achievementUnlockedAt.get(selected.id)}
-          progress={progressFor(selected.id, conditionArgs)}
+          progress={progressOf(selected.id)}
           onClose={() => setSelected(null)}
         />
       )}
@@ -206,50 +233,13 @@ function LandscapeAchievementsScene({
   );
 }
 
-function ProgressPanel({
-  unlockedCount,
-  perfectLevels,
-  totalStars,
-}: {
-  unlockedCount: number;
-  perfectLevels: number;
-  totalStars: number;
-}) {
-  return (
-    <div
-      style={{
-        padding: '12px 14px',
-        marginBottom: 14,
-        borderRadius: 12,
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(207,162,68,0.32)',
-      }}
-    >
-      <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1, color: 'var(--gold)', marginBottom: 8 }}>
-        {unlockedCount} ИЗ {allAchievements.length} ПОЛУЧЕНО
-      </div>
-      <StatRow label="Пройдено уровней" value={`${perfectLevels}/${totalScoredLevelCount}`} />
-      <StatRow label="Получено звёзд" value={String(totalStars)} />
-    </div>
-  );
-}
-
-function StatRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
-      <span style={{ fontSize: 13, fontWeight: 700, color: '#c6d3ed' }}>{label}</span>
-      <span style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--gold-bright)' }}>{value}</span>
-    </div>
-  );
-}
-
 function AchievementGrid({
   unlocked,
-  conditionArgs,
+  progressOf,
   onSelect,
 }: {
   unlocked: Set<string>;
-  conditionArgs: Parameters<typeof progressFor>[1];
+  progressOf: (id: string) => AchievementProgressCount | null;
   onSelect: (achievement: AchievementDefinition) => void;
 }) {
   return (
@@ -259,7 +249,7 @@ function AchievementGrid({
           key={achievement.id}
           achievement={achievement}
           unlocked={unlocked.has(achievement.id)}
-          progress={progressFor(achievement.id, conditionArgs)}
+          progress={progressOf(achievement.id)}
           onClick={() => onSelect(achievement)}
         />
       ))}
@@ -275,10 +265,10 @@ function AchievementTile({
 }: {
   achievement: AchievementDefinition;
   unlocked: boolean;
-  progress: number;
+  /** Null once unlocked — see `progressOf`. */
+  progress: AchievementProgressCount | null;
   onClick: () => void;
 }) {
-  const fraction = unlocked ? 1 : progress;
   return (
     <button
       type="button"
@@ -311,13 +301,16 @@ function AchievementTile({
       >
         {achievement.title}
       </div>
-      <AchievementProgressBar fraction={fraction} />
+      {progress && <AchievementProgressBar progress={progress} />}
     </button>
   );
 }
 
-export function AchievementProgressBar({ fraction }: { fraction: number }) {
-  const percent = Math.round(Math.min(1, Math.max(0, fraction)) * 100);
+export function AchievementProgressBar({ progress }: { progress: AchievementProgressCount }) {
+  const percent = Math.round(progressFraction(progress) * 100);
+  // "8 из 50" says what is left; "16%" made the player do the arithmetic
+  // backwards, and at 2% the bar itself is a dot.
+  const label = progressLabel(progress);
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}>
       <div
@@ -351,7 +344,7 @@ export function AchievementProgressBar({ fraction }: { fraction: number }) {
           whiteSpace: 'nowrap',
         }}
       >
-        {percent}%
+        {label}
       </span>
     </div>
   );
@@ -367,10 +360,10 @@ function AchievementDetailDialog({
   achievement: AchievementDefinition;
   unlocked: boolean;
   unlockedAt?: string;
-  progress: number;
+  /** Null once unlocked — see `progressOf`. */
+  progress: AchievementProgressCount | null;
   onClose: () => void;
 }) {
-  const fraction = unlocked ? 1 : progress;
   return (
     <div
       role="dialog"
@@ -397,6 +390,7 @@ function AchievementDetailDialog({
           background: 'linear-gradient(145deg, #203c7b, #0b1637)',
           boxShadow: '0 20px 60px rgba(0,0,0,0.72)',
           textAlign: 'center',
+          position: 'relative',
         }}
       >
         <AchievementReveal achievement={achievement} size={168} unlocked={unlocked} animate={false} />
@@ -426,25 +420,34 @@ function AchievementDetailDialog({
         <p style={{ margin: '0 0 16px', color: '#d9e4f8', fontSize: 14, fontWeight: 700, lineHeight: 1.45 }}>
           {achievement.description}
         </p>
-        <AchievementProgressBar fraction={fraction} />
+        {progress && <AchievementProgressBar progress={progress} />}
+        {/* A corner close affordance instead of a full-width "ЗАКРЫТЬ"
+            button: dismissing is the least interesting thing on this dialog,
+            and a button at the bottom gave it the same weight as the
+            achievement itself. */}
         <button
           type="button"
           onClick={onClose}
+          aria-label="Закрыть"
           style={{
-            marginTop: 20,
-            width: '100%',
-            minHeight: 44,
-            border: '1.5px solid rgba(207,162,68,0.76)',
-            borderRadius: 12,
-            color: '#ffe6b0',
-            background: 'linear-gradient(#294781, #182852)',
-            fontFamily: 'var(--font-display)',
-            fontSize: 13,
-            letterSpacing: 0.8,
+            position: 'absolute',
+            top: 6,
+            right: 6,
+            width: 40,
+            height: 40,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: 'none',
+            borderRadius: '50%',
+            background: 'transparent',
+            color: 'rgba(255,226,164,0.72)',
+            fontSize: 20,
+            lineHeight: 1,
             cursor: 'pointer',
           }}
         >
-          ЗАКРЫТЬ
+          ✕
         </button>
       </div>
     </div>
