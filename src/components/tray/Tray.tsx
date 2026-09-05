@@ -23,6 +23,13 @@ function TrayItemTile({
       onPointerDown={onPointerDown}
       style={{
         flex: 1,
+        // Without this a flex item refuses to shrink below its content's
+        // width, and the fixed-size sprite inside made that 44px: six tray
+        // pieces then needed more room than the panel has and simply spilled
+        // out of it. Campaign levels hand out at most four, so nothing showed
+        // this until a daily challenge dealt six.
+        minWidth: 0,
+        minHeight: 0,
         margin: vertical ? '3.5px 0' : '0 3.5px',
         height: '100%',
         borderRadius: 12,
@@ -41,9 +48,20 @@ function TrayItemTile({
         style={{
           transform: `rotate(${pieceUprightRotationDeg[type] ?? 0}deg)`,
           transformOrigin: 'bottom center',
+          // The sprite keeps its aspect but is bounded by the tile rather
+          // than by a fixed 44×70, so a crowded tray narrows its pieces the
+          // way the mobile app's Expanded tiles already do.
+          display: 'flex',
+          justifyContent: 'center',
+          minWidth: 0,
+          maxWidth: '100%',
+          maxHeight: '100%',
         }}
       >
-        <PieceArt type={type} width={44} height={70} />
+        <PieceArt
+          type={type}
+          style={{ width: 'auto', height: '100%', maxWidth: '100%', maxHeight: 70 }}
+        />
       </div>
     </div>
   );

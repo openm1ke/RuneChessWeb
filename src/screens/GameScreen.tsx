@@ -124,8 +124,16 @@ export function GameScreen({
     return () => cancelAnimationFrame(raf);
   }, [snapshot.beams.length]);
 
+  // The daily challenge overrides `engine.level` but leaves `levelIndex`
+  // pointing at whatever campaign level the player was on, so a newcomer
+  // sitting on level 1 got the tutorial coachmark — an arrow aimed at a
+  // square from a different puzzle — drawn over today's board. Mobile has
+  // excluded the daily challenge here all along; this is the guard the port
+  // dropped.
   const showOnboarding =
-    engine.levelIndex < FIRST_SCORED_LEVEL_INDEX && !seenOnboardingLevels.has(engine.levelIndex);
+    !engine.isDailyChallenge &&
+    engine.levelIndex < FIRST_SCORED_LEVEL_INDEX &&
+    !seenOnboardingLevels.has(engine.levelIndex);
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
 
