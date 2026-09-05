@@ -151,6 +151,8 @@ export default function App() {
    * the same key even if midnight passes mid-attempt. Null whenever
    * `engine.isDailyChallenge` is false. */
   const dailyChallengeDateRef = useRef<Date | null>(null);
+  /** One `level_abandoned` per attempt — see `reportAbandonedLevel`. */
+  const abandonReportedRef = useRef(false);
 
   useEffect(() => {
     musicService.init();
@@ -492,6 +494,7 @@ export default function App() {
   };
 
   const goToGame = (levelIndex?: number, entrySource: LevelEntrySource = 'menu_play') => {
+    abandonReportedRef.current = false;
     setLevelSelectAddress(false);
     void musicService.stopMenu();
     const requested = levelIndex ?? highestLevel;
@@ -508,7 +511,12 @@ export default function App() {
    * from every exit out of the board — see `AnalyticsService.levelAbandoned`
    * for why the count alone was not enough. */
   const reportAbandonedLevel = () => {
+    // The guard is a ref, not `screen`: two exits can run in the same task
+    // (a double tap on the back control), and React has not re-rendered
+    // between them, so a state-based check reports the same attempt twice.
+    if (abandonReportedRef.current) return;
     if (screen !== 'game' || engine.levelResult != null || engine.isDailyChallenge) return;
+    abandonReportedRef.current = true;
     analyticsService.levelAbandoned(
       engine.levelIndex,
       engine.levelIndex < FIRST_SCORED_LEVEL_INDEX,
@@ -527,6 +535,7 @@ export default function App() {
    * to the daily puzzle until `exitDailyChallenge` (or any campaign entry
    * point, which always clears it) — see `DozorEngine.loadDailyChallenge`. */
   const openDailyChallenge = () => {
+    abandonReportedRef.current = false;
     setLevelSelectAddress(false);
     void musicService.stopMenu();
     const date = new Date();

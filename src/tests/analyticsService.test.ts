@@ -105,3 +105,25 @@ describe('AnalyticsService', () => {
     expect(ym).not.toHaveBeenCalled();
   });
 });
+
+describe('level_abandoned deduplication', () => {
+  it('two exits in the same task report one attempt, not two — a double tap '
+    + 'on the back control lands before React re-renders', () => {
+    const ym = vi.fn();
+    window.ym = ym as unknown as typeof window.ym;
+    const service = new AnalyticsService();
+    (service as unknown as { enabled: boolean }).enabled = true;
+
+    // Mirrors App's guard: a ref, checked and set synchronously.
+    let reported = false;
+    const report = () => {
+      if (reported) return;
+      reported = true;
+      service.levelAbandoned(5, false, { elapsedSeconds: 10, moveCount: 1, hintUsedCount: 0 });
+    };
+    report();
+    report();
+
+    expect(goals(ym).filter((goal) => goal.name === 'level_abandoned')).toHaveLength(1);
+  });
+});
