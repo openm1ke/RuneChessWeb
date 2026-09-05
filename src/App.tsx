@@ -82,12 +82,15 @@ function setLevelSelectAddress(isOpen: boolean): void {
   window.history.replaceState(null, '', address);
 }
 
+/** Abbreviated, and matching the mobile app's `_dailyMonthAbbreviations`
+ * exactly. The full genitive form ("5 сентября") made the header pill wide
+ * enough to run under the back and hint buttons flanking it. */
 const DAILY_DATE_MONTHS = [
-  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+  'ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН',
+  'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК',
 ];
 
-/** Short "4 сентября" label for the daily challenge's in-game header — see
+/** Short "4 СЕН" label for the daily challenge's in-game header — see
  * `DozorSnapshot.levelLabel`. */
 function dailyDateLabel(date: Date): string {
   return `${date.getDate()} ${DAILY_DATE_MONTHS[date.getMonth()]}`;
