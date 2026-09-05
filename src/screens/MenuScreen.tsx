@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { asset } from '../lib/assetUrl';
+import { RulesIcon, SettingsIcon } from '../components/shared/MenuIcons';
 import { playNavigationPress, playNavigationRelease } from '../services/musicService';
 
 export function MenuScreen({
@@ -92,10 +93,10 @@ export function MenuScreen({
             prominent
           />
         </div>
-        <div style={{ position: 'absolute', top: 584, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 566, left: 92, right: 92, height: 72 }}>
           <MenuActionButton label="УРОВНИ" onClick={onLevels} />
         </div>
-        <div style={{ position: 'absolute', top: 668, left: 92, right: 92, height: 72 }}>
+        <div style={{ position: 'absolute', top: 650, left: 92, right: 92, height: 72 }}>
           <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={17} letterSpacing={1.8} />
         </div>
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 36, textAlign: 'center' }}>
@@ -104,8 +105,8 @@ export function MenuScreen({
         {/* Rules are read once, so they sit with settings rather than
             taking a slot equal to the sections a player comes back to. */}
         <div style={{ position: 'absolute', top: 24, right: 24, display: 'flex', gap: 12 }}>
-          <MenuIconButton label="Правила" href="how-to-play.html" glyph="📖" />
-          <MenuIconButton label="Настройки" onClick={onSettings} glyph="⚙" />
+          <MenuIconButton label="Правила" href="how-to-play.html" glyph={<RulesIcon />} />
+          <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
         </div>
         <div
           style={{
@@ -206,7 +207,7 @@ function LandscapeMenuScene({
       <div
         style={{
           position: 'absolute',
-          top: panelTop + 173,
+          top: panelTop + 150,
           left: panelLeft + panelWidth * 0.08,
           width: panelWidth * 0.84,
           height: 62,
@@ -214,12 +215,12 @@ function LandscapeMenuScene({
       >
         <MenuActionButton label="УРОВНИ" onClick={onLevels} />
       </div>
-      <div style={{ position: 'absolute', top: panelTop + 240, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
+      <div style={{ position: 'absolute', top: panelTop + 217, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
         <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={16} letterSpacing={1.4} />
       </div>
       <div style={{ position: 'absolute', top: 18, right: 24, display: 'flex', gap: 12 }}>
-        <MenuIconButton label="Правила" href="how-to-play.html" glyph="📖" />
-        <MenuIconButton label="Настройки" onClick={onSettings} glyph="⚙" />
+        <MenuIconButton label="Правила" href="how-to-play.html" glyph={<RulesIcon />} />
+        <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
       </div>
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 28, textAlign: 'center' }}>
         <MenuFooterLinks />
@@ -454,7 +455,7 @@ function MenuIconButton({
   href,
 }: {
   label: string;
-  glyph: string;
+  glyph: ReactNode;
   onClick?: () => void;
   href?: string;
 }) {
@@ -466,8 +467,6 @@ function MenuIconButton({
     border: '1.7px solid rgba(216,165,55,0.85)',
     boxShadow: '0 4px 12px rgba(0,0,0,0.53)',
     color: 'var(--gold)',
-    fontSize: 24,
-    lineHeight: 1,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
