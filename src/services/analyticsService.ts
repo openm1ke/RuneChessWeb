@@ -120,6 +120,31 @@ export class AnalyticsService {
     this.goal('levels_opened', {});
   }
 
+  /**
+   * Reports the rules being opened, then runs `onDone`.
+   *
+   * Rules live on a separate static page here, so the click that reports this
+   * is the same click that navigates away — a plain `goal()` would race the
+   * unload. Metrica's callback tells us the hit is away; the timer is the
+   * fallback for a blocked or slow counter, and for the case where reporting
+   * is off entirely, so a player never ends up stuck on the menu because
+   * analytics did not answer.
+   */
+  rulesOpened(onDone?: () => void): void {
+    if (!this.enabled || typeof window.ym !== 'function') {
+      onDone?.();
+      return;
+    }
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      onDone?.();
+    };
+    window.ym(COUNTER_ID, 'reachGoal', 'rules_opened', {}, finish);
+    window.setTimeout(finish, 400);
+  }
+
   settingsOpened(): void {
     this.goal('settings_opened', {});
   }

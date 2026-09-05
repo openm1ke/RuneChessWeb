@@ -13,6 +13,7 @@ export function MenuScreen({
   onDailyChallenge,
   dailyChallengeSolvedToday = false,
   currentLevel,
+  onRulesOpened,
 }: {
   onPlay: () => void;
   onLevels: () => void;
@@ -21,6 +22,10 @@ export function MenuScreen({
   onDailyChallenge: () => void;
   /** 1-based number of the level "ИГРАТЬ" opens, shown under it. */
   currentLevel: number;
+  /** Reports the rules being opened and then calls back to navigate — the
+   * rules are a separate static page, so the reporting click is the one that
+   * leaves. See `AnalyticsService.rulesOpened`. */
+  onRulesOpened?: (proceed: () => void) => void;
   /** Whether today's daily challenge already has a saved result — shows a
    * small checkmark badge on the button instead of a plain empty ring. */
   dailyChallengeSolvedToday?: boolean;
@@ -38,6 +43,7 @@ export function MenuScreen({
         onDailyChallenge={onDailyChallenge}
         dailyChallengeSolvedToday={dailyChallengeSolvedToday}
         currentLevel={currentLevel}
+        onRulesOpened={onRulesOpened}
       />
     );
   }
@@ -105,7 +111,12 @@ export function MenuScreen({
         {/* Rules are read once, so they sit with settings rather than
             taking a slot equal to the sections a player comes back to. */}
         <div style={{ position: 'absolute', top: 24, right: 24, display: 'flex', gap: 12 }}>
-          <MenuIconButton label="Правила" href="how-to-play.html" glyph={<RulesIcon />} />
+          <MenuIconButton
+            label="Правила"
+            href="how-to-play.html"
+            glyph={<RulesIcon />}
+            onActivate={onRulesOpened}
+          />
           <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
         </div>
         <div
@@ -142,6 +153,7 @@ function LandscapeMenuScene({
   onDailyChallenge,
   dailyChallengeSolvedToday,
   currentLevel,
+  onRulesOpened,
 }: {
   onPlay: () => void;
   onLevels: () => void;
@@ -150,6 +162,7 @@ function LandscapeMenuScene({
   onDailyChallenge: () => void;
   dailyChallengeSolvedToday: boolean;
   currentLevel: number;
+  onRulesOpened?: (proceed: () => void) => void;
 }) {
   const { width, height } = useViewportSize();
   const panelWidth = Math.min(290, Math.max(210, width * 0.27));
@@ -219,7 +232,12 @@ function LandscapeMenuScene({
         <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={16} letterSpacing={1.4} />
       </div>
       <div style={{ position: 'absolute', top: 18, right: 24, display: 'flex', gap: 12 }}>
-        <MenuIconButton label="Правила" href="how-to-play.html" glyph={<RulesIcon />} />
+        <MenuIconButton
+          label="Правила"
+          href="how-to-play.html"
+          glyph={<RulesIcon />}
+          onActivate={onRulesOpened}
+        />
         <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
       </div>
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 28, textAlign: 'center' }}>
@@ -453,11 +471,15 @@ function MenuIconButton({
   glyph,
   onClick,
   href,
+  onActivate,
 }: {
   label: string;
   glyph: ReactNode;
   onClick?: () => void;
   href?: string;
+  /** Given the navigation as a callback, so a goal reported on this click
+   * is not cut off by the page unloading. */
+  onActivate?: (proceed: () => void) => void;
 }) {
   const style = {
     width: 48,
@@ -480,7 +502,14 @@ function MenuIconButton({
         href={asset(href)}
         aria-label={label}
         onPointerDown={playNavigationPress}
-        onClick={playNavigationRelease}
+        onClick={(event) => {
+          playNavigationRelease();
+          if (!onActivate) return;
+          event.preventDefault();
+          onActivate(() => {
+            window.location.href = asset(href);
+          });
+        }}
         style={style}
       >
         {glyph}

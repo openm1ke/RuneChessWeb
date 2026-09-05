@@ -127,3 +127,52 @@ describe('level_abandoned deduplication', () => {
     expect(goals(ym).filter((goal) => goal.name === 'level_abandoned')).toHaveLength(1);
   });
 });
+
+describe('rulesOpened', () => {
+  beforeEach(() => {
+    delete (window as { ym?: unknown }).ym;
+    vi.useRealTimers();
+  });
+
+  it('waits for the counter before navigating, so the goal is not cut off '
+    + 'by the page it opens', async () => {
+    let ymCallback: (() => void) | undefined;
+    const ym = vi.fn((_id, method, _goal, _params, cb) => {
+      if (method === 'reachGoal') ymCallback = cb as () => void;
+    });
+    window.ym = ym as unknown as typeof window.ym;
+    const service = new AnalyticsService();
+    (service as unknown as { enabled: boolean }).enabled = true;
+
+    const proceed = vi.fn();
+    service.rulesOpened(proceed);
+
+    expect(ym).toHaveBeenCalled();
+    expect(proceed).not.toHaveBeenCalled();
+    ymCallback?.();
+    expect(proceed).toHaveBeenCalledTimes(1);
+  });
+
+  it('navigates anyway when reporting is off, so a player is never stranded '
+    + 'on the menu because analytics did not answer', () => {
+    const proceed = vi.fn();
+    new AnalyticsService().rulesOpened(proceed);
+    expect(proceed).toHaveBeenCalledTimes(1);
+  });
+
+  it('navigates once even if the counter also answers after the fallback', async () => {
+    let ymCallback: (() => void) | undefined;
+    window.ym = vi.fn((_id, method, _goal, _params, cb) => {
+      if (method === 'reachGoal') ymCallback = cb as () => void;
+    }) as unknown as typeof window.ym;
+    const service = new AnalyticsService();
+    (service as unknown as { enabled: boolean }).enabled = true;
+
+    const proceed = vi.fn();
+    service.rulesOpened(proceed);
+    await new Promise((r) => setTimeout(r, 500));
+    ymCallback?.();
+
+    expect(proceed).toHaveBeenCalledTimes(1);
+  });
+});

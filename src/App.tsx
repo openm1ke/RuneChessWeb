@@ -939,6 +939,7 @@ export default function App() {
           onSettings={() => setScreen('settings')}
           onAchievements={() => setScreen('achievements')}
           currentLevel={highestLevel + 1}
+          onRulesOpened={(proceed) => analyticsService.rulesOpened(proceed)}
           onDailyChallenge={openDailyChallenge}
           dailyChallengeSolvedToday={dailyChallengeHistory.has(dailyChallengeKey(new Date()))}
         />
