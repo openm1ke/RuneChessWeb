@@ -204,8 +204,10 @@ export default function App() {
       const date = dailyChallengeDateRef.current;
       if (date == null) return;
       const key = dailyChallengeKey(date);
-      analyticsService.dailyChallengeCompleted(key, result.stars ?? 0, result.hintUsedCount);
-      if (result.stars == null) return;
+      if (result.stars == null) {
+        analyticsService.dailyChallengeCompleted(key, 0, result.hintUsedCount);
+        return;
+      }
       const isFirstEverCompletion = dailyChallengeHistoryRef.current.size === 0;
       const nextHistory = progressRepository.saveDailyChallengeResult(dailyChallengeHistoryRef.current, key, {
         stars: result.stars,
@@ -213,6 +215,14 @@ export default function App() {
       });
       dailyChallengeHistoryRef.current = nextHistory;
       setDailyChallengeHistory(nextHistory);
+      // Reported after the history is updated, so the streak counts the day
+      // just finished — the number the player is actually looking at.
+      analyticsService.dailyChallengeCompleted(
+        key,
+        result.stars,
+        result.hintUsedCount,
+        computeDailyChallengeStats({ history: nextHistory, today: date }).currentStreak,
+      );
       void ensureDailyReminderActive(isFirstEverCompletion);
     };
 

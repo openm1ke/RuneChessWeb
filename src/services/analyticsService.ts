@@ -57,7 +57,11 @@ export class AnalyticsService {
 
     window.ym(COUNTER_ID, 'init', {
       ssr: true,
-      clickmap: true,
+      // No click map. It records where on the page people click, which is
+      // more than the privacy page describes ("номер уровня, время, ходы,
+      // подсказки и звёзды") — and a heat map over a puzzle board answers
+      // nothing the level events do not already answer better.
+      clickmap: false,
       accurateTrackBounce: true,
       trackLinks: true,
     });
