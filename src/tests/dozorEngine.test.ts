@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DozorEngine } from '../game/dozorEngine';
 import { campaignSolutions, MAIN_CAMPAIGN_LEVEL_COUNT } from '../data/campaignLevels';
 
@@ -97,5 +97,70 @@ describe('DozorEngine', () => {
     const snapshot = engine.snapshot();
     expect(snapshot.boardSize).toBe(6);
     expect(snapshot.cellPx).toBeCloseTo(292 / 6);
+  });
+});
+
+/** Time with the tab hidden is not time spent solving — the same rule the
+ * mobile app applies on background, so one funnel is not fed two different
+ * definitions of `elapsed_seconds`. */
+describe('attempt timing across a hidden tab', () => {
+  let now = 0;
+
+  beforeEach(() => {
+    now = 1_757_000_000_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+  });
+
+  afterEach(() => vi.restoreAllMocks());
+
+  const elapsed = (engine: DozorEngine) => engine.attemptMetrics.elapsedSeconds;
+
+  it('counts visible time', () => {
+    const engine = new DozorEngine();
+    now += 40_000;
+    expect(elapsed(engine)).toBe(40);
+  });
+
+  it('does not count hidden time', () => {
+    const engine = new DozorEngine();
+    now += 30_000;
+    engine.onHidden();
+    now += 9 * 3600_000;
+    engine.onVisible();
+    now += 20_000;
+    expect(elapsed(engine)).toBe(50);
+  });
+
+  it('stops advancing while the tab is still hidden', () => {
+    const engine = new DozorEngine();
+    now += 15_000;
+    engine.onHidden();
+    now += 45 * 60_000;
+    expect(elapsed(engine)).toBe(15);
+  });
+
+  it('ignores a repeated hide or a stray show', () => {
+    const engine = new DozorEngine();
+    engine.onVisible();
+    now += 10_000;
+    engine.onHidden();
+    now += 5 * 60_000;
+    engine.onHidden();
+    now += 5 * 60_000;
+    engine.onVisible();
+    engine.onVisible();
+    now += 5_000;
+    expect(elapsed(engine)).toBe(15);
+  });
+
+  it('starts a fresh attempt from zero', () => {
+    const engine = new DozorEngine();
+    now += 10_000;
+    engine.onHidden();
+    now += 2 * 3600_000;
+    engine.onVisible();
+    engine.resetLevel();
+    now += 7_000;
+    expect(elapsed(engine)).toBe(7);
   });
 });

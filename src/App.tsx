@@ -322,6 +322,29 @@ export default function App() {
   // Refs mirroring state for use inside the onLevelSolved closure/persist calls.
   const unlockedLevelsRef = useRef(unlockedLevels);
   const seenOnboardingRef = useRef(seenOnboardingLevels);
+  // A hidden tab is not a player who is still solving. The music has to stop
+  // (browsers do not reliably stop it themselves, and the game may be on a
+  // second monitor), and the attempt's clock has to stop with it, or a level
+  // left open overnight reports hours into `elapsed_seconds`. The mobile app
+  // does the same on background — see its `didChangeAppLifecycleState`.
+  //
+  // Deliberately not reported as `level_abandoned`: switching tabs is not
+  // leaving the level, and firing here would pair an abandon with the
+  // completion of the same attempt.
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        engine.onHidden();
+        musicService.pauseAll();
+      } else {
+        engine.onVisible();
+        musicService.resumeAll();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [engine, musicService]);
+
   const tutorialCompleteRef = useRef(tutorialComplete);
   const levelStarsRef = useRef(levelStars);
   const achievementUnlockedAtRef = useRef(achievementUnlockedAt);

@@ -54,11 +54,40 @@ export class DozorEngine {
 
   private attemptStart = Date.now();
 
+  /** Time this attempt spent with the tab hidden, and when that stretch
+   * started (null while the tab is visible).
+   *
+   * Elapsed used to be plain wall-clock, so a level left open in a
+   * background tab overnight reported hours of "solving" — and the mobile
+   * app had exactly the same fault, which matters because the two feed one
+   * funnel. Play time is what the metric describes, so time away is
+   * subtracted. See `App.tsx`'s visibilitychange handler. */
+  private hiddenFor = 0;
+  private hiddenSince: number | null = null;
+
+  private elapsedMs(): number {
+    const away =
+      this.hiddenFor + (this.hiddenSince == null ? 0 : Date.now() - this.hiddenSince);
+    return Math.max(0, Date.now() - this.attemptStart - away);
+  }
+
+  /** Idempotent in both directions: a repeated hide, or a show without a
+   * preceding hide, changes nothing. */
+  onHidden(): void {
+    this.hiddenSince ??= Date.now();
+  }
+
+  onVisible(): void {
+    if (this.hiddenSince == null) return;
+    this.hiddenFor += Date.now() - this.hiddenSince;
+    this.hiddenSince = null;
+  }
+
   /** How the current attempt is going, for an abandonment report — the
    * attempt's own clock is private, so a caller cannot assemble this. */
   get attemptMetrics(): { elapsedSeconds: number; moveCount: number; hintUsedCount: number } {
     return {
-      elapsedSeconds: Math.round((Date.now() - this.attemptStart) / 1000),
+      elapsedSeconds: Math.round(this.elapsedMs() / 1000),
       moveCount: this.moveCount,
       hintUsedCount: this.hintUsedCount,
     };
@@ -153,6 +182,10 @@ export class DozorEngine {
     this.held = null;
     this.hint = false;
     this.attemptStart = Date.now();
+    this.hiddenFor = 0;
+    // Stay "still hidden", but start the stretch now: a fresh attempt cannot
+    // have been away longer than it has existed.
+    if (this.hiddenSince != null) this.hiddenSince = Date.now();
     this.moveCount = 0;
     this.hintUsedCount = 0;
     this.levelResult = null;
@@ -162,7 +195,7 @@ export class DozorEngine {
   private checkForSolve(): void {
     if (this.levelResult != null) return;
     if (!this.snapshot().solved) return;
-    const elapsedSeconds = Math.round((Date.now() - this.attemptStart) / 1000);
+    const elapsedSeconds = Math.round(this.elapsedMs() / 1000);
     const requiredMoves = this.level.tray.length;
     const scored = this.isDailyChallenge || this.levelIndex >= FIRST_SCORED_LEVEL_INDEX;
     const result: LevelAttemptResult = {
@@ -379,7 +412,7 @@ export class DozorEngine {
 
   private currentAttemptMetrics(): { elapsedSeconds: number; moveCount: number; hintUsedCount: number } {
     return {
-      elapsedSeconds: Math.round((Date.now() - this.attemptStart) / 1000),
+      elapsedSeconds: Math.round(this.elapsedMs() / 1000),
       moveCount: this.moveCount,
       hintUsedCount: this.hintUsedCount,
     };
