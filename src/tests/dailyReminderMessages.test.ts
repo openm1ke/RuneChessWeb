@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pickReminderMessage } from '../services/dailyReminderMessages';
+import { formatHourWindow, pickReminderMessage } from '../services/dailyReminderMessages';
 
 function seededRandom(seed: number): () => number {
   let s = seed;
@@ -62,5 +62,20 @@ describe('pickReminderMessage', () => {
       seen.add(pickReminderMessage({ currentStreak: 0, freezeAvailable: true, random }));
     }
     expect(seen.size).toBeGreaterThanOrEqual(20);
+  });
+});
+
+describe('formatHourWindow', () => {
+  it('renders an hour as the window it opens, not a point in time', () => {
+    expect(formatHourWindow(8)).toBe('08:00 – 09:00');
+    expect(formatHourWindow(13)).toBe('13:00 – 14:00');
+  });
+
+  it('pads single-digit hours on both sides of the range', () => {
+    expect(formatHourWindow(9)).toBe('09:00 – 10:00');
+  });
+
+  it('wraps the closing hour past midnight instead of printing 24:00', () => {
+    expect(formatHourWindow(23)).toBe('23:00 – 00:00');
   });
 });

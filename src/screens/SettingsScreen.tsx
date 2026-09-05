@@ -3,6 +3,7 @@ import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { RoundControl } from '../components/shared/RoundControl';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { asset } from '../lib/assetUrl';
+import { formatHourWindow } from '../services/dailyReminderMessages';
 
 interface SettingsProps {
   musicEnabled: boolean;
@@ -377,18 +378,18 @@ function DailyReminderCard({
             Напоминать о задании дня
           </div>
           <div style={{ marginTop: 5, fontSize: 12.5, lineHeight: 1.4, fontWeight: 700, color: '#c6d3ed' }}>
-            Уведомление в браузере, если сегодняшнее задание ещё не решено. Работает, пока вкладка открыта.
+            Уведомление в браузере, если сегодняшнее задание ещё не решено. Придёт где-то внутри выбранного окна, пока вкладка открыта.
           </div>
         </div>
         <RuneToggle value={enabled} onChange={onEnabledChanged} label="Напоминать о задании дня" />
       </div>
       {enabled && (
         <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 13, fontWeight: 800, color: '#d6e4ff' }}>Время напоминания</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: '#d6e4ff' }}>Окно напоминания</span>
           <select
             value={hour}
             onChange={(e) => onHourChanged(Number(e.target.value))}
-            aria-label="Время напоминания"
+            aria-label="Окно напоминания"
             style={{
               padding: '8px 10px',
               borderRadius: 10,
@@ -402,7 +403,7 @@ function DailyReminderCard({
           >
             {REMINDER_HOURS.map((h) => (
               <option key={h} value={h} style={{ background: '#0b1530', color: '#ffe2a4' }}>
-                {`${String(h).padStart(2, '0')}:00`}
+                {formatHourWindow(h)}
               </option>
             ))}
           </select>
@@ -414,7 +415,9 @@ function DailyReminderCard({
 
 /** Hourly picker, 08:00 through 22:00 — the earlier/later hours of the day
  * are rarely useful for a "did you play today" nudge, so the range is
- * deliberately narrower than the full 0-23. */
+ * deliberately narrower than the full 0-23. Entries render as windows
+ * ("13:00 – 14:00") via `formatHourWindow`; the stored value stays the hour
+ * the window opens, matching the mobile app. */
 const REMINDER_HOURS = Array.from({ length: 15 }, (_, i) => 8 + i);
 
 function ResetProgressConfirmation({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {

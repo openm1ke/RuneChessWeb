@@ -94,3 +94,18 @@ export function pickReminderMessage({
   }
   return next;
 }
+
+/**
+ * Renders an hour as the interval it opens ("13:00 – 14:00").
+ *
+ * The picker deliberately never shows a bare "13:00". A reminder here fires
+ * from a 15-minute poll that only runs while the tab is open (see
+ * `DailyReminderService.startWatching`), and the mobile app's equivalent
+ * rides an inexact OS alarm the system gives a full hour of slack. Neither
+ * can hit a stated minute, so both offer windows and both keep storing the
+ * hour the window opens.
+ */
+export function formatHourWindow(hour: number): string {
+  const pad = (h: number) => `${String(h).padStart(2, '0')}:00`;
+  return `${pad(hour)} – ${pad((hour + 1) % 24)}`;
+}
