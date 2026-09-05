@@ -4,23 +4,22 @@
 // counted over two different sets of names is not one funnel. That has gone
 // wrong before, and it was noticed only because two dashboards disagreed —
 // months later. The mobile app has the mirror of this test.
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-
-// Resolved from the repository root: the jsdom test environment does not give
-// these modules a file: URL to hang import.meta.url off.
-const repoFile = (path: string) => resolve(process.cwd(), path);
+// Imported through Vite's `?raw` rather than read with node:fs: this project
+// is typechecked by `tsc -b` without Node types, so a `node:fs` import builds
+// locally under vitest and fails the deploy.
+import catalogue from '../../docs/ANALYTICS_EVENTS.md?raw';
+import analyticsSource from '../services/analyticsService.ts?raw';
 
 /** Event names lifted from the catalogue's table, so the doc is what is
  * actually asserted rather than a second list maintained beside it. */
 function catalogueEvents(): Set<string> {
-  const doc = readFileSync(repoFile('docs/ANALYTICS_EVENTS.md'), 'utf8');
+  const doc = catalogue;
   const names = new Set<string>();
   for (const row of doc.matchAll(/^\| `([^`]+)`(?: \/ `([^`]+)`)? \|(.*)$/gm)) {
     // Column 3 is the mobile mark, column 4 the web one; a dash there means
     // the platform deliberately does not send it.
-    const cells = row[3].split('|').map((c) => c.trim());
+    const cells = row[3].split('|').map((cell: string) => cell.trim());
     if (cells[1] === '—') continue;
     names.add(row[1]);
     if (row[2]) names.add(row[2]);
@@ -30,7 +29,7 @@ function catalogueEvents(): Set<string> {
 
 /** Every name passed to `this.goal(...)`. */
 function reportedEvents(): Set<string> {
-  const source = readFileSync(repoFile('src/services/analyticsService.ts'), 'utf8');
+  const source = analyticsSource;
   const names = new Set<string>();
   for (const call of source.matchAll(/this\.goal\(\s*'([a-z][a-z0-9_]*)'/g)) names.add(call[1]);
   // rulesOpened talks to `ym` directly, because it has to wait for the
