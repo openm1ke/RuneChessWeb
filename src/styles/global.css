@@ -88,24 +88,38 @@ img {
 /* A thin gold-on-navy scrollbar for scrollable panels (e.g. the level
    list), matching the app's own gold/navy language instead of the
    browser's default scrollbar. */
+/* The mobile app has no scrollbar at all — a touch surface shows it is
+   scrollable the moment you drag. A pointer has no such hint, so the web
+   keeps one, but quietly: a thin gold thumb on no track. Full-strength gold
+   on a solid track read as a piece of the interface competing with the tiles
+   beside it. Each scroller holds its own content clear of the bar with its
+   padding-right. */
 .dozor-scroll-panel {
   scrollbar-width: thin;
-  scrollbar-color: var(--gold-border) rgba(11, 23, 51, 0.5);
+  scrollbar-color: rgba(207, 162, 68, 0.45) transparent;
 }
 .dozor-scroll-panel::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 .dozor-scroll-panel::-webkit-scrollbar-track {
-  background: rgba(11, 23, 51, 0.5);
-  border-radius: 8px;
+  background: transparent;
 }
 .dozor-scroll-panel::-webkit-scrollbar-thumb {
-  background: var(--gold-border);
-  border-radius: 8px;
-  border: 2px solid rgba(11, 23, 51, 0.5);
+  background: rgba(207, 162, 68, 0.45);
+  border-radius: 6px;
 }
 .dozor-scroll-panel::-webkit-scrollbar-thumb:hover {
-  background: var(--gold);
+  background: rgba(255, 215, 122, 0.75);
+}
+/* Touch surfaces overlay their own auto-hiding scrollbar and show the
+   affordance the moment you drag, so there is nothing to draw. */
+@media (hover: none) {
+  .dozor-scroll-panel {
+    scrollbar-width: none;
+  }
+  .dozor-scroll-panel::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Idle pulse on the level-result bonus-star offer. The mobile app drives the

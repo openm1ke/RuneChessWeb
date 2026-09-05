@@ -123,7 +123,14 @@ export function LevelSelectList({
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <ProgressSummary progress={progress} compact />
       <div style={{ height: 12 }} />
-      <div ref={scrollerRef} className="dozor-scroll-panel" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      <div
+        ref={scrollerRef}
+        className="dozor-scroll-panel"
+        // Keeps the tiles clear of the scrollbar, which is drawn at this
+        // element's own edge — without it the right-hand column of the grid
+        // sits directly against the bar.
+        style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: 10 }}
+      >
         <SectionTitle label="ОБУЧЕНИЕ · 5 УРОВНЕЙ" />
         {/* A centred wrap rather than a grid: five tiles across three columns
             leaves a hole on the right, and centring the short last row reads
