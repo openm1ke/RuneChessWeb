@@ -72,7 +72,9 @@ AppMetrica показывает любое событие сама. Метрик
 
 - `level` — **1-based**, тот номер, который видит игрок, никогда не индекс.
 - `entry_source` — `menu_play` | `level_select` | `next_level` | `skip_level`.
-- `placement` — `extra_hint` | `bonus_star`.
+- `placement` — `extra_hint` | `bonus_star` | `skip_level`.
+  `extra_hint` — предложение ролика, когда бесплатные подсказки кончились;
+  `skip_level` — предложение пропустить уровень после трёх сбросов подряд.
 - `date` — локальный календарный день `yyyy-MM-dd` (см. `dailyChallengeKey`).
 - Никаких персональных данных и никаких текстов исключений: в `reason`
   попадает тип ошибки или короткая машинная причина, но не сообщение, которое

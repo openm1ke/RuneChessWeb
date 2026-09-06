@@ -38,10 +38,16 @@ interface YandexAdvManagerRenderOptions {
   onClose?: () => void;
 }
 
-export type AdPlacement = 'extraHint' | 'bonusStar';
+export type AdPlacement = 'extraHint' | 'bonusStar' | 'skipLevel';
+
+const ANALYTICS_NAME: Record<AdPlacement, string> = {
+  extraHint: 'extra_hint',
+  bonusStar: 'bonus_star',
+  skipLevel: 'skip_level',
+};
 
 function analyticsName(placement: AdPlacement): string {
-  return placement === 'extraHint' ? 'extra_hint' : 'bonus_star';
+  return ANALYTICS_NAME[placement];
 }
 
 /** Placeholder blockIds — see the file doc above. Swap for real ones once
@@ -49,6 +55,7 @@ function analyticsName(placement: AdPlacement): string {
 const DEMO_BLOCK_ID: Record<AdPlacement, string> = {
   extraHint: 'R-A-000000-1',
   bonusStar: 'R-A-000000-2',
+  skipLevel: 'R-A-000000-3',
 };
 
 export type RewardedAdState =
@@ -92,10 +99,12 @@ export class RewardedAdsService {
   private readonly lastState: Record<AdPlacement, RewardedAdState> = {
     extraHint: 'idle',
     bonusStar: 'idle',
+    skipLevel: 'idle',
   };
   private readonly showInFlight: Record<AdPlacement, boolean> = {
     extraHint: false,
     bonusStar: false,
+    skipLevel: false,
   };
   private readonly listeners = new Set<RewardedAdListener>();
 

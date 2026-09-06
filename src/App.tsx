@@ -1018,6 +1018,8 @@ export default function App() {
             onBack={goToMenu}
             onNextLevel={nextLevel}
             onSkipLevel={isDev && !engine.isDailyChallenge ? skipLevel : undefined}
+            onSkipForAd={engine.isDailyChallenge ? undefined : skipLevel}
+            onSkipOffered={() => analyticsService.adOfferShown('skip_level')}
             onResetOnboarding={resetOnboardingForDebug}
             seenOnboardingLevels={seenOnboardingLevels}
             rewardedAdsService={ADS_AVAILABLE && !isOnYandexGamesPlatform ? rewardedAdsService : undefined}

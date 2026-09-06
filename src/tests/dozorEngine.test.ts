@@ -192,3 +192,21 @@ describe('drag preview', () => {
     expect(engine.snapshot().previewCells).toHaveLength(0);
   });
 });
+
+/** Three resets of the same level is where the game offers a way past it —
+ * see `SkipOfferDialog`. The count is what the offer triggers on, so it has
+ * to survive the reset it counts and restart on a new level. */
+describe('reset counting', () => {
+  it('counts resets of the same level and clears on the next one', () => {
+    const engine = new DozorEngine();
+    engine.goToLevel(8);
+    expect(engine.snapshot().resetCount).toBe(0);
+
+    engine.resetLevel();
+    engine.resetLevel();
+    expect(engine.snapshot().resetCount).toBe(2);
+
+    engine.goToLevel(9);
+    expect(engine.snapshot().resetCount).toBe(0);
+  });
+});

@@ -8,6 +8,7 @@ import { useViewportSize } from '../components/game/useViewportSize';
 import { TopControls, TopStatus, BottomUtilityControls } from '../components/game/TopBar';
 import { ResetConfirmDialog } from '../components/game/ResetConfirmDialog';
 import { HintOfferDialog } from '../components/game/HintOfferDialog';
+import { SkipOfferDialog } from '../components/game/SkipOfferDialog';
 import { LevelResultOverlay } from '../components/game/LevelResultOverlay';
 import { TutorialCoachmark, type CoachmarkLayout } from '../components/game/TutorialCoachmark';
 import { useDozorEngine } from '../game/useDozorEngine';
@@ -35,6 +36,9 @@ export function GameScreen({
   hintWaitMs: hintWait = null,
   onHintSpent,
   onHintOffered,
+  onSkipForAd,
+  onSkipOffered,
+  skipAfterResets = 3,
 }: {
   engine: DozorEngine;
   onBack: () => void;
@@ -63,6 +67,13 @@ export function GameScreen({
   onHintSpent?: () => void;
   /** The out-of-hints offer was put in front of the player. */
   onHintOffered?: () => void;
+  /** Advances past this level without a star result — the reward for the
+   * skip ad. Distinct from `onSkipLevel`, which is the dev control. */
+  onSkipForAd?: () => void;
+  /** The skip offer was put in front of the player. */
+  onSkipOffered?: () => void;
+  /** Resets of one level before the game offers a way past it. */
+  skipAfterResets?: number;
 }) {
   const { snapshot } = useDozorEngine(engine);
   const boardRef = useRef<HTMLDivElement>(null!);
@@ -92,6 +103,10 @@ export function GameScreen({
   // possible answer for a stuck player.
   const gated = onCampaignLevel || engine.isDailyChallenge;
   const [hintOfferOpen, setHintOfferOpen] = useState(false);
+  const [skipOfferOpen, setSkipOfferOpen] = useState(false);
+  /** The skip offer is made once per level, at the third reset: repeating it
+   * on every later reset would turn help into nagging. */
+  const skipOfferedForLevel = useRef(false);
   const handleHint = () => {
     if (!gated) {
       engine.toggleHint();
@@ -114,6 +129,27 @@ export function GameScreen({
     if (!rewardedAdsService) return;
     void rewardedAdsService.show('extraHint').then(() => {
       if (rewardedAdsService.stateOf('extraHint') === 'rewarded') engine.grantHint();
+    });
+  };
+
+  // Three resets of the same scored level is the point where the realistic
+  // alternatives are "watch a video" and "close the game". The daily
+  // challenge is excluded: there is no next level to skip to.
+  useEffect(() => {
+    if (snapshot.resetCount === 0) skipOfferedForLevel.current = false;
+    if (!onSkipForAd || !rewardedAdsService || engine.isDailyChallenge) return;
+    if (engine.levelIndex < FIRST_SCORED_LEVEL_INDEX) return;
+    if (skipOfferedForLevel.current || snapshot.resetCount < skipAfterResets) return;
+    skipOfferedForLevel.current = true;
+    onSkipOffered?.();
+    setSkipOfferOpen(true);
+  }, [snapshot.resetCount, engine, onSkipForAd, onSkipOffered, rewardedAdsService, skipAfterResets]);
+
+  const watchAdForSkip = () => {
+    setSkipOfferOpen(false);
+    if (!rewardedAdsService) return;
+    void rewardedAdsService.show('skipLevel').then(() => {
+      if (rewardedAdsService.stateOf('skipLevel') === 'rewarded') onSkipForAd?.();
     });
   };
 
@@ -175,6 +211,9 @@ export function GameScreen({
   const renderOverlays = (layout?: CoachmarkLayout) => (
     <>
       {showOnboarding && <TutorialCoachmark snapshot={snapshot} layout={layout} />}
+      {skipOfferOpen && (
+        <SkipOfferDialog onSkip={watchAdForSkip} onClose={() => setSkipOfferOpen(false)} />
+      )}
       {hintOfferOpen && (
         <HintOfferDialog
           waitMs={hintWait}

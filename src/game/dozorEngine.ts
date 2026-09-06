@@ -39,6 +39,8 @@ export interface DozorSnapshot {
   levelTrayCount: number;
   /** See `DozorEngine.lessonPhase`. */
   lessonPhase: LessonPhase;
+  /** See `DozorEngine.resetCount`. */
+  resetCount: number;
   /** The cell a dragged figure is being held over, and what it is — the
    * board draws a ghost of it there. Null unless a drag is in flight over a
    * placeable cell. See `DozorEngine.setDragPreview`. */
@@ -202,6 +204,7 @@ export class DozorEngine {
     this.held = null;
     this.hint = false;
     this.attemptStart = Date.now();
+    this.resetCount = 0;
     this.lessonPhase = 'trial';
     this.hiddenFor = 0;
     // Stay "still hidden", but start the stretch now: a fresh attempt cannot
@@ -337,9 +340,18 @@ export class DozorEngine {
     return true;
   }
 
+  /** How many times the player has reset *this* level without solving it.
+   *
+   * Three is the point where the honest alternatives are "watch a video to
+   * move on" and "close the game", and the game used to have nothing to say
+   * — the skip control was dev-only. */
+  resetCount = 0;
+
   resetLevel(): void {
     this.onLevelReset?.(this.levelIndex, this.currentAttemptMetrics());
+    const resets = this.resetCount + 1;
     this.loadLevel();
+    this.resetCount = resets;
     this.notify();
   }
 
@@ -701,6 +713,7 @@ export class DozorEngine {
       beaconKey,
       levelTrayCount: this.level.tray.length,
       lessonPhase: this.lessonPhase,
+      resetCount: this.resetCount,
       previewCell: previewPiece == null ? null : { c: previewPiece.c, r: previewPiece.r },
       previewType: previewPiece?.type ?? null,
       previewBeams,
