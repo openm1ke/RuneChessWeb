@@ -1,14 +1,15 @@
-import { useState, type PointerEvent, type RefObject } from 'react';
-import type { DozorEngine, DozorSnapshot } from '../../game/dozorEngine';
+import { useState, type PointerEvent, type RefObject } from "react";
+import type { DozorEngine, DozorSnapshot } from "../../game/dozorEngine";
 import {
   pieceAttackSummary,
   pieceNames,
   pieceSkins,
   pieceUprightRotationDeg,
   type PieceType,
-} from '../../game/pieceTypes';
-import { PieceArt } from '../board/PieceArt';
-import type { DragController } from '../board/useDragController';
+} from "../../game/pieceTypes";
+import { PieceArt } from "../board/PieceArt";
+import type { DragController } from "../board/useDragController";
+import { TILE_GAP, TRAY_PORTRAIT, trayTileExtent } from "./trayGeometry";
 
 function TrayItemTile({
   type,
@@ -35,63 +36,62 @@ function TrayItemTile({
       aria-pressed={selected}
       aria-label={`${pieceNames[type]}, бьёт ${pieceAttackSummary[type].toLowerCase()}`}
       style={{
-        flex: 'none',
-        width: vertical ? '100%' : extent,
+        flex: "none",
+        width: vertical ? "100%" : extent,
         minWidth: 0,
         minHeight: 0,
-        margin: vertical ? '3.5px 0' : '0 3.5px',
-        height: vertical ? extent : '100%',
+        margin: vertical ? `${TILE_GAP / 2}px 0` : `0 ${TILE_GAP / 2}px`,
+        height: vertical ? extent : "100%",
         borderRadius: 12,
-        background: selected ? '#263f82' : '#172551',
-        border: `2px solid ${selected ? 'var(--gold)' : 'rgba(122,107,83,0.6)'}`,
-        boxShadow: selected ? `0 0 12px ${pieceSkins[type].glow}` : 'none',
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
+        background: selected ? "#263f82" : "#172551",
+        border: `2px solid ${selected ? "var(--gold)" : "rgba(122,107,83,0.6)"}`,
+        boxShadow: selected ? `0 0 12px ${pieceSkins[type].glow}` : "none",
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
         paddingBottom: 4,
-        cursor: 'pointer',
-        transition: 'background 160ms, border-color 160ms',
+        cursor: "pointer",
+        transition: "background 160ms, border-color 160ms",
       }}
     >
       <div
         style={{
           transform: `rotate(${pieceUprightRotationDeg[type] ?? 0}deg)`,
-          transformOrigin: 'bottom center',
+          transformOrigin: "bottom center",
           // The sprite keeps its aspect but is bounded by the tile rather
           // than by a fixed 44×70, so a crowded tray narrows its pieces the
           // way the mobile app's Expanded tiles already do.
-          display: 'flex',
-          justifyContent: 'center',
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "center",
           minWidth: 0,
-          maxWidth: '100%',
-          maxHeight: '100%',
+          width: "100%",
+          // An explicit height: the sprite below sizes itself as a
+          // percentage, and a percentage of an auto height falls back to the
+          // image's natural 70px — which is how the figure ended up sticking
+          // out of the tile's outline.
+          height: "100%",
+          maxWidth: "100%",
         }}
       >
         <PieceArt
           type={type}
-          style={{ width: 'auto', height: '100%', maxWidth: '100%', maxHeight: 70 }}
+          style={{ width: "auto", height: "92%", maxWidth: "100%" }}
         />
       </div>
     </div>
   );
 }
 
-/** Gap between tiles, and the extent a tile never exceeds — past this a
- * figure is just a small sprite in a large empty box. */
-const TILE_GAP = 7;
-const MAX_TILE_EXTENT = 64;
-/** The panel's own horizontal padding, which the tile row cannot use. */
-const TRAY_PADDING = 20;
-
 export function Tray({
   engine,
   snapshot,
   drag,
   trayRef,
-  left = 96,
-  right = 96,
-  bottom = 120,
-  height = 104,
+  left = TRAY_PORTRAIT.left,
+  right = TRAY_PORTRAIT.right,
+  bottom = TRAY_PORTRAIT.bottom,
+  height = TRAY_PORTRAIT.height,
   vertical = false,
   panelExtent,
 }: {
@@ -119,9 +119,10 @@ export function Tray({
   // survivors jump wider under the finger that had just aimed at one. Sizing
   // from the level's *starting* count fixes both: the row simply gets
   // shorter, centred, as figures leave.
-  const total = Math.max(1, engine.level.tray.length);
-  const available = (panelExtent ?? 430 - left - right) - TRAY_PADDING;
-  const tileExtent = Math.min(MAX_TILE_EXTENT, (available - TILE_GAP * (total - 1)) / total);
+  const tileExtent = trayTileExtent(
+    snapshot.levelTrayCount,
+    panelExtent ?? 430 - left - right,
+  );
 
   // What the figure in hand is and how it strikes: the one line worth
   // reading while a figure is in the air. Deliberately not a long-press
@@ -134,18 +135,19 @@ export function Tray({
     <div
       ref={trayRef}
       style={{
-        position: 'absolute',
+        position: "absolute",
         left,
         right,
         bottom,
         height,
-        padding: '8px 10px 10px',
+        padding: "8px 10px 10px",
         borderRadius: 16,
-        background: 'linear-gradient(to bottom, rgba(30,48,104,0.94), rgba(15,26,60,0.94))',
-        border: '2.5px solid var(--gold-border)',
-        boxShadow: '0 -8px 26px rgba(0,0,0,0.55)',
-        display: 'flex',
-        flexDirection: 'column',
+        background:
+          "linear-gradient(to bottom, rgba(30,48,104,0.94), rgba(15,26,60,0.94))",
+        border: "2.5px solid var(--gold-border)",
+        boxShadow: "0 -8px 26px rgba(0,0,0,0.55)",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* One line at a time, in the order of what the player needs: the
@@ -160,49 +162,51 @@ export function Tray({
           fontSize: inHand ? 9.5 : 10.5,
           fontWeight: 900,
           letterSpacing: inHand ? 0.4 : 2.4,
-          color: inHand ? pieceSkins[inHand].color : 'var(--gold)',
-          fontFamily: 'var(--font-body)',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          color: inHand ? pieceSkins[inHand].color : "var(--gold)",
+          fontFamily: "var(--font-body)",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
       >
         {inHand
           ? `${pieceNames[inHand].toUpperCase()} · ${pieceAttackSummary[inHand].toUpperCase()}`
           : showHint
-            ? 'ПЕРЕТАЩИТЕ НА ДОСКУ'
-            : 'ФИГУРЫ'}
+            ? "ПЕРЕТАЩИТЕ НА ДОСКУ"
+            : "ФИГУРЫ"}
       </div>
       <div style={{ height: 7 }} />
       <div
         style={{
           flex: 1,
           minHeight: 0,
-          display: 'flex',
-          flexDirection: vertical ? 'column' : 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
+          display: "flex",
+          flexDirection: vertical ? "column" : "row",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         {snapshot.tray.length === 0 ? (
-          // The panel used to go blank with "0 ОСТАЛОСЬ" at exactly the
-          // moment a player who has run out of figures without solving the
-          // level needs to know what to do. Dragging one back is the answer,
-          // and nothing had ever mentioned it existed.
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              lineHeight: 1.35,
-              textAlign: 'center',
-              color: 'rgba(255,231,178,0.62)',
-              fontFamily: 'var(--font-body)',
-            }}
-          >
-            Все фигуры на доске.
-            <br />
-            Перетащите фигуру сюда, чтобы переставить.
-          </div>
+          snapshot.solved ? null : (
+            // The panel used to go blank with "0 ОСТАЛОСЬ" at exactly the
+            // moment a player who has run out of figures without solving the
+            // level needs to know what to do. Dragging one back is the answer,
+            // and nothing had ever mentioned it existed.
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                lineHeight: 1.35,
+                textAlign: "center",
+                color: "rgba(255,231,178,0.62)",
+                fontFamily: "var(--font-body)",
+              }}
+            >
+              Все фигуры на доске.
+              <br />
+              Перетащите фигуру сюда, чтобы переставить.
+            </div>
+          )
         ) : (
           snapshot.tray.map((item) => (
             <TrayItemTile
@@ -214,9 +218,9 @@ export function Tray({
                 setDragging(item.type);
                 const clear = () => {
                   setDragging(null);
-                  window.removeEventListener('pointerup', clear);
+                  window.removeEventListener("pointerup", clear);
                 };
-                window.addEventListener('pointerup', clear);
+                window.addEventListener("pointerup", clear);
                 drag.startFromTray(item, e);
               }}
               vertical={vertical}

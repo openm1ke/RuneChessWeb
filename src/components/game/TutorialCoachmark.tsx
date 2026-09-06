@@ -1,21 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
 import type { DozorSnapshot } from '../../game/dozorEngine';
-import { cellKey, type Cell } from '../../game/models';
-import type { PieceType } from '../../game/pieceTypes';
+import type { Cell } from '../../game/models';
+import { tutorialLine } from '../../game/tutorialScript';
 import { FIRST_SCORED_LEVEL_INDEX } from '../../data/campaignLevels';
+import { TRAY_PORTRAIT, trayTileCenter } from '../tray/trayGeometry';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../board/boardPerspective';
 
-type Focus = 'place' | 'ray' | 'ready' | 'hint' | 'reset' | 'trial' | 'overflow';
-type LevelFivePhase = 'trial' | 'overflow' | 'solution';
-
-const PIECE_NAME: Record<PieceType, string> = {
-  rook: 'ладью',
-  bishop: 'слона',
-  knight: 'коня',
-  king: 'короля',
-  queen: 'ферзя',
-  pawn: 'пешку',
-};
+/** `ready` and `reset` used to be here too. `reset` was never returned at
+ * all, and `ready` could only appear behind the level-result overlay, which
+ * covers the board the instant a level is solved — so its line ("нажмите
+ * «ГОТОВО»") was both invisible and wrong: the button says «ПРОДОЛЖИТЬ». */
+type Focus = 'place' | 'ray' | 'hint' | 'trial' | 'overflow';
 
 /** Where the board and tray actually are on screen — portrait renders them
  * inside the fixed 430x932 design canvas (so these are design units that
@@ -33,15 +27,15 @@ const DEFAULT_LAYOUT: CoachmarkLayout = {
   isLandscape: false,
   canvasWidth: 430,
   board: { left: BOARD_LEFT, top: BOARD_TOP, scaleX: 1, scaleY: 1 },
-  // Mirrors the tray's own inner content rect (96px outer margin + 10px
-  // padding on each side); height 0 collapses to the single fixed row the
-  // original portrait design pointed at.
-  tray: { left: 106, top: 764, width: 218, height: 0 },
+  // The tray's own outer box on the design canvas; `trayTileCenter` turns
+  // it into the exact tile the arrow should start from.
+  tray: {
+    left: TRAY_PORTRAIT.left,
+    top: 932 - TRAY_PORTRAIT.bottom - TRAY_PORTRAIT.height,
+    width: 430 - TRAY_PORTRAIT.left - TRAY_PORTRAIT.right,
+    height: TRAY_PORTRAIT.height,
+  },
 };
-
-function hasOverfilledCoin(snapshot: DozorSnapshot): boolean {
-  return snapshot.beacons.some((beacon) => (snapshot.counts[cellKey(beacon.c, beacon.r)] ?? 0) > beacon.target);
-}
 
 /** Projects a raw board-space point (0..292 on each axis) through the
  * isometric perspective, then into screen space via the board's actual
@@ -65,30 +59,13 @@ export function TutorialCoachmark({
   snapshot: DozorSnapshot;
   layout?: CoachmarkLayout;
 }) {
-  const [levelFivePhase, setLevelFivePhase] = useState<LevelFivePhase>(() =>
-    snapshot.levelNumber === FIRST_SCORED_LEVEL_INDEX && hasOverfilledCoin(snapshot) ? 'overflow' : 'trial',
-  );
-  const prevLevelRef = useRef(snapshot.levelNumber);
-
-  useEffect(() => {
-    if (prevLevelRef.current !== snapshot.levelNumber) {
-      prevLevelRef.current = snapshot.levelNumber;
-      setLevelFivePhase('trial');
-      return;
-    }
-    if (snapshot.levelNumber !== FIRST_SCORED_LEVEL_INDEX) return;
-    setLevelFivePhase((phase) => {
-      if (phase === 'trial' && snapshot.tray.length === 0 && hasOverfilledCoin(snapshot)) return 'overflow';
-      if (phase === 'overflow' && snapshot.pieces.length === 0) return 'solution';
-      return phase;
-    });
-  }, [snapshot]);
+  const levelFivePhase = snapshot.lessonPhase;
 
   const computeFocus = (): Focus => {
     const level = snapshot.levelNumber;
     if (level === FIRST_SCORED_LEVEL_INDEX) {
       if (levelFivePhase === 'trial') {
-        return snapshot.tray.length > 0 ? 'trial' : hasOverfilledCoin(snapshot) ? 'overflow' : 'ray';
+        return snapshot.tray.length > 0 ? 'trial' : 'ray';
       }
       if (levelFivePhase === 'overflow') return 'overflow';
       return snapshot.tray.length > 0 ? 'place' : 'ray';
@@ -96,73 +73,49 @@ export function TutorialCoachmark({
     if (level === 4 && snapshot.pieces.length === 0 && snapshot.solutionCell == null) return 'hint';
     if (snapshot.pieces.length === 0) return 'place';
     if (snapshot.tray.length > 0) return 'place';
-    if (snapshot.beams.length > 0) return 'ray';
-    if (snapshot.solved) return 'ready';
     return 'ray';
   };
   const focus = computeFocus();
 
   const item = snapshot.nextSolutionItem;
-  const name = item ? PIECE_NAME[item.type] : 'фигуру';
   const level = snapshot.levelNumber;
+  const firstPlacement = snapshot.pieces.length === 0;
 
-  const text = (() => {
-    if (focus === 'ray' && snapshot.solved) {
-      return 'Пунктирная линия показывает, как фигура доходит до монеты. Монеты засияли — можно нажать «ГОТОВО».';
-    }
+  /** Which line of `tutorialScript` this moment calls for — the wording
+   * lives in one shared, testable place, see docs/TUTORIAL_SCRIPT.md. */
+  const lineId = (): string => {
     switch (focus) {
       case 'place':
         switch (level) {
           case 1:
-            return 'Пешка бьёт по диагонали вперёд. Перетащите её на подсвеченную клетку.';
+            return 'l1.place';
           case 2:
-            return snapshot.pieces.length === 0
-              ? `Здесь две фигуры: ладья и слон. Начните с ${name} и подсвеченной клетки.`
-              : `Теперь поставьте вторую фигуру: ${name} уже ждёт вас в панели.`;
+            return firstPlacement ? 'l2.place.first' : 'l2.place.second';
           case 3:
-            return snapshot.pieces.length === 0
-              ? `Три монеты с разными номиналами ждут коня и ладью. Начните с ${name}.`
-              : `Отлично! Теперь поставьте вторую фигуру: ${name} уже ждёт вас в панели.`;
+            return firstPlacement ? 'l3.place.first' : 'l3.place.second';
           case 4:
             return item?.type === 'king'
-              ? 'Король бьёт только на одну клетку вокруг себя. Поставьте его на подсвеченную клетку.'
-              : snapshot.pieces.length === 0
-              ? `Здесь четыре монеты и три фигуры. Начните с ${name}.`
-              : `Продолжайте: поставьте ${name} на подсвеченную клетку.`;
+              ? 'l4.place.king'
+              : firstPlacement
+                ? 'l4.place.first'
+                : 'l4.place.next';
           default:
-            return snapshot.pieces.length === 0
-              ? 'После сброса поставьте ладью на подсвеченную клетку.'
-              : 'Теперь поставьте ферзя на вторую подсвеченную клетку. Ферзь ходит и по прямым, и по диагоналям.';
+            return firstPlacement ? 'l5.place.first' : 'l5.place.second';
         }
       case 'ray':
-        switch (level) {
-          case 1:
-            return 'Пунктирная линия показывает, как фигура доходит до монеты.';
-          case 2:
-            return 'Ладья ходит по прямым, а слон — по диагоналям. Каждая монета здесь ждёт один удар.';
-          case 3:
-            return 'Цифра на монете — нужное число ударов: «1» — один, «2» — два. Проверьте все три монеты.';
-          case 4:
-            return 'Чтобы пройти уровень, все четыре монеты должны получить ровно нужное количество ударов.';
-          default:
-            return 'Проверьте линии: две фигуры должны вместе зажечь все три монеты.';
-        }
-      case 'ready':
-        return 'Все монеты поднялись и светятся. Уровень пройден — нажмите «ГОТОВО».';
+        return level <= 4 ? `l${level}.ray` : 'l5.ray';
       case 'hint':
-        return 'Если не знаете, куда поставить фигуру, нажмите лампочку. На поле появится прозрачный силуэт.';
-      case 'reset':
-        return 'Хотите начать заново? Нажмите круглую стрелку слева внизу — все фигуры вернутся в панель.';
+        return 'l4.hint';
       case 'trial':
-        return snapshot.pieces.length === 0
-          ? 'Давайте попробуем вариант: поставьте ладью на подсвеченную клетку.'
-          : 'Теперь поставьте ферзя на подсвеченную клетку. Он ходит и по прямым, и по диагоналям.';
+        return firstPlacement ? 'l5.trial.first' : 'l5.trial.second';
       case 'overflow':
-        return 'Эта монета получила больше ударов, чем написано на ней. Условие не выполнится — нажмите сброс и попробуйте ещё раз.';
+        return 'l5.overflow';
     }
-  })();
+  };
 
-  const accent = focus === 'ready' ? '#ffd56a' : '#70e9f3';
+  const text = tutorialLine(lineId(), item?.type);
+
+  const accent = '#70e9f3';
   const { canvasWidth, board, tray } = layout;
 
   // The card's own on-screen rect — computed once so the arrows that point
@@ -175,13 +128,20 @@ export function TutorialCoachmark({
   /** The tray item's approximate screen position, mirroring the tray's own
    * evenly-distributed slots closely enough for the arrow to clearly point
    * at the next figure. */
+  /** The centre of the tile the arrow should come from.
+   *
+   * Asks the tray where its tiles are rather than re-deriving the layout:
+   * this used to assume the tiles were spread evenly across the panel, and
+   * once they became fixed-size and centred, the arrow started at a point
+   * beside the figure instead of on it. */
   function trayPoint(trayItem: { id: string } | null): { x: number; y: number } {
     const index = trayItem == null ? 0 : snapshot.tray.findIndex((t) => t.id === trayItem.id);
-    const count = Math.max(1, snapshot.tray.length);
-    return {
-      x: tray.left + tray.width * ((Math.max(0, index) + 0.5) / count),
-      y: tray.top + tray.height / 2,
-    };
+    return trayTileCenter({
+      index,
+      visibleCount: snapshot.tray.length,
+      levelTrayCount: snapshot.levelTrayCount,
+      panel: tray,
+    });
   }
 
   let arrow: { from: { x: number; y: number }; to: { x: number; y: number } } | null = null;
@@ -192,12 +152,6 @@ export function TutorialCoachmark({
     arrow = layout.isLandscape
       ? { from: { x: cardRightX - 24, y: cardTop }, to: { x: canvasWidth - 42, y: 46 } }
       : { from: { x: cardRightX - 20, y: cardTop + 2 }, to: { x: 367, y: 63 } };
-  } else if (focus === 'ready') {
-    // Points straight up at the "УРОВЕНЬ / N of M" status pill, starting
-    // from the card's own top-centre edge.
-    arrow = layout.isLandscape
-      ? { from: { x: (cardLeftX + cardRightX) / 2, y: cardTop }, to: { x: canvasWidth / 2, y: 52 } }
-      : { from: { x: (cardLeftX + cardRightX) / 2, y: cardTop + 2 }, to: { x: 215, y: 98 } };
   } else if (focus === 'ray' && snapshot.beams.length > 0) {
     const beam = snapshot.beams[0];
     arrow = {
@@ -249,11 +203,14 @@ export function TutorialCoachmark({
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: 'var(--font-display)',
-            fontSize: 11,
+            // Which lesson this is, and how many there are — the badge used
+            // to show the level number alone, which says nothing about how
+            // long the tutorial lasts.
+            fontSize: 9,
             color: accent,
           }}
         >
-          {level}
+          {level}/{FIRST_SCORED_LEVEL_INDEX}
         </div>
         <div style={{ fontSize: 11.4, lineHeight: 1.3, fontWeight: 800, color: '#f1f5ff' }}>{text}</div>
       </div>

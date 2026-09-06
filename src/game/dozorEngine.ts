@@ -8,6 +8,9 @@ import { computeStars } from './starRating';
 
 export { FIRST_SCORED_LEVEL_INDEX };
 
+/** The three beats of the fifth lesson — see `TutorialCoachmark`. */
+export type LessonPhase = 'trial' | 'overflow' | 'solution';
+
 export interface DozorSnapshot {
   pieces: Piece[];
   tray: TrayItem[];
@@ -30,6 +33,12 @@ export interface DozorSnapshot {
   boardSize: number;
   occ: ReadonlySet<string>;
   beaconKey: ReadonlySet<string>;
+  /** How many figures the level started with. The tray sizes its tiles from
+   * this rather than from what is left, so they hold one size for the whole
+   * level — see `Tray`. */
+  levelTrayCount: number;
+  /** See `DozorEngine.lessonPhase`. */
+  lessonPhase: LessonPhase;
   /** The cell a dragged figure is being held over, and what it is — the
    * board draws a ghost of it there. Null unless a drag is in flight over a
    * placeable cell. See `DozorEngine.setDragPreview`. */
@@ -146,6 +155,7 @@ export class DozorEngine {
   };
 
   private notify(): void {
+    this.syncLessonPhase();
     // Invalidate the memoized snapshot so `useSyncExternalStore` gets a
     // fresh, referentially-stable object per state change rather than a new
     // object identity on every render (which would defeat React's tearing
@@ -192,6 +202,7 @@ export class DozorEngine {
     this.held = null;
     this.hint = false;
     this.attemptStart = Date.now();
+    this.lessonPhase = 'trial';
     this.hiddenFor = 0;
     // Stay "still hidden", but start the stretch now: a fresh attempt cannot
     // have been away longer than it has existed.
@@ -585,6 +596,37 @@ export class DozorEngine {
     return placed == null ? null : { ...placed, c: cell.c, r: cell.r };
   }
 
+  /** How far the fifth lesson has got: its "try it, see it overflow, now do
+   * it properly" arc.
+   *
+   * It lived in the coach mark's own state, so anything that remounted the
+   * component restarted the lesson from the beginning, halfway through. It
+   * belongs to the attempt, like every other piece of progress. */
+  lessonPhase: LessonPhase = 'trial';
+
+  /** Every mutation funnels through `notify`, which is the one place that
+   * sees each board change exactly once. */
+  private syncLessonPhase(): void {
+    if (this.levelIndex !== FIRST_SCORED_LEVEL_INDEX - 1) return;
+    if (this.lessonPhase === 'trial' && this.tray.length === 0 && this.hasOverfilledBeacon()) {
+      this.lessonPhase = 'overflow';
+    } else if (this.lessonPhase === 'overflow' && this.pieces.length === 0) {
+      this.lessonPhase = 'solution';
+    }
+  }
+
+  private hasOverfilledBeacon(): boolean {
+    const occ = new Set(this.pieces.map((p) => cellKey(p.c, p.r)));
+    const counts: Record<string, number> = {};
+    for (const p of this.pieces) {
+      for (const hit of this.attacks(p, occ)) {
+        const key = cellKey(hit.c, hit.r);
+        counts[key] = (counts[key] ?? 0) + 1;
+      }
+    }
+    return this.beacons.some((b) => (counts[cellKey(b.c, b.r)] ?? 0) > b.target);
+  }
+
   snapshot(): DozorSnapshot {
     if (this.cachedSnapshot != null) return this.cachedSnapshot;
     this.cachedSnapshot = this.computeSnapshot();
@@ -657,6 +699,8 @@ export class DozorEngine {
       boardSize,
       occ,
       beaconKey,
+      levelTrayCount: this.level.tray.length,
+      lessonPhase: this.lessonPhase,
       previewCell: previewPiece == null ? null : { c: previewPiece.c, r: previewPiece.r },
       previewType: previewPiece?.type ?? null,
       previewBeams,
