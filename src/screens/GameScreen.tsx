@@ -29,6 +29,7 @@ export function GameScreen({
   achievement,
   onAchievementRevealed,
   onOpenDailyCalendar,
+  dailyStreak = 0,
 }: {
   engine: DozorEngine;
   onBack: () => void;
@@ -48,6 +49,8 @@ export function GameScreen({
   /** Only meaningful (and only rendered as a button) while
    * `engine.isDailyChallenge` — opens the streak calendar. */
   onOpenDailyCalendar?: () => void;
+  /** See `TopControls.dailyStreak`. */
+  dailyStreak?: number;
 }) {
   const { snapshot } = useDozorEngine(engine);
   const boardRef = useRef<HTMLDivElement>(null!);
@@ -244,6 +247,7 @@ export function GameScreen({
           onHint={handleHint}
           hintEnabled={hintEnabled}
           onCalendar={engine.isDailyChallenge ? onOpenDailyCalendar : undefined}
+          dailyStreak={dailyStreak}
         />
         <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} label={snapshot.levelLabel} />
         <Board
@@ -293,6 +297,7 @@ export function GameScreen({
           onHint={handleHint}
           hintEnabled={hintEnabled}
           onCalendar={engine.isDailyChallenge ? onOpenDailyCalendar : undefined}
+          dailyStreak={dailyStreak}
         />
         <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} label={snapshot.levelLabel} />
         <Board engine={engine} snapshot={snapshot} beamPhase={beamPhase} drag={drag} boardRef={boardRef} />

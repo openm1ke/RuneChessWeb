@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react';
 import { dailyChallengeKey, type DailyChallengeResult } from '../../game/dailyChallengeLevels';
-import { computeDailyChallengeStats } from '../../game/dailyChallengeStats';
+import {
+  computeDailyChallengeStats,
+  dayWord,
+  daysUntilFreezeRefill,
+  formatDurationShort,
+  timeUntilNextDailyChallenge,
+} from '../../game/dailyChallengeStats';
 import { asset } from '../../lib/assetUrl';
 
 const MONTH_NAMES = [
@@ -9,18 +15,29 @@ const MONTH_NAMES = [
 ];
 const WEEKDAY_LETTERS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-function dayWord(count: number): string {
-  const mod100 = count % 100;
-  const mod10 = count % 10;
-  if (mod100 >= 11 && mod100 <= 14) return 'дней';
-  if (mod10 === 1) return 'день';
-  if (mod10 >= 2 && mod10 <= 4) return 'дня';
-  return 'дней';
-}
+const SOLVED_FILL = '#3a6b3f';
+const FROZEN_FILL = '#1e4a66';
+const MISSED_FILL = 'rgba(255,255,255,0.12)';
+const ICE = '#7fe0ff';
+const GOLD = '#ffd77a';
+const MUTED = 'rgba(206,225,255,0.6)';
 
-/** Opens the daily-challenge calendar: streak, freeze state, and a month
- * grid marking solved/frozen/missed days — a port of the mobile app's
- * `DailyChallengeCalendarDialog`. */
+/**
+ * The streak screen of the daily challenge — a port of the mobile app's
+ * `DailyChallengeCalendarDialog`, rebuilt together with it.
+ *
+ * It is ordered by what the player came for. That used to be upside down: a
+ * 56px snowflake and the word "Дейли-фриз" opened the card, and the streak —
+ * the only number the mode is actually about — was the fourth line at 15px.
+ * The freeze is insurance for the streak, so it reads as a status line under
+ * it now.
+ *
+ * The wording changed with it: "Дейли-фриз заработан" appeared over a streak
+ * of 0 for a player who had never played, right under "Пройдите 7 дней
+ * подряд, чтобы получить фриз" — the freeze is granted up front (see
+ * `computeDailyChallengeStats`), so the card both claimed it was earned and
+ * asked for seven days to earn it.
+ */
 export function DailyChallengeCalendarSheet({
   history,
   onClose,
@@ -34,6 +51,7 @@ export function DailyChallengeCalendarSheet({
   }, []);
   const [visibleMonth, setVisibleMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const stats = useMemo(() => computeDailyChallengeStats({ history, today }), [history, today]);
+  const leftToday = useMemo(() => timeUntilNextDailyChallenge(new Date()), []);
 
   const shiftMonth = (delta: number) =>
     setVisibleMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + delta, 1));
@@ -49,8 +67,14 @@ export function DailyChallengeCalendarSheet({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
+          position: 'relative',
           width: 'min(380px, 100%)',
-          padding: '22px 20px 16px',
+          // Landscape phones are the case this exists for: the card is taller
+          // than the viewport, and without a cap the month grid ran off the
+          // bottom with the close control somewhere past it.
+          maxHeight: 'calc(100dvh - 48px)',
+          overflowY: 'auto',
+          padding: '18px 20px',
           borderRadius: 18,
           border: '2px solid #cf9c3c',
           background: 'linear-gradient(to bottom, rgba(30,48,104,0.94), rgba(15,26,60,0.94))',
@@ -58,27 +82,38 @@ export function DailyChallengeCalendarSheet({
           textAlign: 'center',
         }}
       >
-        <img
-          src={asset('assets/images/daily-freeze-snowflake.webp')}
-          alt=""
-          width={56}
-          height={56}
-          style={{ opacity: stats.freezeAvailable ? 1 : 0.35, margin: '0 auto' }}
-          draggable={false}
-        />
-        <div style={{ height: 6 }} />
-        <div style={{ fontSize: 13, fontWeight: 800, color: stats.freezeAvailable ? '#7fe0ff' : 'rgba(206,225,255,0.55)' }}>
-          {stats.freezeAvailable ? 'Дейли-фриз заработан' : 'Дейли-фриз использован'}
-        </div>
-        <div style={{ height: 2 }} />
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(206,225,255,0.6)' }}>
-          Пройдите 7 дней подряд, чтобы получить фриз
+        {/* Pinned, so it stays reachable once the month scrolls; the disc is
+            what keeps it readable with the grid passing underneath. */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Закрыть"
+          style={{
+            position: 'sticky',
+            top: 0,
+            float: 'right',
+            width: 40,
+            height: 40,
+            marginRight: -8,
+            borderRadius: '50%',
+            border: 'none',
+            background: 'rgba(30,48,104,0.94)',
+            color: 'rgba(255,226,164,0.72)',
+            fontSize: 22,
+            lineHeight: 1,
+            cursor: 'pointer',
+          }}
+        >
+          ×
+        </button>
+        <StreakHeadline streak={stats.currentStreak} />
+        <div style={{ height: 12 }} />
+        <FreezeStatus available={stats.freezeAvailable} streak={stats.currentStreak} />
+        <div style={{ height: 10 }} />
+        <div style={{ fontSize: 11.5, fontWeight: 700, color: MUTED }}>
+          Новое задание через {formatDurationShort(leftToday)}
         </div>
         <div style={{ height: 14 }} />
-        <div id="daily-calendar-title" style={{ fontSize: 15, fontWeight: 900, color: '#ffd77a' }}>
-          Текущий стрик: {stats.currentStreak} {dayWord(stats.currentStreak)}
-        </div>
-        <div style={{ height: 12 }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button type="button" onClick={() => shiftMonth(-1)} aria-label="Предыдущий месяц" style={monthArrowStyle}>
             ‹
@@ -100,27 +135,130 @@ export function DailyChallengeCalendarSheet({
         </div>
         <div style={{ height: 4 }} />
         <MonthGrid visibleMonth={visibleMonth} today={today} history={history} frozenDates={stats.frozenDates} />
-        <div style={{ height: 8 }} />
-        <button
-          type="button"
-          onClick={onClose}
-          style={{ background: 'transparent', border: 'none', color: '#ffd77a', fontWeight: 900, fontSize: 14, cursor: 'pointer', padding: 8 }}
-        >
-          Закрыть
-        </button>
+        <div style={{ height: 12 }} />
+        <Legend />
       </div>
     </div>
+  );
+}
+
+/** The number the mode is about, at the size that says so. */
+function StreakHeadline({ streak }: { streak: number }) {
+  if (streak === 0) {
+    // A giant "0" is a scoreboard of failure. With nothing to count yet, the
+    // honest headline is the invitation.
+    return (
+      <div style={{ padding: '0 36px' }}>
+        <div id="daily-calendar-title" style={{ fontSize: 19, fontWeight: 900, color: GOLD }}>
+          Серия ещё не начата
+        </div>
+        <div style={{ height: 4 }} />
+        <div style={{ fontSize: 12, fontWeight: 600, color: MUTED }}>
+          Решите сегодняшнее задание, чтобы начать
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ padding: '0 36px' }}>
+      <div id="daily-calendar-title" style={{ fontSize: 46, fontWeight: 900, color: GOLD, lineHeight: 1.05 }}>
+        {streak}
+      </div>
+      <div style={{ fontSize: 13, fontWeight: 800, color: 'rgba(255,226,164,0.8)', letterSpacing: 0.6 }}>
+        {dayWord(streak)} подряд
+      </div>
+    </div>
+  );
+}
+
+/** The freeze, as a status line rather than the headline it used to be. */
+function FreezeStatus({ available, streak }: { available: boolean; streak: number }) {
+  const refillIn = daysUntilFreezeRefill(streak);
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 10,
+        textAlign: 'left',
+        padding: '9px 12px 10px',
+        borderRadius: 12,
+        background: 'rgba(127,224,255,0.12)',
+        border: `1px solid ${available ? 'rgba(127,224,255,0.4)' : 'rgba(255,255,255,0.1)'}`,
+      }}
+    >
+      <img
+        src={asset('assets/images/daily-freeze-snowflake.webp')}
+        alt=""
+        width={26}
+        height={26}
+        style={{ opacity: available ? 1 : 0.35, flexShrink: 0 }}
+        draggable={false}
+      />
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 900, color: available ? ICE : 'rgba(206,225,255,0.55)' }}>
+          {available ? 'Фриз в запасе' : 'Фриз использован'}
+        </div>
+        <div style={{ height: 2 }} />
+        <div style={{ fontSize: 11, fontWeight: 600, color: MUTED }}>
+          {/* What it does, not how it is obtained: the old line ("Пройдите 7
+              дней подряд, чтобы получить фриз") was shown to players who
+              already had one. */}
+          {available
+            ? 'Один пропущенный день не обнулит серию'
+            : `Вернётся ещё через ${refillIn} ${dayWord(refillIn)} подряд`}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Four cell states with no key at all left the player to guess which grey
+ * meant "missed" — and the month before install is all greys, which reads as
+ * an accusation. */
+function Legend() {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 12px' }}>
+      <LegendItem fill={SOLVED_FILL} label="пройден">
+        <span style={{ fontSize: 9, color: GOLD }}>★</span>
+      </LegendItem>
+      <LegendItem fill={FROZEN_FILL} label="прощён фризом">
+        <span style={{ fontSize: 9, color: ICE }}>❄</span>
+      </LegendItem>
+      <LegendItem fill={MISSED_FILL} label="пропущен" />
+    </div>
+  );
+}
+
+function LegendItem({ fill, label, children }: { fill: string; label: string; children?: React.ReactNode }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+      <span
+        style={{
+          width: 14,
+          height: 14,
+          borderRadius: 4,
+          background: fill,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {children}
+      </span>
+      <span style={{ fontSize: 10.5, fontWeight: 600, color: MUTED }}>{label}</span>
+    </span>
   );
 }
 
 const monthArrowStyle: React.CSSProperties = {
   background: 'transparent',
   border: 'none',
-  color: '#ffd77a',
+  color: GOLD,
   fontSize: 22,
   lineHeight: 1,
   cursor: 'pointer',
-  padding: 4,
+  padding: 6,
 };
 
 function MonthGrid({
@@ -167,37 +305,43 @@ function DayCell({
 }) {
   const key = dailyChallengeKey(date);
   const result = history.get(key);
-  const solved = result != null;
   const frozen = frozenDates.has(key);
   const isFuture = date.getTime() > today.getTime();
   const isToday = date.getTime() === today.getTime();
 
-  let background = 'rgba(255,255,255,0.12)';
+  let background = MISSED_FILL;
   let textColor = 'rgba(206,225,255,0.5)';
   let mark: React.ReactNode = null;
-  if (solved) {
-    background = '#3a6b3f';
+  let label = 'пропущен';
+  if (result != null) {
+    background = SOLVED_FILL;
     textColor = '#e9ffea';
+    label = `пройден, звёзд: ${result.stars}`;
     mark = (
       <div style={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+        {/* 10, not the 8 this used to be: three tiny stars merged into one
+            smudge and could not be told apart from one. */}
         {Array.from({ length: result.stars }, (_, i) => (
-          <span key={i} style={{ fontSize: 8, color: '#ffd77a' }}>
+          <span key={i} style={{ fontSize: 10, color: GOLD, lineHeight: 1 }}>
             ★
           </span>
         ))}
       </div>
     );
   } else if (frozen) {
-    background = '#1e4a66';
+    background = FROZEN_FILL;
     textColor = '#dff4ff';
-    mark = <span style={{ fontSize: 11, color: '#7fe0ff' }}>❄</span>;
+    label = 'пропущен, прощён фризом';
+    mark = <span style={{ fontSize: 11, color: ICE, lineHeight: 1 }}>❄</span>;
   } else if (isFuture) {
     background = 'transparent';
     textColor = 'rgba(206,225,255,0.3)';
+    label = 'ещё не наступил';
   }
 
   return (
     <div
+      aria-label={`${date.getDate()} ${MONTH_NAMES[date.getMonth()].toLowerCase()} — ${label}`}
       style={{
         aspectRatio: '1',
         borderRadius: 8,

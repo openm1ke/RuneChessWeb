@@ -42,6 +42,7 @@ export function TopControls({
   onHint,
   hintEnabled = true,
   onCalendar,
+  dailyStreak = 0,
 }: {
   onBack: () => void;
   onHint: () => void;
@@ -50,6 +51,11 @@ export function TopControls({
    * calendar. Stacked below the hint button rather than beside it, so it
    * never competes for space with a longer hint-button row. */
   onCalendar?: () => void;
+  /** Current streak, shown as a badge on the calendar button: the streak is
+   * the whole point of the mode, and hiding it behind a tap meant the screen
+   * never showed the one number the player comes back for. Zero draws no
+   * badge — a "0" advertises the thing the player has not got. */
+  dailyStreak?: number;
 }) {
   return (
     <div style={{ position: 'absolute', top: 22, left: 20, right: 20, display: 'flex', justifyContent: 'space-between' }}>
@@ -61,12 +67,45 @@ export function TopControls({
           <LightbulbIcon />
         </RoundControl>
         {onCalendar && (
-          <RoundControl onClick={onCalendar} label="Календарь заданий дня">
-            <CalendarIcon />
-          </RoundControl>
+          <div style={{ position: 'relative' }}>
+            <RoundControl
+              onClick={onCalendar}
+              label={dailyStreak > 0 ? `Календарь заданий дня, серия ${dailyStreak}` : 'Календарь заданий дня'}
+            >
+              <CalendarIcon />
+            </RoundControl>
+            {dailyStreak > 0 && <StreakBadge streak={dailyStreak} />}
+          </div>
         )}
       </div>
     </div>
+  );
+}
+
+/** The current daily-challenge streak, riding on the calendar button. */
+function StreakBadge({ streak }: { streak: number }) {
+  return (
+    <span
+      style={{
+        position: 'absolute',
+        top: -6,
+        right: -8,
+        minWidth: 20,
+        height: 20,
+        padding: '0 5px',
+        borderRadius: 10,
+        border: '1.5px solid #0e193c',
+        background: '#e8b93f',
+        color: '#23180a',
+        fontSize: 11,
+        fontWeight: 900,
+        lineHeight: '17px',
+        textAlign: 'center',
+        pointerEvents: 'none',
+      }}
+    >
+      {streak}
+    </span>
   );
 }
 

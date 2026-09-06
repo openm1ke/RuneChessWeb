@@ -15,6 +15,7 @@ import {
 import { ConsentBanner } from './components/shared/ConsentBanner';
 import { AchievementCelebrationOverlay } from './components/shared/AchievementReveal';
 import { DailyChallengeCalendarSheet } from './components/game/DailyChallengeCalendarSheet';
+import { Toast } from './components/shared/Toast';
 import { MenuScreen } from './screens/MenuScreen';
 import { LevelSelectScreen } from './screens/LevelSelectScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -149,6 +150,9 @@ export default function App() {
   // flag — mirrors the mobile app's two separate call sites for the same
   // dialog.
   const [dailyCalendarMode, setDailyCalendarMode] = useState<'view' | 'exit' | null>(null);
+  /** Set when opening the daily challenge finds that the freeze quietly
+   * covered a missed day — see `announceFreezeIfSpent`. */
+  const [freezeNotice, setFreezeNotice] = useState<string | null>(null);
   /** The exact local calendar day `openDailyChallenge` generated the
    * current puzzle for — kept so `handleDailyChallengeSolved` saves under
    * the same key even if midnight passes mid-attempt. Null whenever
@@ -570,8 +574,26 @@ export default function App() {
   /** Starts today's daily-challenge puzzle. `engine.level` simply overrides
    * to the daily puzzle until `exitDailyChallenge` (or any campaign entry
    * point, which always clears it) — see `DozorEngine.loadDailyChallenge`. */
+  /** The freeze is spent automatically, without asking — which is right (a
+   * missed day is usually an accident, and a prompt at that moment is just
+   * noise) but leaves the player watching a streak survive a gap for no
+   * visible reason. Told once, on the next visit, and remembered so it is
+   * never repeated. */
+  const announceFreezeIfSpent = () => {
+    const stats = computeDailyChallengeStats({
+      history: dailyChallengeHistoryRef.current,
+      today: new Date(),
+    });
+    if (stats.frozenDates.size === 0) return;
+    const latest = [...stats.frozenDates].sort().at(-1)!;
+    if (progressRepository.loadAnnouncedFreezeDate() === latest) return;
+    progressRepository.saveAnnouncedFreezeDate(latest);
+    setFreezeNotice('Пропуск дня прощён — использован дейли-фриз ❄️');
+  };
+
   const openDailyChallenge = () => {
     abandonReportedRef.current = false;
+    announceFreezeIfSpent();
     setLevelSelectAddress(false);
     void musicService.stopMenu();
     const date = new Date();
@@ -952,8 +974,16 @@ export default function App() {
             achievement={levelResultAchievement}
             onAchievementRevealed={playAchievementReveal}
             onOpenDailyCalendar={() => setDailyCalendarMode('view')}
+            dailyStreak={
+              engine.isDailyChallenge
+                ? computeDailyChallengeStats({ history: dailyChallengeHistory, today: new Date() }).currentStreak
+                : 0
+            }
             onBonusStarOffered={() => analyticsService.adOfferShown('bonus_star')}
           />
+          {freezeNotice && (
+            <Toast message={freezeNotice} onDone={() => setFreezeNotice(null)} />
+          )}
           {dailyCalendarMode && (
             <DailyChallengeCalendarSheet
               history={dailyChallengeHistory}

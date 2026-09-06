@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { computeDailyChallengeStats } from '../game/dailyChallengeStats';
+import {
+  computeDailyChallengeStats,
+  daysUntilFreezeRefill,
+  formatDurationShort,
+  timeUntilNextDailyChallenge,
+} from '../game/dailyChallengeStats';
 import type { DailyChallengeResult } from '../game/dailyChallengeLevels';
 
 const RESULT: DailyChallengeResult = { stars: 3, hintsUsed: 0 };
@@ -75,5 +80,41 @@ describe('computeDailyChallengeStats', () => {
     const stats = computeDailyChallengeStats({ history: historyFor(keys), today: new Date(2026, 0, 14) });
     expect(stats.currentStreak).toBe(14);
     expect(stats.freezeAvailable).toBe(true);
+  });
+});
+
+/** The deadline the whole mode runs on, which nothing on screen used to name. */
+describe('time until the next daily', () => {
+  it('counts down to local midnight, not 24h from now', () => {
+    expect(timeUntilNextDailyChallenge(new Date(2026, 8, 6, 18, 30))).toBe(
+      (5 * 60 + 30) * 60_000,
+    );
+  });
+
+  it('is a full day exactly at midnight', () => {
+    expect(timeUntilNextDailyChallenge(new Date(2026, 8, 6))).toBe(24 * 3600_000);
+  });
+});
+
+describe('days until the freeze refills', () => {
+  // The refill lands on every 7th day of the streak.
+  it('a fresh streak needs the full week', () => {
+    expect(daysUntilFreezeRefill(0)).toBe(7);
+  });
+
+  it('counts down within the week and starts over after a refill', () => {
+    expect(daysUntilFreezeRefill(1)).toBe(6);
+    expect(daysUntilFreezeRefill(6)).toBe(1);
+    expect(daysUntilFreezeRefill(7)).toBe(7);
+    expect(daysUntilFreezeRefill(9)).toBe(5);
+  });
+});
+
+describe('the countdown reads at a glance', () => {
+  it('never shows seconds', () => {
+    expect(formatDurationShort(6 * 3600_000 + 20 * 60_000 + 42_000)).toBe('6 ч 20 мин');
+    expect(formatDurationShort(3 * 3600_000)).toBe('3 ч');
+    expect(formatDurationShort(40 * 60_000)).toBe('40 мин');
+    expect(formatDurationShort(30_000)).toBe('меньше минуты');
   });
 });

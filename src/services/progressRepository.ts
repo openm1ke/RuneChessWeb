@@ -39,6 +39,7 @@ const KEYS = {
   dailyReminderHour: 'dozor.daily_reminder_hour',
   dailyReminderLastShownDate: 'dozor.daily_reminder_last_shown_date',
   dailyReminderLastMessage: 'dozor.daily_reminder_last_message',
+  announcedFreezeDate: 'dozor.daily_freeze_announced_v1',
 } as const;
 
 const DEFAULT_DAILY_REMINDER_HOUR = 11;
@@ -315,5 +316,19 @@ export class ProgressRepository {
   saveDailyReminderShownState(shownDate: string, message: string): void {
     writeJson(KEYS.dailyReminderLastShownDate, shownDate);
     writeJson(KEYS.dailyReminderLastMessage, message);
+  }
+
+  /** The most recent day whose freeze consumption the player has already
+   * been told about, `dailyChallengeKey`-formatted, or null if none.
+   *
+   * The freeze is spent silently by `computeDailyChallengeStats` — nothing
+   * asks the player, by design. Without a record of what has been announced,
+   * the notice would either never appear or reappear on every visit. */
+  loadAnnouncedFreezeDate(): string | null {
+    return readJson<string>(KEYS.announcedFreezeDate);
+  }
+
+  saveAnnouncedFreezeDate(key: string): void {
+    writeJson(KEYS.announcedFreezeDate, key);
   }
 }
