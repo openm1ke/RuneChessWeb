@@ -42,4 +42,42 @@ describe('gameProgressFrom', () => {
     expect(progress.totalLevels).toBe(campaignLevels.length);
     expect(progress.maxStars).toBe((campaignLevels.length - FIRST_SCORED_LEVEL_INDEX) * 3);
   });
+
+  it('a level skipped for an ad is not a level passed', () => {
+    // The frontier moved past level 7 without it being solved, so the
+    // counter used to say eight levels were done. The stars stayed honest —
+    // a skip earns none — but the level count flattered.
+    const progress = gameProgressFrom({
+      unlockedLevels: new Set([0, 1, 2, 3, 4, 5, 6, 7, 8]),
+      highestUnlocked: 8,
+      levelStars: new Map([
+        [5, 3],
+        [6, 2],
+      ]),
+      skippedLevels: new Set([7]),
+    });
+
+    expect(progress.completedLevels).toBe(7);
+  });
+
+  it('coming back and solving a skipped level makes it count again', () => {
+    const unlockedLevels = new Set([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    const skipped = gameProgressFrom({
+      unlockedLevels,
+      highestUnlocked: 8,
+      levelStars: new Map([[5, 3]]),
+      skippedLevels: new Set([7]),
+    });
+    const solvedLater = gameProgressFrom({
+      unlockedLevels,
+      highestUnlocked: 8,
+      levelStars: new Map([
+        [5, 3],
+        [7, 2],
+      ]),
+      skippedLevels: new Set(),
+    });
+
+    expect(solvedLater.completedLevels).toBe(skipped.completedLevels + 1);
+  });
 });

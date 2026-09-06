@@ -45,6 +45,7 @@ AppMetrica показывает любое событие сама. Метрик
 | `settings_opened` | ✔ | ✔ | — |
 | `music_enabled` / `music_disabled` | ✔ | ✔ | — |
 | `progress_reset_confirmed` | ✔ | ✔ | — |
+| `notification_opened` | ✔ | — | — |
 | `daily_challenge_opened` | ✔ | ✔ | `date` |
 | `daily_challenge_started` | ✔ | ✔ | `date` |
 | `daily_challenge_completed` | ✔ | ✔ | `date`, `stars`¹, `hints_used`, `streak_length` |
@@ -71,7 +72,9 @@ AppMetrica показывает любое событие сама. Метрик
 ## Соглашения
 
 - `level` — **1-based**, тот номер, который видит игрок, никогда не индекс.
-- `entry_source` — `menu_play` | `level_select` | `next_level` | `skip_level`.
+- `entry_source` — `menu_play` | `level_select` | `next_level` | `skip_level` |
+  `daily_challenge` | `reminder`. `reminder` — приложение открыто нажатием на
+  напоминание о задании дня (см. `notification_opened`).
 - `placement` — `extra_hint` | `bonus_star` | `skip_level`.
   `extra_hint` — предложение ролика, когда бесплатные подсказки кончились;
   `skip_level` — предложение пропустить уровень после трёх сбросов подряд.

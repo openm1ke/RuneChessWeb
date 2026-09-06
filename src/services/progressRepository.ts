@@ -12,6 +12,8 @@ export interface ProgressSnapshot {
   unlockedLevels: Set<number>;
   highestLevel: number;
   seenOnboardingLevels: Set<number>;
+  /** Levels the player was handed rather than solved — see `save`. */
+  skippedLevels: Set<number>;
   tutorialComplete: boolean;
   levelStars: Map<number, number>;
   musicEnabled: boolean;
@@ -28,6 +30,10 @@ export interface ProgressSnapshot {
 const KEYS = {
   unlockedLevels: 'dozor.unlocked_level_indexes',
   seenOnboardingLevels: 'dozor.seen_onboarding_level_indexes',
+  // Levels advanced past without solving them (the rewarded-ad skip, or the
+  // dev control). Stored so "Пройдено уровней" can leave them out — the
+  // unlocked-level frontier alone cannot tell a solve from a skip.
+  skippedLevels: 'dozor.skipped_level_indexes_v1',
   tutorialComplete: 'dozor.tutorial_campaign_complete',
   musicEnabled: 'dozor.music_enabled',
   musicVolume: 'dozor.music_volume',
@@ -137,6 +143,12 @@ export class ProgressRepository {
         .map((v) => Number.parseInt(v, 10))
         .filter((index) => Number.isInteger(index) && index >= 0 && index < FIRST_SCORED_LEVEL_INDEX),
     );
+    const skippedRaw = readJson<string[]>(KEYS.skippedLevels) ?? [];
+    const skippedLevels = new Set<number>(
+      skippedRaw
+        .map((v) => Number.parseInt(v, 10))
+        .filter((index) => Number.isInteger(index) && index >= 0 && index < campaignLevels.length),
+    );
     const tutorialComplete = readJson<boolean>(KEYS.tutorialComplete) ?? false;
     const musicEnabled = readJson<boolean>(KEYS.musicEnabled) ?? true;
     const storedMusicVolume = readJson<number>(KEYS.musicVolume) ?? 0.6;
@@ -215,6 +227,7 @@ export class ProgressRepository {
       unlockedLevels: unlocked,
       highestLevel: highest,
       seenOnboardingLevels,
+      skippedLevels,
       tutorialComplete,
       levelStars,
       musicEnabled,
@@ -232,6 +245,7 @@ export class ProgressRepository {
   save(args: {
     unlockedLevels: Set<number>;
     seenOnboardingLevels: Set<number>;
+    skippedLevels?: Set<number>;
     tutorialComplete: boolean;
     levelStars: Map<number, number>;
     achievementUnlockedAt?: Map<string, string>;
@@ -245,6 +259,12 @@ export class ProgressRepository {
       KEYS.seenOnboardingLevels,
       [...args.seenOnboardingLevels].sort((a, b) => a - b).map(String),
     );
+    if (args.skippedLevels != null) {
+      writeJson(
+        KEYS.skippedLevels,
+        [...args.skippedLevels].sort((a, b) => a - b).map(String),
+      );
+    }
     writeJson(KEYS.tutorialComplete, args.tutorialComplete);
     const starsPayload: Record<string, number> = {};
     for (const [index, stars] of args.levelStars) starsPayload[String(index)] = stars;
@@ -276,6 +296,7 @@ export class ProgressRepository {
   resetProgress(): void {
     removeValue(KEYS.unlockedLevels);
     removeValue(KEYS.seenOnboardingLevels);
+    removeValue(KEYS.skippedLevels);
     removeValue(KEYS.tutorialComplete);
     removeValue(KEYS.levelStars);
     removeValue(KEYS.achievementUnlockedAt);

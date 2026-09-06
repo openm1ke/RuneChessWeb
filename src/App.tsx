@@ -123,6 +123,11 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [unlockedLevels, setUnlockedLevels] = useState<Set<number>>(new Set([0]));
   const [seenOnboardingLevels, setSeenOnboardingLevels] = useState<Set<number>>(new Set());
+  // Levels the player was handed by a skip instead of solving. Kept so the
+  // "Пройдено уровней" counter can leave them out — the unlocked frontier
+  // alone cannot tell a solve from a skip, and it flattered the player who
+  // watched an ad to get past a level.
+  const [skippedLevels, setSkippedLevels] = useState<Set<number>>(new Set());
   const [levelStars, setLevelStars] = useState<Map<number, number>>(new Map());
   const [tutorialComplete, setTutorialComplete] = useState(false);
   const [highestLevel, setHighestLevel] = useState(0);
@@ -201,6 +206,8 @@ export default function App() {
     setUnlockedLevels(snapshot.unlockedLevels);
     setHighestLevel(snapshot.highestLevel);
     setSeenOnboardingLevels(snapshot.seenOnboardingLevels);
+    setSkippedLevels(snapshot.skippedLevels);
+    skippedRef.current = snapshot.skippedLevels;
     setTutorialComplete(snapshot.tutorialComplete);
     setLevelStars(snapshot.levelStars);
     levelStarsRef.current = snapshot.levelStars;
@@ -259,6 +266,21 @@ export default function App() {
         result,
         levelEntrySourceRef.current,
       );
+      // A level skipped earlier and played through later is passed like any
+      // other — the registry only holds what is still owed.
+      if (skippedRef.current.has(levelIndex)) {
+        const stillSkipped = new Set(skippedRef.current);
+        stillSkipped.delete(levelIndex);
+        skippedRef.current = stillSkipped;
+        setSkippedLevels(stillSkipped);
+        progressRepository.save({
+          unlockedLevels: unlockedLevelsRef.current,
+          seenOnboardingLevels: seenOnboardingRef.current,
+          skippedLevels: stillSkipped,
+          tutorialComplete: tutorialCompleteRef.current,
+          levelStars: levelStarsRef.current,
+        });
+      }
       if (result.stars == null) return;
 
       const newProgress = recordLevelSolved(finalizePending(achievementProgressRef.current), levelIndex, result);
@@ -345,6 +367,7 @@ export default function App() {
   // Refs mirroring state for use inside the onLevelSolved closure/persist calls.
   const unlockedLevelsRef = useRef(unlockedLevels);
   const seenOnboardingRef = useRef(seenOnboardingLevels);
+  const skippedRef = useRef(skippedLevels);
   // A hidden tab is not a player who is still solving. The music has to stop
   // (browsers do not reliably stop it themselves, and the game may be on a
   // second monitor), and the attempt's clock has to stop with it, or a level
@@ -399,6 +422,9 @@ export default function App() {
   useEffect(() => {
     seenOnboardingRef.current = seenOnboardingLevels;
   }, [seenOnboardingLevels]);
+  useEffect(() => {
+    skippedRef.current = skippedLevels;
+  }, [skippedLevels]);
   useEffect(() => {
     tutorialCompleteRef.current = tutorialComplete;
   }, [tutorialComplete]);
@@ -551,10 +577,11 @@ export default function App() {
     if (analyticsConsent && screen === 'achievements') analyticsService.achievementsOpened();
   }, [analyticsConsent, analyticsService, screen]);
 
-  const persist = (overrides: Partial<{ unlockedLevels: Set<number>; seenOnboardingLevels: Set<number>; tutorialComplete: boolean; levelStars: Map<number, number> }>) => {
+  const persist = (overrides: Partial<{ unlockedLevels: Set<number>; seenOnboardingLevels: Set<number>; skippedLevels: Set<number>; tutorialComplete: boolean; levelStars: Map<number, number> }>) => {
     progressRepository.save({
       unlockedLevels: overrides.unlockedLevels ?? unlockedLevelsRef.current,
       seenOnboardingLevels: overrides.seenOnboardingLevels ?? seenOnboardingRef.current,
+      skippedLevels: overrides.skippedLevels ?? skippedRef.current,
       tutorialComplete: overrides.tutorialComplete ?? tutorialCompleteRef.current,
       levelStars: overrides.levelStars ?? levelStars,
     });
@@ -751,6 +778,12 @@ export default function App() {
       analyticsService.mainCampaignCompleted();
     }
     engine.nextLevel();
+    // The level being left behind was not solved — remember that, so it
+    // stops counting as passed until it is actually played through.
+    const nextSkipped = new Set(skippedLevels);
+    nextSkipped.add(before);
+    skippedRef.current = nextSkipped;
+    setSkippedLevels(nextSkipped);
     levelEntrySourceRef.current = 'skip_level';
     analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX, 'skip_level');
     const nextUnlocked = new Set(unlockedLevels);
@@ -769,7 +802,12 @@ export default function App() {
       analyticsService.tutorialCompleted();
       recordNewAchievements(levelStarsRef.current, achievementProgressRef.current, 'tutorial_completed', true);
     }
-    persist({ unlockedLevels: nextUnlocked, seenOnboardingLevels: nextSeen, tutorialComplete: nextTutorialComplete });
+    persist({
+      unlockedLevels: nextUnlocked,
+      seenOnboardingLevels: nextSeen,
+      skippedLevels: nextSkipped,
+      tutorialComplete: nextTutorialComplete,
+    });
   };
 
   const resetOnboardingForDebug = () => {
@@ -852,6 +890,8 @@ export default function App() {
     const initialStars = new Map<number, number>();
     unlockedLevelsRef.current = initialUnlocked;
     seenOnboardingRef.current = initialSeen;
+    skippedRef.current = new Set();
+    setSkippedLevels(new Set());
     tutorialCompleteRef.current = false;
     levelStarsRef.current = initialStars;
     achievementUnlockedAtRef.current = new Map();
@@ -905,7 +945,7 @@ export default function App() {
   // The one place "how far am I" is computed. The level list and the
   // achievements screen used to work it out themselves and disagreed — see
   // .
-  const progress = gameProgressFrom({ unlockedLevels, highestUnlocked: highestLevel, levelStars });
+  const progress = gameProgressFrom({ unlockedLevels, highestUnlocked: highestLevel, levelStars, skippedLevels });
 
   switch (screen) {
     case 'campaignComplete':

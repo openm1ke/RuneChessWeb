@@ -25,21 +25,30 @@ export interface GameProgress {
  * and so finished. The last level of a campaign has no successor to unlock,
  * so the frontier never moves past it — a recorded star result catches that
  * one, and any other scored level.
+ *
+ * `skippedLevels` are the ones the frontier passed without the player
+ * solving them — the rewarded-ad skip. They are not finished, and this
+ * counter used to say they were: a skip earns no stars, so the star count
+ * stayed honest while the level count quietly flattered.
  */
 export function gameProgressFrom({
   unlockedLevels,
   highestUnlocked,
   levelStars,
+  skippedLevels,
 }: {
   unlockedLevels: Set<number>;
   highestUnlocked: number;
   levelStars: Map<number, number>;
+  skippedLevels?: Set<number>;
 }): GameProgress {
   const totalLevels = campaignLevels.length;
   let completedLevels = 0;
   for (let index = 0; index < totalLevels; index++) {
     const completed =
-      unlockedLevels.has(index) && (index < highestUnlocked || levelStars.get(index) != null);
+      unlockedLevels.has(index) &&
+      skippedLevels?.has(index) !== true &&
+      (index < highestUnlocked || levelStars.get(index) != null);
     if (completed) completedLevels++;
   }
   let stars = 0;
