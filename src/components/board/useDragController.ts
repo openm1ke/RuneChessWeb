@@ -1,4 +1,5 @@
 import { useRef, useState, createElement, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import type { DozorEngine } from '../../game/dozorEngine';
 import type { Cell, Piece, TrayItem } from '../../game/models';
 import { pieceAsset, pieceUprightRotationDeg } from '../../game/pieceTypes';
@@ -134,7 +135,7 @@ export function useDragController(
   };
 
   const type = drag?.piece?.type ?? drag?.item?.type;
-  const feedback = drag && type
+  const sprite = drag && type
     ? createElement('img', {
         src: pieceAsset[type],
         alt: '',
@@ -152,6 +153,18 @@ export function useDragController(
         },
       })
     : null;
+
+  // Rendered into `document.body`, not where the board sits.
+  //
+  // `position: fixed` is only viewport-relative while no ancestor has a
+  // transform — and every scene lives inside `DesignCanvas`, which scales
+  // and centres itself with one. Inside that, the sprite was being placed
+  // at the pointer's *viewport* coordinates interpreted in the canvas's own
+  // space: measured at 128px to the right of the cursor on a desktop-width
+  // window, and off by however much the canvas is offset elsewhere. Mobile
+  // never had this because Flutter draws drag feedback in a screen-level
+  // overlay.
+  const feedback = sprite ? createPortal(sprite, document.body) : null;
 
   return { startFromBoard, startFromTray, feedback };
 }
