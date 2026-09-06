@@ -5,6 +5,7 @@ import { AchievementReveal } from '../components/shared/AchievementReveal';
 import type { AchievementDefinition } from '../data/achievements';
 import { campaignLevels } from '../data/campaignLevels';
 import { asset } from '../lib/assetUrl';
+import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
 const COINS = [
   { target: 1, left: 60, top: 300, size: 44 },
@@ -161,6 +162,7 @@ function LandscapeCampaignCompleteScene({
   onAchievementRevealed,
   viewport,
 }: CampaignCompleteProps & { viewport: { width: number; height: number } }) {
+  const skin = useCosmeticSkin();
   const { width, height } = viewport;
   const panelWidth = Math.min(720, Math.max(440, width * 0.48));
   const panelLeft = (width - panelWidth) / 2;
@@ -168,7 +170,7 @@ function LandscapeCampaignCompleteScene({
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       <img
-        src={asset("assets/images/menu-castle-bg-web-wide.webp")}
+        src={skin.wideMenuBackground}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         draggable={false}

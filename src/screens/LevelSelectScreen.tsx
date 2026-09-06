@@ -2,8 +2,8 @@ import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { LevelSelectList } from '../components/game/LevelSelectList';
 import { RoundControl } from '../components/shared/RoundControl';
 import { useViewportSize } from '../components/game/useViewportSize';
-import { asset } from '../lib/assetUrl';
 import type { GameProgress } from '../game/gameProgress';
+import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
 interface LevelSelectProps {
   unlockedLevels: Set<number>;
@@ -110,6 +110,7 @@ function LandscapeLevelSelectScene({
   onLevelChosen,
   viewportWidth,
 }: LevelSelectProps & { viewportWidth: number }) {
+  const skin = useCosmeticSkin();
   // Each tile remains comfortably tappable while the number of columns grows
   // on tablets and desktop-sized browser windows.
   const columns = Math.min(8, Math.max(5, Math.floor((viewportWidth - 112) / 108)));
@@ -117,7 +118,7 @@ function LandscapeLevelSelectScene({
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       <img
-        src={asset("assets/images/menu-castle-bg-web-wide.webp")}
+        src={skin.wideMenuBackground}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         draggable={false}

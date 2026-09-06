@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { RoundControl } from '../components/shared/RoundControl';
 import { useViewportSize } from '../components/game/useViewportSize';
-import { asset } from '../lib/assetUrl';
 import { formatHourWindow } from '../services/dailyReminderMessages';
+import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
 interface SettingsProps {
   musicEnabled: boolean;
@@ -74,11 +74,12 @@ function PortraitSettingsScene({
   onAppearance,
   skinName,
 }: SettingsProps & { onResetRequested: () => void }) {
+  const skin = useCosmeticSkin();
   return (
     <DesignCanvas>
       <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
         <img
-          src={asset("assets/images/menu-castle-bg-clean.webp")}
+          src={skin.menuBackground}
           alt=""
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
           draggable={false}
@@ -160,10 +161,11 @@ function LandscapeSettingsScene({
   onAppearance,
   skinName,
 }: SettingsProps & { onResetRequested: () => void }) {
+  const skin = useCosmeticSkin();
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       <img
-        src={asset("assets/images/menu-castle-bg-web-wide.webp")}
+        src={skin.wideMenuBackground}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         draggable={false}

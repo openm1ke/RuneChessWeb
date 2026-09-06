@@ -4,6 +4,7 @@ import { useViewportSize } from '../components/game/useViewportSize';
 import { asset } from '../lib/assetUrl';
 import { RulesIcon, SettingsIcon } from '../components/shared/MenuIcons';
 import { playNavigationPress, playNavigationRelease } from '../services/musicService';
+import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
 export function MenuScreen({
   onPlay,
@@ -30,6 +31,7 @@ export function MenuScreen({
    * small checkmark badge on the button instead of a plain empty ring. */
   dailyChallengeSolvedToday?: boolean;
 }) {
+  const skin = useCosmeticSkin();
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
 
@@ -53,7 +55,7 @@ export function MenuScreen({
       <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: '#000' }} />
         <img
-          src={asset("assets/images/menu-castle-bg-clean.webp")}
+          src={skin.menuBackground}
           alt=""
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
           draggable={false}
@@ -164,6 +166,7 @@ function LandscapeMenuScene({
   currentLevel: number;
   onRulesOpened?: (proceed: () => void) => void;
 }) {
+  const skin = useCosmeticSkin();
   const { width, height } = useViewportSize();
   const panelWidth = Math.min(290, Math.max(210, width * 0.27));
   // Centred on the screen's own edges rather than the artwork's off-centre
@@ -177,7 +180,7 @@ function LandscapeMenuScene({
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       <img
-        src={asset("assets/images/menu-castle-bg-web-wide.webp")}
+        src={skin.wideMenuBackground}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         draggable={false}

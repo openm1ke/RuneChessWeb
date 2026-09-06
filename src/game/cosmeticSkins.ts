@@ -38,6 +38,10 @@ export interface CosmeticSkin {
   boardFrameAsset: string | null;
   /** The landscape companion piece, when the set has one. */
   wideBoardAsset: string | null;
+  /** The room the menu and every panel over it are set in: portrait, and
+   * the wide painting landscape uses. */
+  menuBackground: string;
+  wideMenuBackground: string;
   /** Painted behind everything, and around the table in landscape. */
   backdrop: string;
   /**
@@ -79,6 +83,8 @@ export const classicSkin: CosmeticSkin = {
   // The classic frame ends where the felt begins: nothing leans in.
   boardFrameAsset: null,
   wideBoardAsset: asset('assets/images/isometric-table-web-wide.webp'),
+  menuBackground: asset('assets/images/menu-castle-bg-clean.webp'),
+  wideMenuBackground: asset('assets/images/menu-castle-bg-web-wide.webp'),
   backdrop: '#05091a',
   lightCell: '#dbc49a',
   darkCell: '#1d2c55',
@@ -105,8 +111,9 @@ export const obsidianAstralSkin: CosmeticSkin = {
   tagline: 'Чёрное стекло, золото и звёздная пыль внутри фигур.',
   boardAsset: asset(`${OBSIDIAN}/board.webp`),
   boardFrameAsset: asset(`${OBSIDIAN}/board-frame.webp`),
-  // No wide art in this set yet — landscape places the portrait table.
-  wideBoardAsset: null,
+  wideBoardAsset: asset(`${OBSIDIAN}/board-wide.webp`),
+  menuBackground: asset(`${OBSIDIAN}/menu.webp`),
+  wideMenuBackground: asset(`${OBSIDIAN}/menu-wide.webp`),
   backdrop: '#05070f',
   // Lifted well above the art's own squares (which are nearly black): the
   // figures are dark too, and on the real thing they disappeared.

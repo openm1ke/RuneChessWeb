@@ -74,6 +74,18 @@ describe('cosmetic skins', () => {
     expect(obsidianAstralSkin.pieceAmbientGlow).toBeGreaterThan(0);
   });
 
+  it('a set brings its own room and its own wide table', () => {
+    // Landscape and the menu are skinned too; a set that named neither
+    // would fall back to the classic room mid-scene.
+    for (const skin of cosmeticSkins) {
+      expect(skin.menuBackground, skin.id).toBeTruthy();
+      expect(skin.wideMenuBackground, skin.id).toBeTruthy();
+      expect(skin.wideBoardAsset, skin.id).toBeTruthy();
+    }
+    expect(obsidianAstralSkin.wideBoardAsset).toContain('board-wide.webp');
+    expect(obsidianAstralSkin.menuBackground).toContain('menu.webp');
+  });
+
   it('only a frame that overhangs carries a layer of its own', () => {
     // The classic frame ends where the felt begins; the obsidian one leans
     // its gems in over the squares, so it needs to be drawn back on top.

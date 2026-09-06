@@ -15,7 +15,7 @@ import { CosmeticSkinContext } from '../game/cosmeticSkinContext';
 import { coinAsset, cosmeticSkins, uprightRotationOf, type CosmeticSkin } from '../game/cosmeticSkins';
 import { pieceOnBoardSize, pieceSkins, type PieceType } from '../game/pieceTypes';
 import { BOARD_N } from '../game/attackRules';
-import { asset } from '../lib/assetUrl';
+import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
 export function AppearanceScreen({
   selectedSkinId,
@@ -26,11 +26,12 @@ export function AppearanceScreen({
   onSkinChosen: (skin: CosmeticSkin) => void;
   onBack: () => void;
 }) {
+  const skin = useCosmeticSkin();
   return (
     <DesignCanvas background="#05091a">
       <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
         <img
-          src={asset('assets/images/menu-castle-bg-clean.webp')}
+          src={skin.menuBackground}
           alt=""
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
           draggable={false}

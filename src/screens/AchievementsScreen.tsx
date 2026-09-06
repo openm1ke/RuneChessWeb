@@ -15,7 +15,7 @@ import {
 import { ProgressSummary } from '../components/shared/ProgressSummary';
 import type { GameProgress } from '../game/gameProgress';
 import type { AchievementProgressState } from '../game/achievementProgress';
-import { asset } from '../lib/assetUrl';
+import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
 interface AchievementsProps {
   /** Shared with the level list so both screens quote the same numbers —
@@ -179,10 +179,11 @@ function LandscapeAchievementsScene({
   stats: ReactNode;
   grid: ReactNode;
 }) {
+  const skin = useCosmeticSkin();
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       <img
-        src={asset('assets/images/menu-castle-bg-web-wide.webp')}
+        src={skin.wideMenuBackground}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         draggable={false}

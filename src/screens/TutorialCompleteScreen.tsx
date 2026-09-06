@@ -3,7 +3,7 @@ import { useViewportSize } from '../components/game/useViewportSize';
 import { MenuActionButton } from './MenuScreen';
 import { AchievementReveal } from '../components/shared/AchievementReveal';
 import type { AchievementDefinition } from '../data/achievements';
-import { asset } from '../lib/assetUrl';
+import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
 interface TutorialCompleteProps {
   onContinue: () => void;
@@ -16,6 +16,7 @@ interface TutorialCompleteProps {
 }
 
 export function TutorialCompleteScreen(props: TutorialCompleteProps) {
+  const skin = useCosmeticSkin();
   const { onContinue, onLevels } = props;
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
@@ -28,7 +29,7 @@ export function TutorialCompleteScreen(props: TutorialCompleteProps) {
     <DesignCanvas>
       <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
         <img
-          src={asset("assets/images/menu-castle-bg-clean.webp")}
+          src={skin.menuBackground}
           alt=""
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
           draggable={false}
@@ -68,10 +69,11 @@ export function TutorialCompleteScreen(props: TutorialCompleteProps) {
  * side-by-side, avoiding a shrunken portrait page after rotation.
  */
 function LandscapeTutorialCompleteScene({ onContinue, onLevels, achievement, animateAchievement, onAchievementRevealed }: TutorialCompleteProps) {
+  const skin = useCosmeticSkin();
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       <img
-        src={asset("assets/images/menu-castle-bg-web-wide.webp")}
+        src={skin.wideMenuBackground}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         draggable={false}
