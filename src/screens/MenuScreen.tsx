@@ -60,6 +60,27 @@ export function MenuScreen({
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
           draggable={false}
         />
+        {/* The same room, brighter, breathed in and out underneath the menu
+            — see `.menu-backdrop-breath`. Never fully revealed: the motion
+            stays at the edge of perception and the menu's controls stay in
+            charge. A set without a brighter twin simply keeps still. */}
+        {skin.menuBackgroundLively && (
+          <img
+            className="menu-backdrop-breath"
+            src={skin.menuBackgroundLively}
+            alt=""
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              opacity: 0,
+              pointerEvents: 'none',
+            }}
+            draggable={false}
+          />
+        )}
         <div
           style={{
             position: 'absolute',

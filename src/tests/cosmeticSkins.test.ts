@@ -86,6 +86,14 @@ describe('cosmetic skins', () => {
     expect(obsidianAstralSkin.menuBackground).toContain('menu.webp');
   });
 
+  it('the classic room breathes, the obsidian one keeps still', () => {
+    // The brighter twin is what `.menu-backdrop-breath` fades in and out;
+    // a set without one must render no layer at all rather than an empty
+    // <img>.
+    expect(classicSkin.menuBackgroundLively).toContain('living-bright');
+    expect(obsidianAstralSkin.menuBackgroundLively).toBeNull();
+  });
+
   it('only a frame that overhangs carries a layer of its own', () => {
     // The classic frame ends where the felt begins; the obsidian one leans
     // its gems in over the squares, so it needs to be drawn back on top.

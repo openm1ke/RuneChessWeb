@@ -136,3 +136,39 @@ img {
     box-shadow: 0 0 20px rgba(255, 215, 122, 0.26);
   }
 }
+
+/* The menu room breathes.
+ *
+ * Not a loop: it brightens once, holds, fades back, and then stays still for
+ * three seconds — the mobile app's `MenuScene` pulse, in the same rhythm
+ * (2.4s in, 0.85s held, 2.4s out, 3s still). A permanent shimmer under a
+ * menu is the kind of motion people turn games off over; this is meant to
+ * be caught out of the corner of an eye. */
+.menu-backdrop-breath {
+  animation: menu-backdrop-breath 8650ms ease-in-out infinite;
+}
+
+@keyframes menu-backdrop-breath {
+  0% {
+    opacity: 0;
+  }
+  27.7% {
+    opacity: 0.72;
+  }
+  37.6% {
+    opacity: 0.72;
+  }
+  65.3% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-backdrop-breath {
+    animation: none;
+    opacity: 0;
+  }
+}

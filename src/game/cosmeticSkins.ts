@@ -42,6 +42,10 @@ export interface CosmeticSkin {
    * the wide painting landscape uses. */
   menuBackground: string;
   wideMenuBackground: string;
+  /** A brighter version of the same room, breathed in and out under the
+   * menu so the scene is not quite still. Null for a set without one,
+   * which simply keeps still. */
+  menuBackgroundLively: string | null;
   /** Painted behind everything, and around the table in landscape. */
   backdrop: string;
   /**
@@ -85,6 +89,7 @@ export const classicSkin: CosmeticSkin = {
   wideBoardAsset: asset('assets/images/isometric-table-web-wide.webp'),
   menuBackground: asset('assets/images/menu-castle-bg-clean.webp'),
   wideMenuBackground: asset('assets/images/menu-castle-bg-web-wide.webp'),
+  menuBackgroundLively: asset('assets/images/menu-castle-bg-living-bright.webp'),
   backdrop: '#05091a',
   lightCell: '#dbc49a',
   darkCell: '#1d2c55',
@@ -114,6 +119,8 @@ export const obsidianAstralSkin: CosmeticSkin = {
   wideBoardAsset: asset(`${OBSIDIAN}/board-wide.webp`),
   menuBackground: asset(`${OBSIDIAN}/menu.webp`),
   wideMenuBackground: asset(`${OBSIDIAN}/menu-wide.webp`),
+  // One painting, no brighter twin: this room keeps still.
+  menuBackgroundLively: null,
   backdrop: '#05070f',
   // Lifted well above the art's own squares (which are nearly black): the
   // figures are dark too, and on the real thing they disappeared.
