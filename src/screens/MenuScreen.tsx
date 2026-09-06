@@ -189,28 +189,45 @@ function LandscapeMenuScene({
 }) {
   const skin = useCosmeticSkin();
   const { width, height } = useViewportSize();
-  // Two columns: the mark on one side, the buttons on the other.
+  // One centred column while the height allows it, two when it does not.
   //
-  // One column of everything only fits a tall screen. On a phone held
-  // sideways — about 411 logical pixels of height — the button stack ran off
-  // the bottom and the footer link, pinned to that bottom, landed on the
-  // play button's own subtitle. A landscape screen has width to spare and no
-  // height, so the layout uses the width. Mirrors `LandscapeMenuScene` in
-  // the Flutter app.
+  // The mark above the buttons, both centred, is the composition this menu
+  // is drawn for, and a wide window has room for it. A phone held sideways
+  // does not: at about 411 logical pixels of height the stack ran off the
+  // bottom, and the footer link, pinned to that bottom, was drawn over the
+  // play button's own subtitle. So below the height the centred column
+  // needs, the layout uses the width it does have instead — mark and footer
+  // in one column, buttons in the other. Mirrors `LandscapeMenuScene` in the
+  // Flutter app.
   const gap = 14;
   const buttonHeights = [62, 82, 62, 62];
-  const buttonWidth = Math.min(320, Math.max(220, width * 0.3));
-  const columnRight = Math.min(120, Math.max(28, width * 0.09));
-  const columnLeft = width - columnRight - buttonWidth;
   const naturalHeight =
     buttonHeights.reduce((sum, h) => sum + h, 0) + gap * (buttonHeights.length - 1);
-  // The rules and settings icons live in the top-right corner, which is this
-  // column's corner too: the stack starts below them.
+  // The rules and settings icons live in the top-right corner; a column of
+  // buttons on that side has to start below them.
   const stackCeiling = 72;
-  const room = height - 16 - stackCeiling;
+  const footerRoom = 56;
+
+  const centredBrandOrb = Math.min(138, Math.max(96, height * 0.16));
+  const centredBrandHeight = centredBrandOrb * 1.48 * (660 / 560);
+  const centred = height >= centredBrandHeight + 20 + naturalHeight + footerRoom + 24;
+
+  const buttonWidth = centred
+    ? Math.min(290, Math.max(210, width * 0.27))
+    : Math.min(320, Math.max(220, width * 0.3));
+  const columnRight = Math.min(120, Math.max(28, width * 0.09));
+  const columnLeft = centred
+    ? (width - buttonWidth) / 2
+    : width - columnRight - buttonWidth;
+
+  const room = centred
+    ? height - footerRoom - centredBrandHeight - 20 - 24
+    : height - 16 - stackCeiling;
   // Shrink the whole stack rather than let any of it leave the screen.
   const scale = Math.min(1, Math.max(0.68, room / naturalHeight));
-  const stackTop = stackCeiling + (room - naturalHeight * scale) / 2;
+  const stackTop = centred
+    ? 24 + (room - naturalHeight * scale) / 2 + centredBrandHeight + 20
+    : stackCeiling + (room - naturalHeight * scale) / 2;
   const topOf = (index: number) =>
     stackTop +
     (buttonHeights.slice(0, index).reduce((sum, h) => sum + h, 0) + gap * index) *
@@ -222,16 +239,15 @@ function LandscapeMenuScene({
     width: buttonWidth * widthFactor,
     height: buttonHeights[index] * scale,
   });
-  const brandOrbSize = Math.min(
-    150,
-    Math.max(84, Math.min(height * 0.34, (columnLeft - 48) * 0.52)),
-  );
+  const brandOrbSize = centred
+    ? centredBrandOrb
+    : Math.min(150, Math.max(84, Math.min(height * 0.34, (columnLeft - 48) * 0.52)));
   const brandHeight = brandOrbSize * 1.48 * (660 / 560);
-  const brandColumn = {
-    left: 24,
-    width: Math.max(160, columnLeft - 48),
-    textAlign: 'center' as const,
-  };
+  // Centred, the mark sits above the buttons and the footer spans the
+  // screen; in two columns both live in the mark's own column.
+  const brandColumn = centred
+    ? { left: 0, width, textAlign: 'center' as const }
+    : { left: 24, width: Math.max(160, columnLeft - 48), textAlign: 'center' as const };
 
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -251,9 +267,11 @@ function LandscapeMenuScene({
       <div
         style={{
           position: 'absolute',
-          top: Math.max(16, (height - brandHeight) / 2 - 18),
+          top: centred
+            ? Math.max(16, stackTop - brandHeight - 20)
+            : Math.max(16, (height - brandHeight) / 2 - 18),
           left: 0,
-          width: columnLeft,
+          width: centred ? width : columnLeft,
         }}
       >
         <MenuBrand orbSize={brandOrbSize} />
