@@ -9,6 +9,7 @@
  * gets, and a set added later cannot quietly disagree with its own preview.
  */
 import { DesignCanvas } from '../components/shared/DesignCanvas';
+import { useViewportSize } from '../components/game/useViewportSize';
 import { RoundControl } from '../components/shared/RoundControl';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../components/board/boardPerspective';
 import { CosmeticSkinContext } from '../game/cosmeticSkinContext';
@@ -27,6 +28,74 @@ export function AppearanceScreen({
   onBack: () => void;
 }) {
   const skin = useCosmeticSkin();
+  const viewport = useViewportSize();
+
+  // Landscape lays the sets out side by side instead of scaling the
+  // portrait column down to a strip: a set is a picture, and a wide screen
+  // is exactly where there is room to show two of them properly.
+  if (viewport.width > viewport.height) {
+    const gap = 20;
+    const padding = { left: 76, right: 28, top: 14, bottom: 16 };
+    const available =
+      viewport.width - padding.left - padding.right - gap * (cosmeticSkins.length - 1);
+    const cardWidth = Math.min(
+      460,
+      Math.max(260, available / cosmeticSkins.length),
+    );
+    return (
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', background: '#05091a' }}>
+        <img
+          src={skin.wideMenuBackground}
+          alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          draggable={false}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            padding: `${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px`,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <div
+            style={{
+              textAlign: 'center',
+              fontFamily: 'var(--font-display)',
+              fontSize: 20,
+              letterSpacing: 2,
+              color: 'var(--gold-bright)',
+              marginBottom: 10,
+            }}
+          >
+            ВНЕШНИЙ ВИД
+          </div>
+          <div
+            className="dozor-scroll-panel"
+            style={{ display: 'flex', gap, overflowX: 'auto', alignItems: 'flex-start' }}
+          >
+            {cosmeticSkins.map((entry) => (
+              <SkinCard
+                key={entry.id}
+                skin={entry}
+                selected={entry.id === selectedSkinId}
+                onChosen={() => onSkinChosen(entry)}
+                width={cardWidth}
+                compact
+              />
+            ))}
+          </div>
+        </div>
+        <div style={{ position: 'absolute', left: 20, top: 14 }}>
+          <RoundControl onClick={onBack} label="Назад">
+            ‹
+          </RoundControl>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <DesignCanvas background="#05091a">
       <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
@@ -88,11 +157,42 @@ function SkinCard({
   skin,
   selected,
   onChosen,
+  width = PREVIEW_CARD_WIDTH,
+  compact = false,
 }: {
   skin: CosmeticSkin;
   selected: boolean;
   onChosen: () => void;
+  /** Outer width of the card; the preview scales itself to fit inside it. */
+  width?: number;
+  /** Landscape has width to spare and no height: the board goes beside the
+   * name rather than above it. */
+  compact?: boolean;
 }) {
+  const previewWidth = compact ? Math.round((width - 32) * 0.55) : width - 32;
+  const preview = (
+    <div
+      style={{
+        borderRadius: 14,
+        overflow: 'hidden',
+        flex: 'none',
+        width: previewWidth,
+        height: (PREVIEW_HEIGHT * previewWidth) / PREVIEW_WIDTH,
+      }}
+    >
+      <SkinPreview skin={skin} width={previewWidth} />
+    </div>
+  );
+  const details = (
+    <>
+      <div style={{ fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8, color: '#f4d8a1' }}>
+        {skin.name.toUpperCase()}
+      </div>
+      <div style={{ marginTop: 6, fontSize: 12.5, fontWeight: 700, lineHeight: 1.25, color: '#c6d3ed' }}>
+        {skin.tagline}
+      </div>
+    </>
+  );
   return (
     <div
       role="button"
@@ -101,6 +201,9 @@ function SkinCard({
       onClick={selected ? undefined : onChosen}
       style={{
         padding: '16px 16px 18px',
+        width,
+        flex: 'none',
+        boxSizing: 'border-box',
         borderRadius: 22,
         background: 'linear-gradient(to bottom, rgba(29,49,103,0.96), rgba(12,23,52,0.96))',
         border: selected ? '2.5px solid #ffd77a' : '1.5px solid rgba(207,162,68,0.4)',
@@ -109,64 +212,65 @@ function SkinCard({
         transition: 'border-color 180ms, box-shadow 180ms',
       }}
     >
+      {compact ? null : preview}
       <div
         style={{
-          borderRadius: 14,
-          overflow: 'hidden',
-          width: PREVIEW_CARD_WIDTH,
-          height: PREVIEW_HEIGHT * PREVIEW_SCALE,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          marginTop: compact ? 0 : 14,
         }}
       >
-        <SkinPreview skin={skin} />
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8, color: '#f4d8a1' }}>
-            {skin.name.toUpperCase()}
-          </div>
-          <div style={{ marginTop: 6, fontSize: 12.5, fontWeight: 700, lineHeight: 1.25, color: '#c6d3ed' }}>
-            {skin.tagline}
-          </div>
+        {compact ? preview : null}
+        <div style={{ flex: 1, display: 'flex', flexDirection: compact ? 'column' : 'row', alignItems: compact ? 'flex-start' : 'center', gap: 12 }}>
+          <div style={{ flex: compact ? 'none' : 1 }}>{details}</div>
+          <ChooseButton selected={selected} onChosen={onChosen} />
         </div>
-        {selected ? (
-          <div
-            style={{
-              padding: '10px 14px',
-              borderRadius: 12,
-              background: 'rgba(255,215,122,0.2)',
-              border: '1.5px solid #ffd77a',
-              fontFamily: 'var(--font-display)',
-              fontSize: 12,
-              letterSpacing: 0.8,
-              color: '#ffe2a4',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            ✓ ВЫБРАНО
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={onChosen}
-            style={{
-              minHeight: 40,
-              padding: '0 16px',
-              borderRadius: 12,
-              border: '1.5px solid rgba(207,162,68,0.86)',
-              background: 'rgba(27,46,99,0.67)',
-              color: '#ffe9c4',
-              fontFamily: 'var(--font-display)',
-              fontSize: 12,
-              letterSpacing: 0.8,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            ВЫБРАТЬ
-          </button>
-        )}
       </div>
     </div>
+  );
+}
+
+function ChooseButton({ selected, onChosen }: { selected: boolean; onChosen: () => void }) {
+  if (selected) {
+    return (
+      <div
+        style={{
+          padding: '10px 14px',
+          borderRadius: 12,
+          background: 'rgba(255,215,122,0.2)',
+          border: '1.5px solid #ffd77a',
+          fontFamily: 'var(--font-display)',
+          fontSize: 12,
+          letterSpacing: 0.8,
+          color: '#ffe2a4',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        ✓ ВЫБРАНО
+      </div>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onChosen}
+      style={{
+        minHeight: 40,
+        padding: '0 16px',
+        borderRadius: 12,
+        border: '1.5px solid rgba(207,162,68,0.86)',
+        background: 'rgba(27,46,99,0.67)',
+        color: '#ffe9c4',
+        fontFamily: 'var(--font-display)',
+        fontSize: 12,
+        letterSpacing: 0.8,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      ВЫБРАТЬ
+    </button>
   );
 }
 
@@ -178,7 +282,6 @@ const PREVIEW_HEIGHT = BoardPerspective.height + PREVIEW_MARGIN.top + PREVIEW_MA
 /** 430 design px, less the screen's 28px padding and the card's 16px, both
  * sides — see `AppearanceScreen` and `SkinCard`. */
 const PREVIEW_CARD_WIDTH = 430 - 28 * 2 - 16 * 2;
-const PREVIEW_SCALE = PREVIEW_CARD_WIDTH / PREVIEW_WIDTH;
 
 /** Enough of a position to read as a game: three figures, three coins, and
  * the squares between them. */
@@ -199,7 +302,16 @@ const PREVIEW_COINS: [number, number, number][] = [
  * geometry the board uses. A preview that shared none of that machinery
  * would be a promise the game has no obligation to keep.
  */
-export function SkinPreview({ skin }: { skin: CosmeticSkin }) {
+export function SkinPreview({
+  skin,
+  width = PREVIEW_CARD_WIDTH,
+}: {
+  skin: CosmeticSkin;
+  /** What the preview has to fit into; it is laid out at design size and
+   * scaled down to that. */
+  width?: number;
+}) {
+  const scale = width / PREVIEW_WIDTH;
   const cells = [];
   for (let r = 0; r < BOARD_N; r++) {
     for (let c = 0; c < BOARD_N; c++) {
@@ -225,11 +337,8 @@ export function SkinPreview({ skin }: { skin: CosmeticSkin }) {
           width: PREVIEW_WIDTH,
           height: PREVIEW_HEIGHT,
           overflow: 'hidden',
-          // Everything here lives inside the fixed 430-wide design canvas,
-          // so how much the preview has to shrink to fit a card is a
-          // constant, not something to measure at runtime.
           transformOrigin: 'top left',
-          transform: `scale(${PREVIEW_SCALE})`,
+          transform: `scale(${scale})`,
         }}
       >
         {/* The table art, shifted so the board area it frames lands where
