@@ -2,6 +2,11 @@ import { campaignLevels } from '../data/campaignLevels';
 import { FIRST_SCORED_LEVEL_INDEX } from '../game/dozorEngine';
 import type { AchievementProgressState, StreakState } from '../game/achievementProgress';
 import type { DailyChallengeResult } from '../game/dailyChallengeLevels';
+import {
+  defaultHintWalletConfig,
+  initialHintWallet,
+  type HintWallet,
+} from '../game/hintWallet';
 
 export interface ProgressSnapshot {
   unlockedLevels: Set<number>;
@@ -40,6 +45,9 @@ const KEYS = {
   dailyReminderLastShownDate: 'dozor.daily_reminder_last_shown_date',
   dailyReminderLastMessage: 'dozor.daily_reminder_last_message',
   announcedFreezeDate: 'dozor.daily_freeze_announced_v1',
+  // The free-hint wallet: how many are in stock, and when the current refill
+  // window started — see `hintWallet.ts`.
+  hintWallet: 'dozor.hint_wallet_v1',
 } as const;
 
 const DEFAULT_DAILY_REMINDER_HOUR = 11;
@@ -324,6 +332,23 @@ export class ProgressRepository {
    * The freeze is spent silently by `computeDailyChallengeStats` — nothing
    * asks the player, by design. Without a record of what has been announced,
    * the notice would either never appear or reappear on every visit. */
+  /** The player's free-hint wallet, or a full one for a player who has never
+   * had it saved. */
+  loadHintWallet(now: number): HintWallet {
+    const stored = readJson<HintWallet>(KEYS.hintWallet);
+    if (stored == null || typeof stored.stock !== 'number' || typeof stored.lastRefillAt !== 'number') {
+      return initialHintWallet(now);
+    }
+    return {
+      stock: Math.max(0, Math.min(defaultHintWalletConfig.max, stored.stock)),
+      lastRefillAt: stored.lastRefillAt,
+    };
+  }
+
+  saveHintWallet(wallet: HintWallet): void {
+    writeJson(KEYS.hintWallet, wallet);
+  }
+
   loadAnnouncedFreezeDate(): string | null {
     return readJson<string>(KEYS.announcedFreezeDate);
   }

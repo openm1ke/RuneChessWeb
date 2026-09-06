@@ -47,7 +47,7 @@ export function TutorialCompleteScreen(props: TutorialCompleteProps) {
           </div>
           <div style={{ height: 14 }} />
           <div style={{ fontSize: 15, lineHeight: 1.35, fontWeight: 700, color: 'var(--text-soft)' }}>
-            Основная кампания открыта.
+            «Лунный сад» открыт.
             <br />
             Впереди более сложные задачи.
           </div>
@@ -98,7 +98,7 @@ function LandscapeTutorialCompleteScene({ onContinue, onLevels, achievement, ani
           </div>
           <div style={{ height: 14 }} />
           <div style={{ fontSize: 17, lineHeight: 1.35, fontWeight: 700, color: 'var(--text-soft)' }}>
-            Основная кампания открыта.
+            «Лунный сад» открыт.
             <br />
             Впереди более сложные задачи.
           </div>

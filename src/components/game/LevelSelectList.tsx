@@ -6,6 +6,7 @@ import {
   MAIN_CAMPAIGN_LEVEL_COUNT,
   campaignLevels,
 } from '../../data/campaignLevels';
+import { BONUS_CAMPAIGN_NAME, MAIN_CAMPAIGN_NAME, TUTORIAL_NAME } from '../../game/campaignNames';
 import type { GameProgress } from '../../game/gameProgress';
 
 /**
@@ -139,7 +140,7 @@ export function LevelSelectList({
         // sits directly against the bar.
         style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: gutter }}
       >
-        <SectionTitle label="ОБУЧЕНИЕ · 5 УРОВНЕЙ" />
+        <SectionTitle label={`${TUTORIAL_NAME} · 5 УРОВНЕЙ`} />
         {/* A centred wrap rather than a grid: five tiles across three columns
             leaves a hole on the right, and centring the short last row reads
             as a deliberate end to the section instead. */}
@@ -163,8 +164,8 @@ export function LevelSelectList({
         <SectionTitle
           label={
             tutorialComplete
-              ? `ОСНОВНАЯ КАМПАНИЯ · ${completedIn(mainStart, mainCount)} ИЗ ${mainCount}`
-              : 'ОСНОВНАЯ КАМПАНИЯ · ПРОЙДИТЕ ОБУЧЕНИЕ'
+              ? `${MAIN_CAMPAIGN_NAME} · ${completedIn(mainStart, mainCount)} ИЗ ${mainCount}`
+              : `${MAIN_CAMPAIGN_NAME} · ПРОЙДИТЕ ОБУЧЕНИЕ`
           }
           locked={!tutorialComplete}
         />
@@ -175,7 +176,9 @@ export function LevelSelectList({
         </LevelGrid>
         {mainVisible < mainCount && <MoreLevelsStrip remaining={mainCount - mainVisible} />}
         <SectionTitle
-          label={`НОВАЯ КАМПАНИЯ · ПОЛЕ 7×7 · ${completedIn(bonusStart, bonusCount)} ИЗ ${bonusCount}`}
+          // No "ПОЛЕ 7×7" any more: with a real name in front of it the line
+          // no longer fits, and the board size shows itself when a level opens.
+          label={`${BONUS_CAMPAIGN_NAME} · ${completedIn(bonusStart, bonusCount)} ИЗ ${bonusCount}`}
         />
         <LevelGrid columns={columns}>
           {Array.from({ length: bonusVisible }, (_, i) => tile(bonusStart + i, true))}

@@ -7,6 +7,7 @@ import { useDragController } from '../components/board/useDragController';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { TopControls, TopStatus, BottomUtilityControls } from '../components/game/TopBar';
 import { ResetConfirmDialog } from '../components/game/ResetConfirmDialog';
+import { HintOfferDialog } from '../components/game/HintOfferDialog';
 import { LevelResultOverlay } from '../components/game/LevelResultOverlay';
 import { TutorialCoachmark, type CoachmarkLayout } from '../components/game/TutorialCoachmark';
 import { useDozorEngine } from '../game/useDozorEngine';
@@ -30,6 +31,10 @@ export function GameScreen({
   onAchievementRevealed,
   onOpenDailyCalendar,
   dailyStreak = 0,
+  hintsLeft = 0,
+  hintWaitMs: hintWait = null,
+  onHintSpent,
+  onHintOffered,
 }: {
   engine: DozorEngine;
   onBack: () => void;
@@ -51,6 +56,13 @@ export function GameScreen({
   onOpenDailyCalendar?: () => void;
   /** See `TopControls.dailyStreak`. */
   dailyStreak?: number;
+  /** Free hints left, and the wait for the next one — see `hintWallet.ts`. */
+  hintsLeft?: number;
+  hintWaitMs?: number | null;
+  /** Spends one free hint; called only when a hint is about to be shown. */
+  onHintSpent?: () => void;
+  /** The out-of-hints offer was put in front of the player. */
+  onHintOffered?: () => void;
 }) {
   const { snapshot } = useDozorEngine(engine);
   const boardRef = useRef<HTMLDivElement>(null!);
@@ -73,18 +85,33 @@ export function GameScreen({
 
   const onCampaignLevel = engine.levelIndex >= FIRST_SCORED_LEVEL_INDEX;
 
-  // On tutorial levels the hint stays a free toggle; on campaign levels
-  // every hint is requested via a rewarded ad and only ever turns on
-  // (never off) — see `DozorEngine.grantHint`. The button itself is
-  // disabled while a show is already in flight, guarding a fast double-tap
-  // the same way the mobile app's `_hintButtonEnabled` does.
-  const hintEnabled = !onCampaignLevel || !rewardedAdsService || extraHintState !== 'loading';
+  // The five tutorial levels keep the free, unlimited toggle: that is where
+  // the button is taught. Everywhere else a hint costs one from the free
+  // wallet, and the ad is the way to get one *now* rather than the only way
+  // to get one at all — a dead lightbulb with no network was the worst
+  // possible answer for a stuck player.
+  const gated = onCampaignLevel || engine.isDailyChallenge;
+  const [hintOfferOpen, setHintOfferOpen] = useState(false);
   const handleHint = () => {
-    if (!onCampaignLevel || !rewardedAdsService) {
+    if (!gated) {
       engine.toggleHint();
       return;
     }
-    if (extraHintState === 'loading') return;
+    if (hintsLeft > 0) {
+      onHintSpent?.();
+      engine.grantHint();
+      return;
+    }
+    // Out of free hints: offer the ad as the fast path, and say how long the
+    // slow one takes. This is the moment `ad_offer_shown` describes for the
+    // `extra_hint` placement.
+    onHintOffered?.();
+    setHintOfferOpen(true);
+  };
+
+  const watchAdForHint = () => {
+    setHintOfferOpen(false);
+    if (!rewardedAdsService) return;
     void rewardedAdsService.show('extraHint').then(() => {
       if (rewardedAdsService.stateOf('extraHint') === 'rewarded') engine.grantHint();
     });
@@ -92,6 +119,11 @@ export function GameScreen({
 
   const bonusStarOffered =
     rewardedAdsService != null &&
+    // Not once an attempt has already told us there is nothing to show: an
+    // offer that answers "Готовим ролик…" forever teaches the player to
+    // ignore every offer. (The web loads on demand, so "ready" is only ever
+    // knowable in hindsight — `unavailable` is that hindsight.)
+    bonusStarState !== 'unavailable' &&
     snapshot.solved &&
     engine.levelResult?.stars != null &&
     engine.levelResult.stars < 3 &&
@@ -143,6 +175,14 @@ export function GameScreen({
   const renderOverlays = (layout?: CoachmarkLayout) => (
     <>
       {showOnboarding && <TutorialCoachmark snapshot={snapshot} layout={layout} />}
+      {hintOfferOpen && (
+        <HintOfferDialog
+          waitMs={hintWait}
+          adReady={rewardedAdsService != null && extraHintState !== 'unavailable'}
+          onWatch={watchAdForHint}
+          onClose={() => setHintOfferOpen(false)}
+        />
+      )}
       {snapshot.solved && engine.levelResult && (
         <LevelResultOverlay
           key={`level-result-${engine.levelIndex}`}
@@ -245,7 +285,8 @@ export function GameScreen({
         <TopControls
           onBack={onBack}
           onHint={handleHint}
-          hintEnabled={hintEnabled}
+          hintEnabled
+          hintsLeft={gated ? hintsLeft : undefined}
           onCalendar={engine.isDailyChallenge ? onOpenDailyCalendar : undefined}
           dailyStreak={dailyStreak}
         />
@@ -296,7 +337,8 @@ export function GameScreen({
         <TopControls
           onBack={onBack}
           onHint={handleHint}
-          hintEnabled={hintEnabled}
+          hintEnabled
+          hintsLeft={gated ? hintsLeft : undefined}
           onCalendar={engine.isDailyChallenge ? onOpenDailyCalendar : undefined}
           dailyStreak={dailyStreak}
         />

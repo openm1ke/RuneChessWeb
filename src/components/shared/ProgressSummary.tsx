@@ -1,3 +1,4 @@
+import { nextRankAfter, rankForStars, starsToNextRank } from '../../game/campaignNames';
 import type { GameProgress } from '../../game/gameProgress';
 
 /**
@@ -41,6 +42,47 @@ export function ProgressSummary({
       />
       <div style={{ height: 12 }} />
       <StatRow icon="★" label="Получено звёзд" value={`${progress.stars}/${progress.maxStars}`} />
+      <div style={{ height: 14 }} />
+      <RankRow stars={progress.stars} />
+    </div>
+  );
+}
+
+/**
+ * The rank the collected stars have earned, and how far the next one is.
+ *
+ * Stars used to accumulate and mean nothing beyond a few achievements. A rank
+ * costs no art, no new economy and no balance risk, and it turns the number
+ * into a place on a ladder — see `playerRanks`.
+ */
+function RankRow({ stars }: { stars: number }) {
+  const rank = rankForStars(stars);
+  const next = nextRankAfter(stars);
+  const toNext = starsToNextRank(stars);
+  const filled = next == null ? 1 : (stars - rank.starsRequired) / (next.starsRequired - rank.starsRequired);
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ fontSize: 18, color: 'var(--gold-bright)' }}>🎖</span>
+        <span style={{ flex: 1, fontSize: 15, fontWeight: 800, color: '#dce7ff' }}>Звание</span>
+        <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--gold-bright)' }}>{rank.title}</span>
+      </div>
+      <div style={{ height: 8 }} />
+      <div style={{ height: 6, borderRadius: 4, background: 'rgba(255,255,255,0.2)', overflow: 'hidden' }}>
+        <div
+          style={{
+            width: `${Math.max(0, Math.min(1, filled)) * 100}%`,
+            height: '100%',
+            background: 'var(--gold)',
+          }}
+        />
+      </div>
+      <div style={{ height: 6 }} />
+      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(206,225,255,0.6)' }}>
+        {next == null
+          ? 'Высшее звание — все руны дозора ваши.'
+          : `До звания «${next.title}» — ${toNext} ${starWord(toNext ?? 0)}`}
+      </div>
     </div>
   );
 }

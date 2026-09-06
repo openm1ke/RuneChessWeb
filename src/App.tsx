@@ -16,6 +16,14 @@ import { ConsentBanner } from './components/shared/ConsentBanner';
 import { AchievementCelebrationOverlay } from './components/shared/AchievementReveal';
 import { DailyChallengeCalendarSheet } from './components/game/DailyChallengeCalendarSheet';
 import { Toast } from './components/shared/Toast';
+import { BONUS_CAMPAIGN_NAME, MAIN_CAMPAIGN_NAME } from './game/campaignNames';
+import {
+  hintWaitMs,
+  initialHintWallet,
+  refilledHintWallet,
+  spendHint,
+  type HintWallet,
+} from './game/hintWallet';
 import { MenuScreen } from './screens/MenuScreen';
 import { LevelSelectScreen } from './screens/LevelSelectScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -97,6 +105,13 @@ function dailyDateLabel(date: Date): string {
   return `${date.getDate()} ${DAILY_DATE_MONTHS[date.getMonth()]}`;
 }
 
+/** «ЗВЁЗДНАЯ ОБСЕРВАТОРИЯ» → «Звёздная обсерватория»: the names are stored
+ * the way the level list shows them (upper case), and a sentence needs them
+ * the other way round. */
+function titleCase(name: string): string {
+  return name ? name[0] + name.slice(1).toLowerCase() : name;
+}
+
 export default function App() {
   const progressRepository = useMemo(() => new ProgressRepository(), []);
   const musicService = useMemo(() => new MusicService(), []);
@@ -153,6 +168,9 @@ export default function App() {
   /** Set when opening the daily challenge finds that the freeze quietly
    * covered a missed day — see `announceFreezeIfSpent`. */
   const [freezeNotice, setFreezeNotice] = useState<string | null>(null);
+  /** Free hints, restored on start and brought up to date whenever a level
+   * opens or the tab comes back — see `hintWallet.ts`. */
+  const [hintWallet, setHintWallet] = useState<HintWallet>(() => initialHintWallet(Date.now()));
   /** The exact local calendar day `openDailyChallenge` generated the
    * current puzzle for — kept so `handleDailyChallengeSolved` saves under
    * the same key even if midnight passes mid-attempt. Null whenever
@@ -194,6 +212,7 @@ export default function App() {
     setMusicVolume(snapshot.musicVolume);
     setSoundEffectsEnabledState(snapshot.soundEffectsEnabled);
     setSoundEffectsEnabled(snapshot.soundEffectsEnabled);
+    setHintWallet(refilledHintWallet(progressRepository.loadHintWallet(Date.now()), Date.now()));
     setAnalyticsConsent(snapshot.analyticsConsent);
     if (snapshot.analyticsConsent) analyticsService.enable();
     musicService.enabled = snapshot.musicEnabled;
@@ -343,11 +362,19 @@ export default function App() {
       } else {
         engine.onVisible();
         musicService.resumeAll();
+        // Inline rather than calling `refreshHintWallet` (declared below and
+        // rebuilt every render): the state updater needs nothing from this
+        // render, so the listener can stay registered once.
+        setHintWallet((wallet) => {
+          const next = refilledHintWallet(wallet, Date.now());
+          if (next.stock !== wallet.stock) progressRepository.saveHintWallet(next);
+          return next;
+        });
       }
     };
     document.addEventListener('visibilitychange', onVisibilityChange);
     return () => document.removeEventListener('visibilitychange', onVisibilityChange);
-  }, [engine, musicService]);
+  }, [engine, musicService, progressRepository]);
 
   const tutorialCompleteRef = useRef(tutorialComplete);
   const levelStarsRef = useRef(levelStars);
@@ -535,6 +562,7 @@ export default function App() {
 
   const goToGame = (levelIndex?: number, entrySource: LevelEntrySource = 'menu_play') => {
     abandonReportedRef.current = false;
+    refreshHintWallet();
     setLevelSelectAddress(false);
     void musicService.stopMenu();
     const requested = levelIndex ?? highestLevel;
@@ -593,6 +621,7 @@ export default function App() {
 
   const openDailyChallenge = () => {
     abandonReportedRef.current = false;
+    refreshHintWallet();
     announceFreezeIfSpent();
     setLevelSelectAddress(false);
     void musicService.stopMenu();
@@ -605,6 +634,27 @@ export default function App() {
     engine.loadDailyChallenge(generated.level, generated.solution, dailyDateLabel(date));
     setScreen('game');
     void musicService.startGame();
+  };
+
+  /** Spends one free hint and persists the wallet. The game screen calls
+   * this the moment it is about to show a hint, so the count on the
+   * lightbulb and the level's own bookkeeping cannot get out of step. */
+  const spendHintFromWallet = () => {
+    setHintWallet((wallet) => {
+      const next = spendHint(wallet, Date.now());
+      progressRepository.saveHintWallet(next);
+      return next;
+    });
+  };
+
+  /** Brings the wallet up to date — the refill is time-based, so nothing
+   * else would ever notice it happening. */
+  const refreshHintWallet = () => {
+    setHintWallet((wallet) => {
+      const next = refilledHintWallet(wallet, Date.now());
+      if (next.stock !== wallet.stock) progressRepository.saveHintWallet(next);
+      return next;
+    });
   };
 
   const openLevelSelect = () => {
@@ -880,8 +930,8 @@ export default function App() {
     case 'mainCampaignComplete':
       return withConsent(
         <CampaignCompleteScreen
-          title={'ОСНОВНАЯ КАМПАНИЯ\nПРОЙДЕНА'}
-          subtitle="Новая кампания с полем 7×7 открыта."
+          title={`${MAIN_CAMPAIGN_NAME}\nПРОЙДЕН`}
+          subtitle={`«${titleCase(BONUS_CAMPAIGN_NAME)}» открыта:\nполе 7×7 и новые задачи.`}
           primaryLabel="ПРОДОЛЖИТЬ"
           onPrimary={continueAfterMainCampaign}
           achievement={achievementUnlockedAt.has(mainKing.id) ? mainKing : null}
@@ -974,6 +1024,10 @@ export default function App() {
             achievement={levelResultAchievement}
             onAchievementRevealed={playAchievementReveal}
             onOpenDailyCalendar={() => setDailyCalendarMode('view')}
+            hintsLeft={refilledHintWallet(hintWallet, Date.now()).stock}
+            hintWaitMs={hintWaitMs(hintWallet, Date.now())}
+            onHintSpent={spendHintFromWallet}
+            onHintOffered={() => analyticsService.adOfferShown('extra_hint')}
             dailyStreak={
               engine.isDailyChallenge
                 ? computeDailyChallengeStats({ history: dailyChallengeHistory, today: new Date() }).currentStreak

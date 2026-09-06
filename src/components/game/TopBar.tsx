@@ -43,10 +43,15 @@ export function TopControls({
   hintEnabled = true,
   onCalendar,
   dailyStreak = 0,
+  hintsLeft,
 }: {
   onBack: () => void;
   onHint: () => void;
   hintEnabled?: boolean;
+  /** Free hints in the wallet, shown as a badge on the lightbulb. Undefined
+   * on the tutorial levels, where hints are unlimited and counting them would
+   * raise a question the player does not have yet. */
+  hintsLeft?: number;
   /** Only present while playing the daily challenge — opens the streak
    * calendar. Stacked below the hint button rather than beside it, so it
    * never competes for space with a longer hint-button row. */
@@ -63,9 +68,16 @@ export function TopControls({
         ‹
       </RoundControl>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
-        <RoundControl onClick={onHint} disabled={!hintEnabled} label="Подсказка">
-          <LightbulbIcon />
-        </RoundControl>
+        <div style={{ position: 'relative' }}>
+          <RoundControl
+            onClick={onHint}
+            disabled={!hintEnabled}
+            label={hintsLeft == null ? 'Подсказка' : `Подсказка, осталось ${hintsLeft}`}
+          >
+            <LightbulbIcon />
+          </RoundControl>
+          {hintsLeft != null && <HintCountBadge count={hintsLeft} />}
+        </div>
         {onCalendar && (
           <div style={{ position: 'relative' }}>
             <RoundControl
@@ -79,6 +91,35 @@ export function TopControls({
         )}
       </div>
     </div>
+  );
+}
+
+/** Free hints left, on the lightbulb. A zero is drawn muted rather than
+ * hidden: "you have none right now" is what the player needs to know before
+ * tapping, and it is what makes the offer dialog make sense. */
+function HintCountBadge({ count }: { count: number }) {
+  return (
+    <span
+      style={{
+        position: 'absolute',
+        top: -6,
+        right: -8,
+        minWidth: 20,
+        height: 20,
+        padding: '0 5px',
+        borderRadius: 10,
+        border: '1.5px solid #0e193c',
+        background: count > 0 ? '#e8b93f' : '#2a3459',
+        color: count > 0 ? '#23180a' : 'rgba(206,225,255,0.6)',
+        fontSize: 11,
+        fontWeight: 900,
+        lineHeight: '17px',
+        textAlign: 'center',
+        pointerEvents: 'none',
+      }}
+    >
+      {count}
+    </span>
   );
 }
 
