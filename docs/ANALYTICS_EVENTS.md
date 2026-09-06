@@ -45,6 +45,8 @@ AppMetrica показывает любое событие сама. Метрик
 | `settings_opened` | ✔ | ✔ | — |
 | `music_enabled` / `music_disabled` | ✔ | ✔ | — |
 | `progress_reset_confirmed` | ✔ | ✔ | — |
+| `appearance_opened` | ✔ | ✔ | — |
+| `skin_chosen` | ✔ | ✔ | `skin_id` |
 | `notification_opened` | ✔ | — | — |
 | `daily_challenge_opened` | ✔ | ✔ | `date` |
 | `daily_challenge_started` | ✔ | ✔ | `date` |
@@ -75,6 +77,9 @@ AppMetrica показывает любое событие сама. Метрик
 - `entry_source` — `menu_play` | `level_select` | `next_level` | `skip_level` |
   `daily_challenge` | `reminder`. `reminder` — приложение открыто нажатием на
   напоминание о задании дня (см. `notification_opened`).
+- `skin_id` — идентификатор косметического набора (`CosmeticSkin.id`):
+  `classic` | `obsidian_astral`. Наборы и их id одинаковы на обеих
+  платформах.
 - `placement` — `extra_hint` | `bonus_star` | `skip_level`.
   `extra_hint` — предложение ролика, когда бесплатные подсказки кончились;
   `skip_level` — предложение пропустить уровень после трёх сбросов подряд.

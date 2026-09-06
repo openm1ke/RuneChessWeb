@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
-import { pieceAsset, type PawnDirection, type PieceType } from '../../game/pieceTypes';
+import { type PawnDirection, type PieceType } from '../../game/pieceTypes';
+import { useCosmeticSkin } from '../../game/cosmeticSkinContext';
 
 export function PieceArt({
   type,
@@ -15,9 +16,10 @@ export function PieceArt({
   style?: CSSProperties;
   className?: string;
 }) {
+  const skin = useCosmeticSkin();
   return (
     <img
-      src={pieceAsset[type]}
+      src={skin.pieceAssets[type]}
       alt={type}
       width={width}
       height={height}

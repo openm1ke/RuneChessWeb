@@ -2,7 +2,8 @@ import { useRef, useState, createElement, type PointerEvent as ReactPointerEvent
 import { createPortal } from 'react-dom';
 import type { DozorEngine } from '../../game/dozorEngine';
 import type { Cell, Piece, TrayItem } from '../../game/models';
-import { pieceAsset, pieceUprightRotationDeg } from '../../game/pieceTypes';
+import { useCosmeticSkin } from '../../game/cosmeticSkinContext';
+import { uprightRotationOf } from '../../game/cosmeticSkins';
 import { BoardPerspective } from './boardPerspective';
 import { playPieceLift, playPieceSet } from '../../services/musicService';
 
@@ -33,6 +34,7 @@ export function useDragController(
   boardRef: RefObject<HTMLDivElement>,
   trayRef: RefObject<HTMLDivElement>,
 ): DragController {
+  const skin = useCosmeticSkin();
   const [drag, setDrag] = useState<DragState | null>(null);
   const dragRef = useRef<DragState | null>(null);
 
@@ -137,7 +139,7 @@ export function useDragController(
   const type = drag?.piece?.type ?? drag?.item?.type;
   const sprite = drag && type
     ? createElement('img', {
-        src: pieceAsset[type],
+        src: skin.pieceAssets[type],
         alt: '',
         style: {
           position: 'fixed',
@@ -148,7 +150,7 @@ export function useDragController(
           objectFit: 'contain',
           pointerEvents: 'none',
           zIndex: 1000,
-          transform: `rotate(${pieceUprightRotationDeg[type] ?? 0}deg)`,
+          transform: `rotate(${uprightRotationOf(skin, type)}deg)`,
           filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.5))',
         },
       })

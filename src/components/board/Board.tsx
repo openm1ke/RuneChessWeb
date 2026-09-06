@@ -1,12 +1,18 @@
 import { useMemo, type PointerEvent, type ReactElement, type RefObject } from 'react';
 import type { DozorEngine, DozorSnapshot } from '../../game/dozorEngine';
 import { cellKey, type Beam, type Cell, type Piece } from '../../game/models';
-import { pieceOnBoardSize, pieceSkins, pieceUprightRotationDeg, type PieceType } from '../../game/pieceTypes';
+import { pieceOnBoardSize, pieceSkins, type PieceType } from '../../game/pieceTypes';
+import { useCosmeticSkin } from '../../game/cosmeticSkinContext';
+import { coinAsset, uprightRotationOf } from '../../game/cosmeticSkins';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from './boardPerspective';
 import { PieceArt } from './PieceArt';
 import type { DragController } from './useDragController';
-import { asset } from '../../lib/assetUrl';
 import { playPieceSet } from '../../services/musicService';
+
+/** How far past the playing field the frame layer is allowed to reach:
+ * enough for the gems and corner work that lean in, and nowhere near the
+ * screen's own controls. */
+const BOARD_FRAME_MARGIN = 36;
 
 function orderPiecesByBoardDepth(pieces: Piece[], heldId: string | null): Piece[] {
   const ordered = [...pieces];
@@ -25,6 +31,7 @@ function polygonPoints(points: { x: number; y: number }[]): string {
 
 /** SVG checkerboard + dashed attack-beam rendering, a port of `BoardPainter`. */
 function BoardSvg({ snapshot, beamPhase }: { snapshot: DozorSnapshot; beamPhase: number }) {
+  const skin = useCosmeticSkin();
   const boardSize = snapshot.boardSize;
   const cells: ReactElement[] = [];
   for (let r = 0; r < boardSize; r++) {
@@ -35,7 +42,7 @@ function BoardSvg({ snapshot, beamPhase }: { snapshot: DozorSnapshot; beamPhase:
         <polygon
           key={`cell-${c}-${r}`}
           points={polygonPoints(corners)}
-          fill={(r + c) % 2 === 0 ? '#dbc49a' : '#1d2c55'}
+          fill={(r + c) % 2 === 0 ? skin.lightCell : skin.darkCell}
           stroke={isSolution ? 'rgba(249,216,104,0.6)' : 'rgba(255,255,255,0.10)'}
           strokeWidth={isSolution ? 2.5 : 1.1}
         />,
@@ -156,6 +163,7 @@ function BeamPath({ beam, beamPhase }: { beam: Beam; beamPhase: number }) {
 }
 
 function BeaconCoin({ beacon, done, cellPx }: { beacon: Cell & { target: number }; done: boolean; cellPx: number }) {
+  const skin = useCosmeticSkin();
   const source = { x: (beacon.c + 0.5) * cellPx, y: (beacon.r + 0.5) * cellPx };
   const center = BoardPerspective.project(source);
   const scale = 0.88 + (0.16 * source.y) / BoardPerspective.sourceSize;
@@ -190,7 +198,7 @@ function BeaconCoin({ beacon, done, cellPx }: { beacon: Cell & { target: number 
         }}
       >
         <img
-          src={asset(`assets/images/coin-${beacon.target}.webp`)}
+          src={coinAsset(skin, beacon.target)}
           width={size}
           height={size}
           alt={`${beacon.target}`}
@@ -263,6 +271,7 @@ function PieceOnBoard({
   isHeld: boolean;
   onDragStart: (piece: Piece, event: PointerEvent) => void;
 }) {
+  const skin = useCosmeticSkin();
   const rect = pieceScreenRect(piece, piece.type, cellPx);
   return (
     <div
@@ -271,6 +280,29 @@ function PieceOnBoard({
       onClick={() => engine.tapPiece(piece.id)}
     >
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        {/* A set carved from one material has no colour of its own to tell a
+            rook from a bishop, and its figures are as dark as the squares
+            they stand on. This puts both back: the type's colour, and enough
+            separation to see the silhouette against the board. */}
+        {skin.pieceAmbientGlow > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 3 * rect.scale,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 40 * rect.scale,
+              height: 46 * rect.scale,
+              borderRadius: '50%',
+              pointerEvents: 'none',
+              background: `radial-gradient(circle, ${pieceSkins[piece.type].color}${Math.round(
+                skin.pieceAmbientGlow * 255,
+              )
+                .toString(16)
+                .padStart(2, '0')} 0%, transparent 70%)`,
+            }}
+          />
+        )}
         {isHeld && (
           <div
             style={{
@@ -303,7 +335,7 @@ function PieceOnBoard({
             bottom: isHeld ? '14%' : 0,
             left: '50%',
             transition: 'bottom 180ms cubic-bezier(0.33,1,0.68,1)',
-            transform: `translateX(-50%) rotate(${pieceUprightRotationDeg[piece.type] ?? 0}deg)`,
+            transform: `translateX(-50%) rotate(${uprightRotationOf(skin, piece.type)}deg)`,
             transformOrigin: 'bottom center',
           }}
         >
@@ -377,8 +409,15 @@ export function Board({
    * frame whose aspect ratio doesn't quite match the board's own. */
   scaleY?: number;
 }) {
+  const skin = useCosmeticSkin();
   const scaleX = scale;
   const effectiveScaleY = scaleY ?? scale;
+  // A set with wide landscape art places its table by that art's own
+  // numbers, not by the board's, so a portrait frame layer would land in the
+  // wrong place — such a set needs a wide layer of its own before this can
+  // be shown.
+  const boardFrame =
+    scaleY !== undefined && skin.wideBoardAsset ? null : skin.boardFrameAsset;
   const cellAt = (clientX: number, clientY: number): Cell | null => {
     const rect = boardRef.current?.getBoundingClientRect();
     if (!rect) return null;
@@ -432,6 +471,46 @@ export function Board({
         }}
       >
         <BoardSvg snapshot={snapshot} beamPhase={beamPhase} />
+        {/* The frame's own gems and corner work lean in over the playing
+            surface; the squares are drawn over the table, so without this
+            they slice those bits off along the edge. Above the squares and
+            below the figures, which is where a piece standing at the near
+            rail already looked right. Placed by the same offset the table
+            itself is: the board sits at (BOARD_LEFT, BOARD_TOP) of the
+            430×764 art, so this box rides every scale the board rides. */}
+        {boardFrame && (
+          <div
+            style={{
+              position: 'absolute',
+              left: -BOARD_FRAME_MARGIN,
+              top: -BOARD_FRAME_MARGIN,
+              width: BoardPerspective.width + BOARD_FRAME_MARGIN * 2,
+              height: BoardPerspective.height + BOARD_FRAME_MARGIN * 2,
+              // Everything this layer has to say is within a few pixels of
+              // the field's edge; the rest of it is table the backdrop
+              // already drew. Clipped to that neighbourhood so it cannot
+              // reach the screen's own furniture — the back and hint
+              // buttons are declared before the board, and an unclipped
+              // layer painted straight over them.
+              overflow: 'hidden',
+              pointerEvents: 'none',
+            }}
+          >
+            <img
+              src={boardFrame}
+              alt=""
+              style={{
+                position: 'absolute',
+                left: BOARD_FRAME_MARGIN - BOARD_LEFT,
+                top: BOARD_FRAME_MARGIN - BOARD_TOP,
+                width: 430,
+                height: 764,
+                objectFit: 'fill',
+              }}
+              draggable={false}
+            />
+          </div>
+        )}
         {snapshot.beacons.map((beacon) => (
           <BeaconCoin
             key={cellKey(beacon.c, beacon.r)}

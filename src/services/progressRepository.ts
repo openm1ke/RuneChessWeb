@@ -54,6 +54,9 @@ const KEYS = {
   // The free-hint wallet: how many are in stock, and when the current refill
   // window started — see `hintWallet.ts`.
   hintWallet: 'dozor.hint_wallet_v1',
+  // Which cosmetic set the player is wearing (`CosmeticSkin.id`). A
+  // preference, not progress: a full reset leaves it alone.
+  cosmeticSkin: 'dozor.cosmetic_skin_v1',
 } as const;
 
 const DEFAULT_DAILY_REMINDER_HOUR = 11;
@@ -280,6 +283,24 @@ export class ProgressRepository {
       writeJson(KEYS.achievementNoHintLevels, [...args.achievementProgress.noHintLevels].sort((a, b) => a - b).map(String));
       writeStreak(KEYS.achievementCleanStreak, args.achievementProgress.cleanStreak);
       writeStreak(KEYS.achievementPerfectStreak, args.achievementProgress.perfectStreak);
+    }
+  }
+
+  /** The chosen cosmetic set, or null for "whatever the game defaults to". */
+  loadCosmeticSkinId(): string | null {
+    try {
+      return window.localStorage.getItem(KEYS.cosmeticSkin);
+    } catch (error) {
+      logError('load cosmetic skin', error);
+      return null;
+    }
+  }
+
+  saveCosmeticSkinId(id: string): void {
+    try {
+      window.localStorage.setItem(KEYS.cosmeticSkin, id);
+    } catch (error) {
+      logError('save cosmetic skin', error);
     }
   }
 

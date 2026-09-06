@@ -23,6 +23,10 @@ interface SettingsProps {
   /** Null while the player has not answered the consent banner yet. */
   analyticsConsent: boolean | null;
   onAnalyticsConsentChanged: (consent: boolean) => void;
+  /** Opens the appearance picker; `skinName` is the set currently worn, so
+   * the row can say what it would be changing. */
+  onAppearance: () => void;
+  skinName: string;
 }
 
 export function SettingsScreen(props: SettingsProps) {
@@ -67,6 +71,8 @@ function PortraitSettingsScene({
   onDailyReminderHourChanged,
   analyticsConsent,
   onAnalyticsConsentChanged,
+  onAppearance,
+  skinName,
 }: SettingsProps & { onResetRequested: () => void }) {
   return (
     <DesignCanvas>
@@ -113,6 +119,8 @@ function PortraitSettingsScene({
             onHourChanged={onDailyReminderHourChanged}
           />
           <div style={{ height: 20 }} />
+          <AppearanceCard skinName={skinName} onAppearance={onAppearance} />
+          <div style={{ height: 20 }} />
           <PrivacyCard
             analyticsConsent={analyticsConsent}
             onAnalyticsConsentChanged={onAnalyticsConsentChanged}
@@ -149,6 +157,8 @@ function LandscapeSettingsScene({
   onDailyReminderHourChanged,
   analyticsConsent,
   onAnalyticsConsentChanged,
+  onAppearance,
+  skinName,
 }: SettingsProps & { onResetRequested: () => void }) {
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -201,6 +211,8 @@ function LandscapeSettingsScene({
             onEnabledChanged={onDailyReminderEnabledChanged}
             onHourChanged={onDailyReminderHourChanged}
           />
+          <div style={{ height: 18 }} />
+          <AppearanceCard skinName={skinName} onAppearance={onAppearance} />
           <div style={{ height: 18 }} />
           <PrivacyCard
             analyticsConsent={analyticsConsent}
@@ -354,6 +366,29 @@ function ResetProgressCard({ onResetRequested }: { onResetRequested: () => void 
         style={{ width: '100%', minHeight: 44, border: '1.5px solid rgba(240,142,104,0.86)', borderRadius: 12, color: '#ffe2d7', background: 'linear-gradient(#77323b, #451d2b)', fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 1, cursor: 'pointer' }}
       >
         СБРОСИТЬ ДОСТИЖЕНИЯ
+      </button>
+    </div>
+  );
+}
+
+/** Sends the player to the appearance picker, and says what they are
+ * wearing now. The picker is its own screen — a set is a picture, and the
+ * settings column has no room to show one honestly. */
+function AppearanceCard({ skinName, onAppearance }: { skinName: string; onAppearance: () => void }) {
+  return (
+    <div style={SETTINGS_CARD_STYLE}>
+      <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>
+        ВНЕШНИЙ ВИД
+      </div>
+      <p style={{ margin: '8px 0 15px', color: '#c6d3ed', fontSize: 13, fontWeight: 700, lineHeight: 1.42 }}>
+        Оформление доски, фигур и монет. Сейчас: {skinName}.
+      </p>
+      <button
+        type="button"
+        onClick={onAppearance}
+        style={{ width: '100%', minHeight: 44, border: '1.5px solid rgba(207,162,68,0.86)', borderRadius: 12, color: '#ffe9c4', background: 'rgba(27,46,99,0.67)', fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 1, cursor: 'pointer' }}
+      >
+        ВЫБРАТЬ ОФОРМЛЕНИЕ
       </button>
     </div>
   );

@@ -4,12 +4,13 @@ import {
   pieceAttackSummary,
   pieceNames,
   pieceSkins,
-  pieceUprightRotationDeg,
   type PieceType,
 } from "../../game/pieceTypes";
 import { PieceArt } from "../board/PieceArt";
 import type { DragController } from "../board/useDragController";
 import { TILE_GAP, TRAY_PORTRAIT, trayTileExtent } from "./trayGeometry";
+import { useCosmeticSkin } from "../../game/cosmeticSkinContext";
+import { uprightRotationOf } from "../../game/cosmeticSkins";
 
 function TrayItemTile({
   type,
@@ -28,6 +29,7 @@ function TrayItemTile({
    * level — see `Tray`'s `tileExtent`. */
   extent: number;
 }) {
+  const skin = useCosmeticSkin();
   return (
     <div
       onClick={onClick}
@@ -56,7 +58,7 @@ function TrayItemTile({
     >
       <div
         style={{
-          transform: `rotate(${pieceUprightRotationDeg[type] ?? 0}deg)`,
+          transform: `rotate(${uprightRotationOf(skin, type)}deg)`,
           transformOrigin: "bottom center",
           // The sprite keeps its aspect but is bounded by the tile rather
           // than by a fixed 44×70, so a crowded tray narrows its pieces the

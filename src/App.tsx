@@ -27,6 +27,9 @@ import {
 import { MenuScreen } from './screens/MenuScreen';
 import { LevelSelectScreen } from './screens/LevelSelectScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
+import { AppearanceScreen } from './screens/AppearanceScreen';
+import { CosmeticSkinContext } from './game/cosmeticSkinContext';
+import { skinById, type CosmeticSkin } from './game/cosmeticSkins';
 import { GameScreen } from './screens/GameScreen';
 import { CampaignCompleteScreen } from './screens/CampaignCompleteScreen';
 import { TutorialCompleteScreen } from './screens/TutorialCompleteScreen';
@@ -60,6 +63,7 @@ type Screen =
   | 'menu'
   | 'levels'
   | 'settings'
+  | 'appearance'
   | 'game'
   | 'tutorialComplete'
   | 'mainCampaignComplete'
@@ -128,6 +132,10 @@ export default function App() {
   // alone cannot tell a solve from a skip, and it flattered the player who
   // watched an ad to get past a level.
   const [skippedLevels, setSkippedLevels] = useState<Set<number>>(new Set());
+  // The cosmetic set the player is wearing — see `cosmeticSkins.ts`. A
+  // preference, not progress: resetting the campaign does not undress the
+  // board.
+  const [skin, setSkin] = useState<CosmeticSkin>(() => skinById(null));
   const [levelStars, setLevelStars] = useState<Map<number, number>>(new Map());
   const [tutorialComplete, setTutorialComplete] = useState(false);
   const [highestLevel, setHighestLevel] = useState(0);
@@ -208,6 +216,7 @@ export default function App() {
     setSeenOnboardingLevels(snapshot.seenOnboardingLevels);
     setSkippedLevels(snapshot.skippedLevels);
     skippedRef.current = snapshot.skippedLevels;
+    setSkin(skinById(progressRepository.loadCosmeticSkinId()));
     setTutorialComplete(snapshot.tutorialComplete);
     setLevelStars(snapshot.levelStars);
     levelStarsRef.current = snapshot.levelStars;
@@ -923,8 +932,18 @@ export default function App() {
     else analyticsService.disable();
   };
 
+  const chooseSkin = (chosen: CosmeticSkin) => {
+    if (chosen.id === skin.id) return;
+    setSkin(chosen);
+    progressRepository.saveCosmeticSkinId(chosen.id);
+    analyticsService.skinChosen(chosen.id);
+  };
+
+  // Everything that draws the board reads the set from here, so a change
+  // repaints the board, the tray, the figures and the drag sprite at once —
+  // none of the components in between have to know a set exists.
   const withConsent = (content: React.ReactNode) => (
-    <>
+    <CosmeticSkinContext.Provider value={skin}>
       {content}
       {analyticsConsent == null && (
         <ConsentBanner
@@ -939,7 +958,7 @@ export default function App() {
           onRevealed={playAchievementReveal}
         />
       )}
-    </>
+    </CosmeticSkinContext.Provider>
   );
 
   // The one place "how far am I" is computed. The level list and the
@@ -1036,6 +1055,21 @@ export default function App() {
           onDailyReminderHourChanged={setDailyReminderHourAndSave}
           analyticsConsent={analyticsConsent}
           onAnalyticsConsentChanged={setAnalyticsConsentAndSave}
+          onAppearance={() => {
+            analyticsService.appearanceOpened();
+            setScreen('appearance');
+          }}
+          skinName={skin.name}
+        />
+      );
+    case 'appearance':
+      return withConsent(
+        <AppearanceScreen
+          selectedSkinId={skin.id}
+          onSkinChosen={chooseSkin}
+          // Back to where it was opened from, without reporting
+          // `settings_opened` a second time for the same visit.
+          onBack={() => setScreen('settings')}
         />
       );
     case 'levels':

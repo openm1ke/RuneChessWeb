@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { Board } from '../components/board/Board';
-import { BoardPerspective } from '../components/board/boardPerspective';
+import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../components/board/boardPerspective';
 import { Tray } from '../components/tray/Tray';
 import { useDragController } from '../components/board/useDragController';
 import { useViewportSize } from '../components/game/useViewportSize';
@@ -13,7 +13,7 @@ import { LevelResultOverlay } from '../components/game/LevelResultOverlay';
 import { TutorialCoachmark, type CoachmarkLayout } from '../components/game/TutorialCoachmark';
 import { useDozorEngine } from '../game/useDozorEngine';
 import { FIRST_SCORED_LEVEL_INDEX, type DozorEngine } from '../game/dozorEngine';
-import { asset } from '../lib/assetUrl';
+import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 import type { RewardedAdsService, RewardedAdState } from '../services/rewardedAdsService';
 import type { AchievementDefinition } from '../data/achievements';
 
@@ -206,6 +206,7 @@ export function GameScreen({
     engine.levelIndex < FIRST_SCORED_LEVEL_INDEX &&
     !seenOnboardingLevels.has(engine.levelIndex);
   const viewport = useViewportSize();
+  const skin = useCosmeticSkin();
   const isLandscape = viewport.width > viewport.height;
 
   const renderOverlays = (layout?: CoachmarkLayout) => (
@@ -259,6 +260,10 @@ export function GameScreen({
     const width = viewport.width;
     const height = viewport.height;
 
+    // A cosmetic set without wide art of its own is fitted differently —
+    // see `landscapeFallback` below — so this whole measurement of the wide
+    // artwork only applies to a set that has it.
+    //
     // `isometric-table-web-wide.png` is 1448x1086; its inner gold frame
     // (the blue felt area the board sits on) spans roughly x:[396,1056],
     // y:[330,888] in that image, measured directly from the asset.
@@ -292,8 +297,25 @@ export function GameScreen({
     const boardScaleY = (frameHeight / BoardPerspective.height) * boardFitMarginY;
     const boardWidth = BoardPerspective.width * boardScaleX;
     const boardHeight = BoardPerspective.height * boardScaleY;
-    const boardLeft = frameLeft + (frameWidth - boardWidth) / 2;
-    const boardTop = frameTop + (frameHeight - boardHeight) / 2;
+    const wideBoardLeft = frameLeft + (frameWidth - boardWidth) / 2;
+    const wideBoardTop = frameTop + (frameHeight - boardHeight) / 2;
+
+    // Without wide art there is no painted frame to fit into: size the board
+    // off the viewport instead, and let the set's portrait table be placed
+    // around it (`LandscapeGameBackdrop`) exactly as it is in portrait.
+    const fallbackScale = Math.min(
+      (height * 0.74) / BoardPerspective.height,
+      (width * 0.42) / BoardPerspective.width,
+    );
+    const landscapeFallback = !skin.wideBoardAsset;
+    const finalScaleX = landscapeFallback ? fallbackScale : boardScaleX;
+    const finalScaleY = landscapeFallback ? fallbackScale : boardScaleY;
+    const boardLeft = landscapeFallback
+      ? (width - BoardPerspective.width * finalScaleX) / 2
+      : wideBoardLeft;
+    const boardTop = landscapeFallback
+      ? (height - BoardPerspective.height * finalScaleY) / 2
+      : wideBoardTop;
 
     // Tall enough that the tray's fixed-size piece art (44x70, unscaled —
     // landscape has no outer canvas transform to shrink it) never pokes out
@@ -304,7 +326,9 @@ export function GameScreen({
     // tray height itself, rather than ever letting the tray overlap the
     // board.
     const bottomMargin = 14;
-    const availableBelowBoard = height - (boardTop + boardHeight) - bottomMargin;
+    const finalBoardWidth = BoardPerspective.width * finalScaleX;
+    const finalBoardHeight = BoardPerspective.height * finalScaleY;
+    const availableBelowBoard = height - (boardTop + finalBoardHeight) - bottomMargin;
     let boardToTrayGap = 58;
     let landscapeTrayHeight = 130;
     if (boardToTrayGap + landscapeTrayHeight > availableBelowBoard) {
@@ -313,14 +337,19 @@ export function GameScreen({
         landscapeTrayHeight = Math.max(90, availableBelowBoard - boardToTrayGap);
       }
     }
-    const trayWidth = Math.min(360, Math.max(220, boardWidth * 0.82));
+    const trayWidth = Math.min(360, Math.max(220, finalBoardWidth * 0.82));
     const trayLeft = (width - trayWidth) / 2;
-    const trayTop = boardTop + boardHeight + boardToTrayGap;
+    const trayTop = boardTop + finalBoardHeight + boardToTrayGap;
     const trayBottom = Math.max(bottomMargin, height - trayTop - landscapeTrayHeight);
 
     return (
-      <div style={{ position: 'fixed', inset: 0, background: '#030406', overflow: 'hidden' }}>
-        <LandscapeGameBackdrop />
+      <div style={{ position: 'fixed', inset: 0, background: skin.wideBoardAsset ? '#030406' : skin.backdrop, overflow: 'hidden' }}>
+        <LandscapeGameBackdrop
+          boardLeft={boardLeft}
+          boardTop={boardTop}
+          boardScaleX={finalScaleX}
+          boardScaleY={finalScaleY}
+        />
         <TopControls
           onBack={onBack}
           onHint={handleHint}
@@ -338,8 +367,8 @@ export function GameScreen({
           boardRef={boardRef}
           boardLeft={boardLeft}
           boardTop={boardTop}
-          scale={boardScaleX}
-          scaleY={boardScaleY}
+          scale={finalScaleX}
+          scaleY={finalScaleY}
         />
         <Tray
           engine={engine}
@@ -362,7 +391,7 @@ export function GameScreen({
         {renderOverlays({
           isLandscape: true,
           canvasWidth: width,
-          board: { left: boardLeft, top: boardTop, scaleX: boardScaleX, scaleY: boardScaleY },
+          board: { left: boardLeft, top: boardTop, scaleX: finalScaleX, scaleY: finalScaleY },
           tray: { left: trayLeft, top: trayTop, width: trayWidth, height: landscapeTrayHeight },
         })}
       </div>
@@ -396,23 +425,63 @@ export function GameScreen({
   );
 }
 
-function LandscapeGameBackdrop() {
+/** A set without wide art of its own gets its portrait table placed here:
+ * scaled and offset so the frame stands around the smaller landscape board
+ * exactly as it does in portrait, with its edges faded into the set's own
+ * darkness so the art does not end in four straight cuts. */
+function LandscapeGameBackdrop({
+  boardLeft,
+  boardTop,
+  boardScaleX,
+  boardScaleY,
+}: {
+  boardLeft: number;
+  boardTop: number;
+  boardScaleX: number;
+  boardScaleY: number;
+}) {
+  const skin = useCosmeticSkin();
+  if (skin.wideBoardAsset) {
+    return (
+      <img
+        src={skin.wideBoardAsset}
+        alt=""
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+        draggable={false}
+      />
+    );
+  }
+  const fade =
+    'linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),' +
+    'linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent)';
   return (
     <img
-      src={asset("assets/images/isometric-table-web-wide.webp")}
+      src={skin.boardAsset}
       alt=""
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+      style={{
+        position: 'absolute',
+        left: boardLeft - BOARD_LEFT * boardScaleX,
+        top: boardTop - BOARD_TOP * boardScaleY,
+        width: 430 * boardScaleX,
+        height: 764 * boardScaleY,
+        objectFit: 'fill',
+        maskImage: fade,
+        WebkitMaskImage: fade,
+        maskComposite: 'intersect',
+        WebkitMaskComposite: 'source-in',
+      }}
       draggable={false}
     />
   );
 }
 
 function StaticGameBackdrop() {
+  const skin = useCosmeticSkin();
   return (
     <>
-      <div style={{ position: 'absolute', inset: 0, background: '#05091a' }} />
+      <div style={{ position: 'absolute', inset: 0, background: skin.backdrop }} />
       <img
-        src={asset("assets/images/isometric-table.webp")}
+        src={skin.boardAsset}
         alt=""
         style={{ position: 'absolute', left: 0, top: 0, width: 430, height: 764, objectFit: 'fill' }}
         draggable={false}
@@ -424,7 +493,7 @@ function StaticGameBackdrop() {
           right: 0,
           top: 764,
           bottom: 0,
-          background: 'linear-gradient(to bottom, #160b08, #03050d)',
+          background: `linear-gradient(to bottom, ${skin.tableFadeTop}, ${skin.tableFadeBottom})`,
         }}
       />
       <div

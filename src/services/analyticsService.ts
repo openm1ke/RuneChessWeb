@@ -153,6 +153,17 @@ export class AnalyticsService {
     this.goal('settings_opened', {});
   }
 
+  /** The appearance picker was opened, and which set the player switched
+   * to. Two events rather than one: opening it says the feature was found at
+   * all, which is the question a first cosmetic set actually asks. */
+  appearanceOpened(): void {
+    this.goal('appearance_opened', {});
+  }
+
+  skinChosen(skinId: string): void {
+    this.goal('skin_chosen', { skin_id: skinId });
+  }
+
   progressResetConfirmed(): void {
     this.goal('progress_reset_confirmed', {});
   }
