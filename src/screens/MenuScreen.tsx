@@ -189,14 +189,49 @@ function LandscapeMenuScene({
 }) {
   const skin = useCosmeticSkin();
   const { width, height } = useViewportSize();
-  const panelWidth = Math.min(290, Math.max(210, width * 0.27));
-  // Centred on the screen's own edges rather than the artwork's off-centre
-  // dark pocket (the Dart source's 0.44 factor reads as visibly off-centre
-  // once the window is much wider than the source art's own proportions).
-  const panelLeft = (width - panelWidth) / 2;
-  const panelTop = height * 0.39;
-  const brandOrbSize = Math.min(138, Math.max(96, height * 0.16));
+  // Two columns: the mark on one side, the buttons on the other.
+  //
+  // One column of everything only fits a tall screen. On a phone held
+  // sideways — about 411 logical pixels of height — the button stack ran off
+  // the bottom and the footer link, pinned to that bottom, landed on the
+  // play button's own subtitle. A landscape screen has width to spare and no
+  // height, so the layout uses the width. Mirrors `LandscapeMenuScene` in
+  // the Flutter app.
+  const gap = 14;
+  const buttonHeights = [62, 82, 62, 62];
+  const buttonWidth = Math.min(320, Math.max(220, width * 0.3));
+  const columnRight = Math.min(120, Math.max(28, width * 0.09));
+  const columnLeft = width - columnRight - buttonWidth;
+  const naturalHeight =
+    buttonHeights.reduce((sum, h) => sum + h, 0) + gap * (buttonHeights.length - 1);
+  // The rules and settings icons live in the top-right corner, which is this
+  // column's corner too: the stack starts below them.
+  const stackCeiling = 72;
+  const room = height - 16 - stackCeiling;
+  // Shrink the whole stack rather than let any of it leave the screen.
+  const scale = Math.min(1, Math.max(0.68, room / naturalHeight));
+  const stackTop = stackCeiling + (room - naturalHeight * scale) / 2;
+  const topOf = (index: number) =>
+    stackTop +
+    (buttonHeights.slice(0, index).reduce((sum, h) => sum + h, 0) + gap * index) *
+      scale;
+  const slot = (index: number, widthFactor: number) => ({
+    position: 'absolute' as const,
+    top: topOf(index),
+    left: columnLeft + (buttonWidth * (1 - widthFactor)) / 2,
+    width: buttonWidth * widthFactor,
+    height: buttonHeights[index] * scale,
+  });
+  const brandOrbSize = Math.min(
+    150,
+    Math.max(84, Math.min(height * 0.34, (columnLeft - 48) * 0.52)),
+  );
   const brandHeight = brandOrbSize * 1.48 * (660 / 560);
+  const brandColumn = {
+    left: 24,
+    width: Math.max(160, columnLeft - 48),
+    textAlign: 'center' as const,
+  };
 
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -216,14 +251,14 @@ function LandscapeMenuScene({
       <div
         style={{
           position: 'absolute',
-          top: Math.max(24, panelTop - brandHeight - 16),
+          top: Math.max(16, (height - brandHeight) / 2 - 18),
           left: 0,
-          right: 0,
+          width: columnLeft,
         }}
       >
         <MenuBrand orbSize={brandOrbSize} />
       </div>
-      <div style={{ position: 'absolute', top: panelTop - 4, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
+      <div style={slot(0, 0.92)}>
         <MenuActionButton
           label="ЗАДАНИЕ ДНЯ"
           onClick={onDailyChallenge}
@@ -233,7 +268,7 @@ function LandscapeMenuScene({
           badge={<DailyChallengeSolvedBadge solved={dailyChallengeSolvedToday} small />}
         />
       </div>
-      <div style={{ position: 'absolute', top: panelTop + 63, left: panelLeft, width: panelWidth, height: 82 }}>
+      <div style={slot(1, 1)}>
         <MenuActionButton
           label="ИГРАТЬ"
           subtitle={`УРОВЕНЬ ${currentLevel}`}
@@ -241,18 +276,10 @@ function LandscapeMenuScene({
           prominent
         />
       </div>
-      <div
-        style={{
-          position: 'absolute',
-          top: panelTop + 150,
-          left: panelLeft + panelWidth * 0.08,
-          width: panelWidth * 0.84,
-          height: 62,
-        }}
-      >
+      <div style={slot(2, 0.84)}>
         <MenuActionButton label="УРОВНИ" onClick={onLevels} />
       </div>
-      <div style={{ position: 'absolute', top: panelTop + 217, left: panelLeft + panelWidth * 0.08, width: panelWidth * 0.84, height: 62 }}>
+      <div style={slot(3, 0.84)}>
         <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={16} letterSpacing={1.4} />
       </div>
       <div style={{ position: 'absolute', top: 18, right: 24, display: 'flex', gap: 12 }}>
@@ -264,16 +291,16 @@ function LandscapeMenuScene({
         />
         <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
       </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 28, textAlign: 'center' }}>
+      {/* Under the mark, in its own column: the button stack owns the other
+          one all the way down. */}
+      <div style={{ position: 'absolute', ...brandColumn, bottom: 28 }}>
         <MenuFooterLinks />
       </div>
       <div
         style={{
           position: 'absolute',
-          left: 0,
-          right: 0,
+          ...brandColumn,
           bottom: 8,
-          textAlign: 'center',
           fontSize: 9,
           fontWeight: 700,
           letterSpacing: 0.4,
