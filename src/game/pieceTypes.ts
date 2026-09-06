@@ -74,3 +74,32 @@ export const pieceTraySize: Record<PieceType, SpriteSize> = {
   queen: { width: 32.8, height: 58.4 },
   pawn: { width: 26.0, height: 43.0 },
 };
+
+/**
+ * What each figure is called, and how it strikes — one line each, mirroring
+ * the mobile app's `pieceNames`/`pieceAttackSummary`.
+ *
+ * The tray used to show six silhouettes and no names, so a player who does
+ * not know chess had no way to tell a bishop from a pawn; the rules are a
+ * separate page, which is a page too far mid-puzzle.
+ */
+export const pieceNames: Record<PieceType, string> = {
+  rook: 'Ладья',
+  bishop: 'Слон',
+  knight: 'Конь',
+  king: 'Король',
+  queen: 'Ферзь',
+  pawn: 'Пешка',
+};
+
+/** Where each figure strikes, phrased to follow either its name ("Ладья ·
+ * по горизонтали и вертикали") or the verb ("Ладья, бьёт по горизонтали и
+ * вертикали"). Kept short because the tray's header line is 218px wide. */
+export const pieceAttackSummary: Record<PieceType, string> = {
+  rook: 'По горизонтали и вертикали',
+  bishop: 'По диагоналям',
+  knight: 'Буквой «Г»',
+  king: 'Вокруг себя на одну клетку',
+  queen: 'По прямым и диагоналям',
+  pawn: 'По диагонали вперёд',
+};

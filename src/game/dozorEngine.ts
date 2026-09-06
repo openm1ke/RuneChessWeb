@@ -2,6 +2,7 @@ import { campaignLevels, campaignSolutions, FIRST_SCORED_LEVEL_INDEX } from '../
 import { computeAttacks, rayDeltasFor, isInBounds } from './attackRules';
 import type { Beacon, Beam, Cell, LevelDefinition, Piece, TrayItem } from './models';
 import { cellKey } from './models';
+import type { PieceType } from './pieceTypes';
 import type { LevelAttemptResult } from './starRating';
 import { computeStars } from './starRating';
 
@@ -29,6 +30,15 @@ export interface DozorSnapshot {
   boardSize: number;
   occ: ReadonlySet<string>;
   beaconKey: ReadonlySet<string>;
+  /** The cell a dragged figure is being held over, and what it is — the
+   * board draws a ghost of it there. Null unless a drag is in flight over a
+   * placeable cell. See `DozorEngine.setDragPreview`. */
+  previewCell: Cell | null;
+  previewType: PieceType | null;
+  /** What that figure would light up from `previewCell`: `previewBeams` to
+   * the beacons it would hit, `previewCells` every square it would strike. */
+  previewBeams: Beam[];
+  previewCells: Cell[];
 }
 
 function hypot(dx: number, dy: number): number {
@@ -459,6 +469,122 @@ export class DozorEngine {
    * the cache (see `notify`), so repeated calls between mutations — e.g. from
    * React's `useSyncExternalStore` re-render check — return the same object.
    */
+  /**
+   * Every beam a piece standing on its cell would draw to the beacons it
+   * hits. Extracted from `computeSnapshot` so a piece the player is only
+   * *holding over* a cell can be previewed with the same geometry the placed
+   * ones use — see `setDragPreview`.
+   */
+  private beamsFor(
+    p: Piece,
+    hits: Cell[],
+    occ: ReadonlySet<string>,
+    beaconKey: ReadonlySet<string>,
+    cellPx: number,
+    boardSize: number,
+  ): Beam[] {
+    const beams: Beam[] = [];
+    const px = p.c * cellPx + cellPx / 2;
+    const py = p.r * cellPx + cellPx / 2;
+
+    if (p.type === 'knight') {
+      for (const h of hits.filter((h) => beaconKey.has(cellKey(h.c, h.r)))) {
+        const hx = h.c * cellPx + cellPx / 2;
+        const hy = h.r * cellPx + cellPx / 2;
+        const mx = (px + hx) / 2;
+        const my = (py + hy) / 2;
+        const dx = hx - px;
+        const dy = hy - py;
+        const len = dx * dx + dy * dy === 0 ? 1 : hypot(dx, dy);
+        const ox = (-dy / len) * 38;
+        const oy = (dx / len) * 38;
+        beams.push({
+          type: p.type,
+          points: [
+            { dx: px, dy: py },
+            { dx: mx + ox, dy: my + oy },
+            { dx: hx, dy: hy },
+          ],
+        });
+      }
+    } else if (p.type === 'king' || p.type === 'pawn') {
+      for (const h of hits.filter((h) => beaconKey.has(cellKey(h.c, h.r)))) {
+        beams.push({
+          type: p.type,
+          points: [
+            { dx: px, dy: py },
+            { dx: h.c * cellPx + cellPx / 2, dy: h.r * cellPx + cellPx / 2 },
+          ],
+        });
+      }
+    } else {
+      for (const [dc, dr] of rayDeltasFor(p.type)) {
+        let c = p.c + dc;
+        let r = p.r + dr;
+        while (isInBounds(c, r, boardSize)) {
+          const key = cellKey(c, r);
+          if (beaconKey.has(key)) {
+            beams.push({
+              type: p.type,
+              points: [
+                { dx: px, dy: py },
+                { dx: c * cellPx + cellPx / 2, dy: r * cellPx + cellPx / 2 },
+              ],
+            });
+          }
+          if (occ.has(key)) break;
+          c += dc;
+          r += dr;
+        }
+      }
+    }
+    return beams;
+  }
+
+  /** The cell a dragged figure is currently held over, and which figure it
+   * is — the board previews what that figure would light up from there.
+   *
+   * The game is entirely about "where does this piece strike", and until now
+   * the only way to find out was to place it and look: beams appeared after
+   * the fact. Answering the question while the figure is still in the air is
+   * the difference between reasoning and guessing. */
+  private previewCell: Cell | null = null;
+  private previewPieceId: string | null = null;
+
+  /** Called from the drag controller as the figure moves over the board.
+   * `id` is a tray item id or an already-placed piece id; a null `cell`
+   * (the drag left the board, or was dropped) clears the preview. */
+  setDragPreview(id: string | null, cell: Cell | null): void {
+    const same =
+      this.previewPieceId === (cell == null ? null : id) &&
+      this.previewCell?.c === cell?.c &&
+      this.previewCell?.r === cell?.r;
+    if (same) return;
+    this.previewPieceId = cell == null ? null : id;
+    this.previewCell = cell;
+    this.notify();
+  }
+
+  clearDragPreview(): void {
+    this.setDragPreview(null, null);
+  }
+
+  /** The piece the preview would put on `previewCell`, or null when nothing
+   * is being dragged over a placeable cell. */
+  private previewPiece(): Piece | null {
+    const cell = this.previewCell;
+    const id = this.previewPieceId;
+    if (cell == null || id == null) return null;
+    const item = this.tray.find((t) => t.id === id);
+    if (item != null) {
+      return { id: item.id, type: item.type, c: cell.c, r: cell.r, pawnDirection: item.pawnDirection };
+    }
+    // An already-placed figure being moved: preview it from the new cell,
+    // with its old position no longer blocking anything.
+    const placed = this.pieces.find((p) => p.id === id);
+    return placed == null ? null : { ...placed, c: cell.c, r: cell.r };
+  }
+
   snapshot(): DozorSnapshot {
     if (this.cachedSnapshot != null) return this.cachedSnapshot;
     this.cachedSnapshot = this.computeSnapshot();
@@ -484,60 +610,22 @@ export class DozorEngine {
         const k = cellKey(h.c, h.r);
         counts[k] = (counts[k] ?? 0) + 1;
       }
-      const px = p.c * cellPx + cellPx / 2;
-      const py = p.r * cellPx + cellPx / 2;
+      beams.push(...this.beamsFor(p, hits, occ, beaconKey, cellPx, boardSize));
+    }
 
-      if (p.type === 'knight') {
-        for (const h of hits.filter((h) => beaconKey.has(cellKey(h.c, h.r)))) {
-          const hx = h.c * cellPx + cellPx / 2;
-          const hy = h.r * cellPx + cellPx / 2;
-          const mx = (px + hx) / 2;
-          const my = (py + hy) / 2;
-          const dx = hx - px;
-          const dy = hy - py;
-          const len = dx * dx + dy * dy === 0 ? 1 : hypot(dx, dy);
-          const ox = (-dy / len) * 38;
-          const oy = (dx / len) * 38;
-          beams.push({
-            type: p.type,
-            points: [
-              { dx: px, dy: py },
-              { dx: mx + ox, dy: my + oy },
-              { dx: hx, dy: hy },
-            ],
-          });
-        }
-      } else if (p.type === 'king' || p.type === 'pawn') {
-        for (const h of hits.filter((h) => beaconKey.has(cellKey(h.c, h.r)))) {
-          beams.push({
-            type: p.type,
-            points: [
-              { dx: px, dy: py },
-              { dx: h.c * cellPx + cellPx / 2, dy: h.r * cellPx + cellPx / 2 },
-            ],
-          });
-        }
-      } else {
-        for (const [dc, dr] of rayDeltasFor(p.type)) {
-          let c = p.c + dc;
-          let r = p.r + dr;
-          while (isInBounds(c, r, boardSize)) {
-            const key = cellKey(c, r);
-            if (beaconKey.has(key)) {
-              beams.push({
-                type: p.type,
-                points: [
-                  { dx: px, dy: py },
-                  { dx: c * cellPx + cellPx / 2, dy: r * cellPx + cellPx / 2 },
-                ],
-              });
-            }
-            if (occ.has(key)) break;
-            c += dc;
-            r += dr;
-          }
-        }
-      }
+    // What the figure currently held over the board would light up from
+    // there: the same beams a placed figure draws, plus every cell it
+    // strikes, so the board can answer "where does this hit" before the
+    // player commits to an answer.
+    const previewPiece = this.previewPiece();
+    let previewBeams: Beam[] = [];
+    let previewCells: Cell[] = [];
+    if (previewPiece != null) {
+      // The moved figure's own square must not block its new line of fire.
+      const previewOcc = new Set(occ);
+      previewOcc.delete(cellKey(previewPiece.c, previewPiece.r));
+      previewCells = this.attacks(previewPiece, previewOcc);
+      previewBeams = this.beamsFor(previewPiece, previewCells, previewOcc, beaconKey, cellPx, boardSize);
     }
 
     const doneCount = this.beacons.filter((b) => (counts[cellKey(b.c, b.r)] ?? 0) === b.target).length;
@@ -569,6 +657,10 @@ export class DozorEngine {
       boardSize,
       occ,
       beaconKey,
+      previewCell: previewPiece == null ? null : { c: previewPiece.c, r: previewPiece.r },
+      previewType: previewPiece?.type ?? null,
+      previewBeams,
+      previewCells,
     };
   }
 }

@@ -45,6 +45,38 @@ function BoardSvg({ snapshot, beamPhase }: { snapshot: DozorSnapshot; beamPhase:
 
   const beams = snapshot.beams.map((beam, index) => <BeamPath key={index} beam={beam} beamPhase={beamPhase} />);
 
+  // What the figure being dragged would strike from the cell under the
+  // pointer: every square it reaches, tinted in its own colour, then its
+  // beams to the coins. Drawn under the real beams so a preview never reads
+  // as an actual, committed hit.
+  const previewSkin = snapshot.previewType ? pieceSkins[snapshot.previewType] : null;
+  const preview = previewSkin && (
+    <g>
+      {snapshot.previewCells.map((cell) => (
+        <polygon
+          key={`preview-${cell.c}-${cell.r}`}
+          points={polygonPoints(BoardPerspective.cellCorners(cell.c, cell.r, boardSize))}
+          fill={previewSkin.color}
+          fillOpacity={0.26}
+        />
+      ))}
+      {snapshot.previewCell && (
+        <polygon
+          points={polygonPoints(
+            BoardPerspective.cellCorners(snapshot.previewCell.c, snapshot.previewCell.r, boardSize),
+          )}
+          fill="none"
+          stroke={previewSkin.color}
+          strokeOpacity={0.85}
+          strokeWidth={2.5}
+        />
+      )}
+      {snapshot.previewBeams.map((beam, index) => (
+        <BeamPath key={`preview-beam-${index}`} beam={beam} beamPhase={beamPhase} />
+      ))}
+    </g>
+  );
+
   const outline = BoardPerspective.outlinePoints();
 
   return (
@@ -55,6 +87,7 @@ function BoardSvg({ snapshot, beamPhase }: { snapshot: DozorSnapshot; beamPhase:
       style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none' }}
     >
       {cells}
+      {preview}
       {beams}
       <polygon points={polygonPoints(outline)} fill="none" stroke="rgba(0,0,0,0.6)" strokeWidth={4} />
     </svg>

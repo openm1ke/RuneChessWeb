@@ -164,3 +164,31 @@ describe('attempt timing across a hidden tab', () => {
     expect(elapsed(engine)).toBe(7);
   });
 });
+
+/** The board used to answer "where does this strike" only after a placement,
+ * so the player had to commit before finding out. */
+describe('drag preview', () => {
+  it('previews a held figure without touching the game', () => {
+    const engine = new DozorEngine();
+    expect(engine.snapshot().previewCells).toHaveLength(0);
+
+    const item = engine.snapshot().tray[0];
+    engine.setDragPreview(item.id, { c: 2, r: 2 });
+
+    const preview = engine.snapshot();
+    expect(preview.previewCell).toEqual({ c: 2, r: 2 });
+    expect(preview.previewType).toBe(item.type);
+    expect(preview.previewCells.length).toBeGreaterThan(0);
+    expect(engine.pieces).toHaveLength(0);
+    expect(engine.tray).toContain(item);
+    expect(engine.moveCount).toBe(0);
+  });
+
+  it('clears itself', () => {
+    const engine = new DozorEngine();
+    engine.setDragPreview(engine.snapshot().tray[0].id, { c: 2, r: 2 });
+    engine.clearDragPreview();
+    expect(engine.snapshot().previewCell).toBeNull();
+    expect(engine.snapshot().previewCells).toHaveLength(0);
+  });
+});

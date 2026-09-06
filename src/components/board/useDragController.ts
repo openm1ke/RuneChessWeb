@@ -1,6 +1,6 @@
 import { useRef, useState, createElement, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react';
 import type { DozorEngine } from '../../game/dozorEngine';
-import type { Piece, TrayItem } from '../../game/models';
+import type { Cell, Piece, TrayItem } from '../../game/models';
 import { pieceAsset, pieceUprightRotationDeg } from '../../game/pieceTypes';
 import { BoardPerspective } from './boardPerspective';
 import { playPieceLift, playPieceSet } from '../../services/musicService';
@@ -43,9 +43,37 @@ export function useDragController(
   const pointInRect = (x: number, y: number, rect: DOMRect | undefined): boolean =>
     !!rect && x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
 
+  /** The board cell under the pointer, or null when it is off the board. */
+  const cellUnder = (clientX: number, clientY: number): Cell | null => {
+    const rect = boardRef.current?.getBoundingClientRect();
+    if (!pointInRect(clientX, clientY, rect) || !rect) return null;
+    return BoardPerspective.unprojectCell(
+      {
+        x: (clientX - rect.left) * (BoardPerspective.width / rect.width),
+        y: (clientY - rect.top) * (BoardPerspective.height / rect.height),
+      },
+      engine.snapshot().boardSize,
+    );
+  };
+
+  /** Keeps the board's "what would this strike" preview in step with the
+   * pointer — the whole point of dragging slowly over the board. */
+  const updatePreview = (state: DragState, clientX: number, clientY: number) => {
+    const cell = cellUnder(clientX, clientY);
+    const id = state.item?.id ?? state.piece?.id ?? null;
+    const allowed =
+      cell != null &&
+      id != null &&
+      (state.kind === 'tray'
+        ? engine.canDropTrayItem(cell.c, cell.r)
+        : engine.canMovePiece(id, cell.c, cell.r));
+    engine.setDragPreview(allowed ? id : null, allowed ? cell : null);
+  };
+
   const finishDrag = (clientX: number, clientY: number) => {
     const current = dragRef.current;
     updateDrag(null);
+    engine.clearDragPreview();
     if (!current) return;
 
     const boardRect = boardRef.current?.getBoundingClientRect();
@@ -80,6 +108,7 @@ export function useDragController(
       const prev = dragRef.current;
       if (!prev) return;
       updateDrag({ ...prev, x: event.clientX, y: event.clientY });
+      updatePreview(prev, event.clientX, event.clientY);
     };
     const handleUp = (event: PointerEvent) => {
       window.removeEventListener('pointermove', handleMove);

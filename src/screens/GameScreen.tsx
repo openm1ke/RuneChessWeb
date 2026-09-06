@@ -271,6 +271,7 @@ export function GameScreen({
           bottom={trayBottom}
           height={landscapeTrayHeight}
           vertical={false}
+          panelExtent={trayWidth}
         />
         <BottomUtilityControls
           onReset={() => setShowResetConfirm(true)}
