@@ -160,7 +160,7 @@ export class RewardedAdsService {
         timeout = window.setTimeout(() => {
           settle('error', () => this.analytics.adShowFailed(name, 'loader_timeout'));
         }, 15_000);
-        window.yaContextCb!.push(() => {
+        const render = () => {
           if (settled) return;
           if (!window.Ya) {
             settle('unavailable', () => this.analytics.adUnavailable(name));
@@ -212,7 +212,15 @@ export class RewardedAdsService {
               ),
             );
           }
-        });
+        };
+
+        // `yaContextCb` is primarily the loader's startup queue. Once
+        // context.js has already initialised AdvManager, calling it through
+        // that queue again can leave a late callback unprocessed in some
+        // browsers. Render immediately in that common case; reserve the
+        // queue only for a click that happens while context.js is loading.
+        if (window.Ya?.Context.AdvManager) render();
+        else window.yaContextCb!.push(render);
       });
     } finally {
       this.showInFlight[placement] = false;

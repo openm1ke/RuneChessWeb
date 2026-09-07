@@ -51,7 +51,6 @@ describe('RewardedAdsService', () => {
     const ads = new RewardedAdsService(analytics, blockIds);
 
     const show = ads.show('extraHint');
-    window.yaContextCb?.at(-1)?.();
 
     expect(options).toMatchObject({ blockId: 'touch-unit', type: 'rewarded', platform: 'touch' });
     expect(ads.stateOf('extraHint')).toBe('showing');
@@ -82,7 +81,6 @@ describe('RewardedAdsService', () => {
     const ads = new RewardedAdsService(analytics, blockIds);
 
     const show = ads.show('bonusStar');
-    window.yaContextCb?.at(-1)?.();
     expect(options?.blockId).toBe('desktop-unit');
 
     options?.onClose?.();
