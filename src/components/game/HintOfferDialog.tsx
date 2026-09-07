@@ -75,7 +75,7 @@ export function HintOfferDialog({
               fontFamily: 'var(--font-body)',
             }}
           >
-            Посмотреть ролик
+            Посмотреть рекламу и получить подсказку
           </button>
         ) : (
           <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(206,225,255,0.55)' }}>

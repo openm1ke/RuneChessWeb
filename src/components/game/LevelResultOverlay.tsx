@@ -26,7 +26,8 @@ export function LevelResultOverlay({
   onContinue: () => void;
   onRetry: () => void;
   /** Whether the "звезда за рекламу" block should be shown at all — solved
-   * with zero hints and below 3 stars. Mirrors the mobile app's
+   * below 3 stars. A hint does not remove the chance to improve a result.
+   * Mirrors the mobile app's
    * `_bonusStarOffered`. */
   bonusStarOffered?: boolean;
   /** Whether the block is currently tappable (a rewarded ad isn't already
@@ -259,7 +260,7 @@ export function LevelResultOverlay({
                       color: 'var(--text-soft)',
                     }}
                   >
-                    {bonusStarEnabled ? 'Ролик, ~30 секунд' : 'Готовим ролик…'}
+                    {bonusStarEnabled ? 'Реклама до конца — одна звезда' : 'Готовим ролик…'}
                   </span>
                 </span>
                 <span

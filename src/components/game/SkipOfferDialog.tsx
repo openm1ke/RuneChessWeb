@@ -67,7 +67,7 @@ export function SkipOfferDialog({
             fontFamily: 'var(--font-body)',
           }}
         >
-          Пропустить за ролик
+          Посмотреть рекламу и пропустить
         </button>
         <div style={{ height: 4 }} />
         <button

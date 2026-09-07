@@ -90,7 +90,7 @@ export function GameScreen({
     setBonusStarState(rewardedAdsService.stateOf('bonusStar'));
     return rewardedAdsService.addListener((placement, state) => {
       if (placement === 'extraHint') setExtraHintState(state);
-      else setBonusStarState(state);
+      else if (placement === 'bonusStar') setBonusStarState(state);
     });
   }, [rewardedAdsService]);
 
@@ -162,8 +162,7 @@ export function GameScreen({
     bonusStarState !== 'unavailable' &&
     snapshot.solved &&
     engine.levelResult?.stars != null &&
-    engine.levelResult.stars < 3 &&
-    engine.hintUsedCount === 0;
+    engine.levelResult.stars < 3;
   const bonusStarOfferReported = useRef(false);
   useEffect(() => {
     if (!bonusStarOffered) {

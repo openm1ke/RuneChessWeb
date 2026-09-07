@@ -1,20 +1,6 @@
 import { AnalyticsService } from './analyticsService';
 
-/**
- * Yandex Advertising Network (RSYA) integration for web Rewarded units —
- * https://yandex.ru/support/partner/web/units/types/rewarded.html
- *
- * This is the real `Ya.Context.AdvManager` API, wired up end to end
- * (loader, render, reward/error callbacks, analytics). The one missing
- * piece is a real `blockId`: RSYA does not let you create an ad block for a
- * site until that site has passed moderation (unlike the mobile Yandex Ads
- * SDK, which ships a public `demo-rewarded-yandex` unit that works with no
- * account at all — there is no equivalent public demo blockId for web).
- * [DEMO_BLOCK_ID] below is the placeholder ID from Yandex's own
- * documentation examples; it will not actually render anything until it is
- * swapped for a real one issued in partner2.yandex.ru once RSYA approves
- * runechess.ru. Nothing else in this file needs to change at that point.
- */
+/** Yandex Advertising Network (РСЯ) Rewarded integration for runechess.ru. */
 
 declare global {
   interface Window {
@@ -22,7 +8,9 @@ declare global {
     Ya?: {
       Context: {
         AdvManager: {
-          render: (options: YandexAdvManagerRenderOptions) => Promise<unknown>;
+          /** The production API may return either void or a Promise. */
+          render: (options: YandexAdvManagerRenderOptions) => void | Promise<unknown>;
+          getPlatform?: () => 'desktop' | 'touch';
         };
       };
     };
@@ -38,6 +26,8 @@ interface YandexAdvManagerRenderOptions {
   onClose?: () => void;
 }
 
+type YandexAdvManager = NonNullable<Window['Ya']>['Context']['AdvManager'];
+
 export type AdPlacement = 'extraHint' | 'bonusStar' | 'skipLevel';
 
 const ANALYTICS_NAME: Record<AdPlacement, string> = {
@@ -50,12 +40,16 @@ function analyticsName(placement: AdPlacement): string {
   return ANALYTICS_NAME[placement];
 }
 
-/** Placeholder blockIds — see the file doc above. Swap for real ones once
- * RSYA approves the site and partner2.yandex.ru issues them. */
-const DEMO_BLOCK_ID: Record<AdPlacement, string> = {
-  extraHint: 'R-A-000000-1',
-  bonusStar: 'R-A-000000-2',
-  skipLevel: 'R-A-000000-3',
+export interface RewardedBlockIds {
+  desktop: string;
+  touch: string;
+}
+
+/** Blocks created by РСЯ support for runechess.ru. The reward differs by
+ * player intent, while the platform-specific ad block is shared. */
+export const RSYA_REWARDED_BLOCK_IDS: RewardedBlockIds = {
+  desktop: 'R-A-19847196-3',
+  touch: 'R-A-19847196-4',
 };
 
 export type RewardedAdState =
@@ -81,9 +75,17 @@ function ensureLoaderScript(): void {
   document.head.appendChild(script);
 }
 
+function platformFor(manager: YandexAdvManager): 'desktop' | 'touch' {
+  const reported = manager.getPlatform?.();
+  if (reported === 'desktop' || reported === 'touch') return reported;
+  return window.matchMedia?.('(pointer: coarse)').matches || window.innerWidth < 768
+    ? 'touch'
+    : 'desktop';
+}
+
 /**
  * Mirrors `RewardedAdsService` in the Flutter app: one instance owns both
- * placements (`extraHint`, `bonusStar`); each is shown independently.
+ * placements (`extraHint`, `bonusStar`, `skipLevel`); each is shown independently.
  * Unlike the mobile SDK, `Ya.Context.AdvManager.render()` both loads *and*
  * shows a rewarded unit in one call — there is no separate preload step —
  * so [show] is the only entry point here.
@@ -91,7 +93,7 @@ function ensureLoaderScript(): void {
 export class RewardedAdsService {
   constructor(
     private readonly analytics: AnalyticsService,
-    private readonly blockIds: Record<AdPlacement, string> = DEMO_BLOCK_ID,
+    private readonly blockIds: RewardedBlockIds = RSYA_REWARDED_BLOCK_IDS,
   ) {
     ensureLoaderScript();
   }
@@ -142,42 +144,74 @@ export class RewardedAdsService {
 
       this.emit(placement, 'loading');
       await new Promise<void>((resolve) => {
+        let settled = false;
+        let timeout: number | undefined;
+        const settle = (state: RewardedAdState, report: () => void) => {
+          if (settled) return;
+          settled = true;
+          if (timeout != null) window.clearTimeout(timeout);
+          this.emit(placement, state);
+          report();
+          resolve();
+        };
+        // An ad blocker or an interrupted connection can prevent the loader
+        // from draining its queue. Recover instead of leaving a CTA disabled
+        // forever; the player may try again later.
+        timeout = window.setTimeout(() => {
+          settle('error', () => this.analytics.adShowFailed(name, 'loader_timeout'));
+        }, 15_000);
         window.yaContextCb!.push(() => {
+          if (settled) return;
           if (!window.Ya) {
-            this.emit(placement, 'unavailable');
-            this.analytics.adUnavailable(name);
-            resolve();
+            settle('unavailable', () => this.analytics.adUnavailable(name));
             return;
           }
-          window.Ya.Context.AdvManager.render({
-            blockId: this.blockIds[placement],
-            type: 'rewarded',
-            platform: window.innerWidth < 768 ? 'touch' : 'desktop',
-            onRewarded: (isRewarded) => {
-              if (isRewarded) {
-                this.emit(placement, 'rewarded');
-                this.analytics.adRewarded(name);
-              } else {
-                this.emit(placement, 'closedWithoutReward');
-                this.analytics.adClosedWithoutReward(name);
-              }
-              resolve();
-            },
-            onError: (error) => {
-              this.emit(placement, 'error');
-              this.analytics.adShowFailed(name, error?.message ?? String(error?.code ?? 'unknown'));
-              resolve();
-            },
-          })
-            .then(() => {
-              this.emit(placement, 'showing');
-              this.analytics.adShown(name);
-            })
-            .catch((error: unknown) => {
-              this.emit(placement, 'error');
-              this.analytics.adShowFailed(name, error instanceof Error ? error.message : 'render_failed');
-              resolve();
+          const manager = window.Ya.Context.AdvManager;
+          const platform = platformFor(manager);
+          let rewarded = false;
+          try {
+            const result = manager.render({
+              blockId: this.blockIds[platform],
+              type: 'rewarded',
+              platform,
+              onRewarded: (isRewarded) => {
+                rewarded = isRewarded;
+                settle(
+                  isRewarded ? 'rewarded' : 'closedWithoutReward',
+                  () => isRewarded
+                    ? this.analytics.adRewarded(name)
+                    : this.analytics.adClosedWithoutReward(name),
+                );
+              },
+              onClose: () => {
+                if (!rewarded) {
+                  settle('closedWithoutReward', () => this.analytics.adClosedWithoutReward(name));
+                }
+              },
+              onError: (error) => {
+                settle('error', () =>
+                  this.analytics.adShowFailed(name, error?.message ?? String(error?.code ?? 'unknown')),
+                );
+              },
             });
+            this.emit(placement, 'showing');
+            this.analytics.adShown(name);
+            void Promise.resolve(result).catch((error: unknown) => {
+              settle('error', () =>
+                this.analytics.adShowFailed(
+                  name,
+                  error instanceof Error ? error.message : 'render_failed',
+                ),
+              );
+            });
+          } catch (error) {
+            settle('error', () =>
+              this.analytics.adShowFailed(
+                name,
+                error instanceof Error ? error.message : 'render_failed',
+              ),
+            );
+          }
         });
       });
     } finally {
