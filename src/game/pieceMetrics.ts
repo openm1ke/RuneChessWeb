@@ -71,7 +71,7 @@ const figureRatio: Record<PieceType, number> = {
  * queen, comes to about two thirds of one). At exactly 1 the pieces read as
  * small counters rather than figures; the board looked like a draughts set.
  */
-export const TALLEST_FIGURE_IN_CELLS = 1.25;
+export const TALLEST_FIGURE_IN_CELLS = 1.4;
 
 /** The board's depth scale, near row over far row — see `BoardPerspective`. */
 export const NEAREST_DEPTH = 1.12;
