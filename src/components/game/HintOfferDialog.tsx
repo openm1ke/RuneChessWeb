@@ -10,11 +10,15 @@ import { formatHintWait } from '../../game/hintWallet';
 export function HintOfferDialog({
   waitMs,
   adReady,
+  adLoading,
+  adFailed,
   onWatch,
   onClose,
 }: {
   waitMs: number | null;
   adReady: boolean;
+  adLoading?: boolean;
+  adFailed?: boolean;
   onWatch: () => void;
   onClose: () => void;
 }) {
@@ -60,6 +64,7 @@ export function HintOfferDialog({
         {adReady ? (
           <button
             type="button"
+            disabled={adLoading}
             onClick={onWatch}
             style={{
               width: '100%',
@@ -71,15 +76,25 @@ export function HintOfferDialog({
               fontSize: 14,
               fontWeight: 900,
               letterSpacing: 0.4,
-              cursor: 'pointer',
+              cursor: adLoading ? 'default' : 'pointer',
+              opacity: adLoading ? 0.68 : 1,
               fontFamily: 'var(--font-body)',
             }}
           >
-            Посмотреть рекламу и получить подсказку
+            {adLoading
+              ? 'Открываем рекламу…'
+              : adFailed
+                ? 'Попробовать рекламу снова'
+                : 'Посмотреть рекламу и получить подсказку'}
           </button>
         ) : (
           <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(206,225,255,0.55)' }}>
             Ролик сейчас недоступен — попробуйте позже.
+          </div>
+        )}
+        {adFailed && (
+          <div style={{ marginTop: 9, fontSize: 12, fontWeight: 700, color: '#ffd487' }}>
+            Реклама сейчас не ответила. Попробуйте ещё раз немного позже.
           </div>
         )}
         <div style={{ height: 4 }} />

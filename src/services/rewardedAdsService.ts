@@ -145,11 +145,10 @@ export class RewardedAdsService {
       this.emit(placement, 'loading');
       await new Promise<void>((resolve) => {
         let settled = false;
-        let timeout: number | undefined;
         const settle = (state: RewardedAdState, report: () => void) => {
           if (settled) return;
           settled = true;
-          if (timeout != null) window.clearTimeout(timeout);
+          window.clearTimeout(timeout);
           this.emit(placement, state);
           report();
           resolve();
@@ -157,7 +156,7 @@ export class RewardedAdsService {
         // An ad blocker or an interrupted connection can prevent the loader
         // from draining its queue. Recover instead of leaving a CTA disabled
         // forever; the player may try again later.
-        timeout = window.setTimeout(() => {
+        const timeout = window.setTimeout(() => {
           settle('error', () => this.analytics.adShowFailed(name, 'loader_timeout'));
         }, 15_000);
         const render = () => {
@@ -214,13 +213,10 @@ export class RewardedAdsService {
           }
         };
 
-        // `yaContextCb` is primarily the loader's startup queue. Once
-        // context.js has already initialised AdvManager, calling it through
-        // that queue again can leave a late callback unprocessed in some
-        // browsers. Render immediately in that common case; reserve the
-        // queue only for a click that happens while context.js is loading.
-        if (window.Ya?.Context.AdvManager) render();
-        else window.yaContextCb!.push(render);
+        // This is deliberately the documented РСЯ invocation form. The
+        // loader replaces `yaContextCb` with its own live queue once ready,
+        // so it is also the supported way to add a callback after load.
+        window.yaContextCb!.push(render);
       });
     } finally {
       this.showInFlight[placement] = false;

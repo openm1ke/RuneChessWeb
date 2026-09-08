@@ -125,10 +125,12 @@ export function GameScreen({
   };
 
   const watchAdForHint = () => {
-    setHintOfferOpen(false);
     if (!rewardedAdsService) return;
     void rewardedAdsService.show('extraHint').then(() => {
-      if (rewardedAdsService.stateOf('extraHint') === 'rewarded') engine.grantHint();
+      if (rewardedAdsService.stateOf('extraHint') === 'rewarded') {
+        engine.grantHint();
+        setHintOfferOpen(false);
+      }
     });
   };
 
@@ -218,6 +220,8 @@ export function GameScreen({
         <HintOfferDialog
           waitMs={hintWait}
           adReady={rewardedAdsService != null && extraHintState !== 'unavailable'}
+          adLoading={extraHintState === 'loading' || extraHintState === 'showing'}
+          adFailed={extraHintState === 'error'}
           onWatch={watchAdForHint}
           onClose={() => setHintOfferOpen(false)}
         />
