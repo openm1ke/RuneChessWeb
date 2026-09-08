@@ -451,39 +451,66 @@ export class DozorEngine {
     };
   }
 
-  private hintCell(occ: ReadonlySet<string>, beaconKey: ReadonlySet<string>): Cell | null {
+  /**
+   * Every move the solution is still waiting for, as [target, figure].
+   *
+   * The hint used to be able to run out of things to say: it only looked at
+   * figures still in the tray, so at the exact moment a stuck player asks for
+   * one — every figure on the board, the puzzle still unsolved — it found
+   * nothing and the board stayed dark. A figure standing on the wrong square
+   * is as unplaced as one still in the tray, and pointing at where it belongs
+   * is the more useful thing to say. Mirrors `_hintTargets` in the mobile
+   * app's `DozorController`.
+   *
+   * `trayOnly` keeps the tutorial's coach marks to what they can draw: their
+   * arrow starts at a tray tile, which a figure already on the board has not
+   * got.
+   */
+  private hintTargets(
+    occ: ReadonlySet<string>,
+    beaconKey: ReadonlySet<string>,
+    trayOnly = false,
+  ): [Cell, TrayItem][] {
     const solution = this.isDailyChallenge
       ? this.dailySolution!
       : this.levelIndex >= campaignSolutions.length
         ? null
         : campaignSolutions[this.levelIndex];
-    if (solution == null) return null;
+    if (solution == null) return [];
     const originalTray = this.level.tray;
-    for (const item of this.tray) {
-      const index = originalTray.findIndex((t) => t.id === item.id);
-      if (index < 0 || index >= solution.length) continue;
+    const waiting: [Cell, TrayItem][] = [];
+    const misplaced: [Cell, TrayItem][] = [];
+    for (let index = 0; index < originalTray.length && index < solution.length; index++) {
+      const item = originalTray[index];
       const target = solution[index];
-      const key = cellKey(target.c, target.r);
-      if (occ.has(key) || beaconKey.has(key)) continue;
-      return target;
+      if (beaconKey.has(cellKey(target.c, target.r))) continue;
+      const placed = this.pieces.find((piece) => piece.id === item.id);
+      if (placed == null) waiting.push([target, item]);
+      else if (!trayOnly && (placed.c !== target.c || placed.r !== target.r)) {
+        misplaced.push([target, item]);
+      }
     }
-    return null;
+    // A ghost drawn underneath another figure is hard to read, so a free
+    // target goes first — but a blocked one still beats saying nothing.
+    const isFree = ([target]: [Cell, TrayItem]) => !occ.has(cellKey(target.c, target.r));
+    return [
+      ...waiting.filter(isFree),
+      ...misplaced.filter(isFree),
+      ...waiting.filter((entry) => !isFree(entry)),
+      ...misplaced.filter((entry) => !isFree(entry)),
+    ];
   }
 
-  private hintItemForCell(cell: Cell | null): TrayItem | null {
-    if (cell == null) return null;
-    const solution = this.isDailyChallenge
-      ? this.dailySolution!
-      : this.levelIndex >= campaignSolutions.length
-        ? null
-        : campaignSolutions[this.levelIndex];
-    if (solution == null) return null;
-    for (const item of this.tray) {
-      const index = this.level.tray.findIndex((original) => original.id === item.id);
-      if (index < 0 || index >= solution.length) continue;
-      if (solution[index].c === cell.c && solution[index].r === cell.r) return item;
-    }
-    return null;
+  /** The cell the hint points at and the figure that belongs there — one
+   * lookup, so the ghost can never suggest a different figure from the one
+   * the cell is waiting for. */
+  private hintTarget(
+    occ: ReadonlySet<string>,
+    beaconKey: ReadonlySet<string>,
+    trayOnly = false,
+  ): [Cell, TrayItem] | null {
+    const targets = this.hintTargets(occ, beaconKey, trayOnly);
+    return targets.length === 0 ? null : targets[0];
   }
 
   /**
@@ -684,10 +711,12 @@ export class DozorEngine {
 
     const doneCount = this.beacons.filter((b) => (counts[cellKey(b.c, b.r)] ?? 0) === b.target).length;
     const active = this.sel != null || this.held != null;
-    const nextSolutionCell = this.hintCell(occ, beaconKey);
-    const nextSolutionItem = this.hintItemForCell(nextSolutionCell);
-    const solutionCell = this.hint ? nextSolutionCell : null;
-    const hintItem = this.hint ? nextSolutionItem : null;
+    const next = this.hintTarget(occ, beaconKey, true);
+    const nextSolutionCell = next?.[0] ?? null;
+    const nextSolutionItem = next?.[1] ?? null;
+    const hinted = this.hint ? this.hintTarget(occ, beaconKey) : null;
+    const solutionCell = hinted?.[0] ?? null;
+    const hintItem = hinted?.[1] ?? null;
 
     return {
       pieces: this.pieces,

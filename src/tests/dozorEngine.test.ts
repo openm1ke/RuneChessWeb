@@ -210,3 +210,50 @@ describe('reset counting', () => {
     expect(engine.snapshot().resetCount).toBe(0);
   });
 });
+
+describe('a hint when every figure is already on the board', () => {
+  // A hint the player cannot get is worse than no hint button: it only ever
+  // looked at figures still in the tray, so at the exact moment someone is
+  // stuck — every figure placed, the puzzle still unsolved — the board stayed
+  // dark. Mirrors test/hint_when_board_is_full_test.dart.
+  const level = 11;
+
+  it('points a misplaced figure at its own square', () => {
+    const engine = new DozorEngine();
+    engine.goToLevel(level);
+    const solution = campaignSolutions[level];
+    const ids = engine.tray.map((item) => item.id);
+    expect(ids.length).toBeGreaterThanOrEqual(2);
+
+    // Everything placed, the first two figures on each other's squares.
+    expect(engine.dropTrayItem(ids[0], solution[1].c, solution[1].r)).toBe(true);
+    for (let index = 1; index < ids.length; index++) {
+      const target = index === 1 ? solution[0] : solution[index];
+      expect(engine.dropTrayItem(ids[index], target.c, target.r)).toBe(true);
+    }
+    expect(engine.tray).toHaveLength(0);
+    expect(engine.snapshot().solved).toBe(false);
+
+    engine.toggleHint();
+    const snapshot = engine.snapshot();
+    expect(snapshot.solutionCell).not.toBeNull();
+    expect(snapshot.hintItem).not.toBeNull();
+    const hinted = snapshot.pieces.find((piece) => piece.id === snapshot.hintItem!.id)!;
+    expect(snapshot.solutionCell).not.toEqual({ c: hinted.c, r: hinted.r });
+    const index = engine.level.tray.findIndex((item) => item.id === snapshot.hintItem!.id);
+    expect(snapshot.solutionCell).toEqual(solution[index]);
+  });
+
+  it('has nothing to say once the board is right', () => {
+    const engine = new DozorEngine();
+    engine.goToLevel(level);
+    const solution = campaignSolutions[level];
+    const ids = engine.tray.map((item) => item.id);
+    ids.forEach((id, index) => {
+      expect(engine.dropTrayItem(id, solution[index].c, solution[index].r)).toBe(true);
+    });
+    engine.toggleHint();
+    expect(engine.snapshot().solutionCell).toBeNull();
+  });
+});
+
