@@ -32,23 +32,24 @@ export function AppearanceScreen({
 
   const isLandscape = viewport.width > viewport.height;
   // A desktop window or a tablet gets a grid: every set fully visible,
-  // nothing clipped, nothing to scroll sideways for. A browser window can
-  // be wide and short — wider than any phone and half as tall — and that is
-  // still a desktop, so width alone is enough to earn the grid; a tall
-  // landscape window earns it too. Only a phone held sideways, which has
-  // neither, keeps the single row of compact cards below.
+  // nothing clipped, nothing to scroll sideways for. Almost any window
+  // qualifies — a browser window even half the height of a screen has room
+  // to stack two rows of cards — while a phone held sideways, some 400
+  // pixels tall, does not and keeps the single row below. A very wide but
+  // short window is a desktop too, and earns the grid on width alone.
   const roomForGrid =
-    isLandscape && (viewport.width >= 1000 || viewport.height >= 560);
+    isLandscape && (viewport.height >= 480 || viewport.width >= 1200);
 
   if (roomForGrid) {
-    const gap = 24;
-    const padding = { x: 48, top: 18, bottom: 28 };
+    const gap = 22;
+    const padding = { x: 40, top: 16, bottom: 24 };
     const usable = viewport.width - padding.x * 2;
-    // Cards wide enough for the board on them to read as a board.
-    const columns = Math.max(2, Math.min(4, Math.floor((usable + gap) / (320 + gap))));
+    // Smaller cards, more of them across: the page fills up instead of
+    // showing three big blocks and a lot of floor.
+    const columns = Math.max(2, Math.min(5, Math.floor((usable + gap) / (280 + gap))));
     const cardWidth = Math.min(
-      420,
-      Math.max(280, (usable - gap * (columns - 1)) / columns),
+      340,
+      Math.max(240, (usable - gap * (columns - 1)) / columns),
     );
     return (
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', background: '#05091a' }}>
@@ -100,6 +101,7 @@ export function AppearanceScreen({
             style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${columns}, ${cardWidth}px)`,
+              gridAutoRows: '1fr',
               justifyContent: 'center',
               gap,
             }}
@@ -263,6 +265,10 @@ function SkinCard({
   compact?: boolean;
 }) {
   const previewWidth = compact ? Math.round((width - 32) * 0.5) : width - 32;
+  // Every block is the same size, whatever its name and description happen
+  // to be: a row of cards each a different height reads as a mistake, and
+  // the eye has nothing to compare the boards against.
+  const previewHeight = (PREVIEW_HEIGHT * previewWidth) / PREVIEW_WIDTH;
   const preview = (
     <div
       style={{
@@ -270,7 +276,7 @@ function SkinCard({
         overflow: 'hidden',
         flex: 'none',
         width: previewWidth,
-        height: (PREVIEW_HEIGHT * previewWidth) / PREVIEW_WIDTH,
+        height: previewHeight,
       }}
     >
       <SkinPreview skin={skin} width={previewWidth} />
@@ -281,14 +287,30 @@ function SkinCard({
       <div
         style={{
           fontFamily: 'var(--font-display)',
-          fontSize: compact ? 13.5 : 15,
-          letterSpacing: compact ? 0.4 : 0.8,
+          // A narrow card has room for "ОБСИДИАНОВЫЙ" on one line at this
+          // size and not at the full one, and a name split mid-word looks
+          // like a mistake.
+          fontSize: compact ? 12.5 : 15,
+          letterSpacing: compact ? 0.2 : 0.8,
           color: '#f4d8a1',
         }}
       >
         {skin.name.toUpperCase()}
       </div>
-      <div style={{ marginTop: 6, fontSize: 12.5, fontWeight: 700, lineHeight: 1.25, color: '#c6d3ed' }}>
+      <div
+        style={{
+          marginTop: 6,
+          fontSize: compact ? 11.5 : 12.5,
+          fontWeight: 700,
+          lineHeight: 1.25,
+          color: '#c6d3ed',
+          // Three lines for every set, however long its own description is.
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 3,
+          overflow: 'hidden',
+        }}
+      >
         {skin.tagline}
       </div>
     </>
@@ -302,6 +324,12 @@ function SkinCard({
       style={{
         padding: '16px 16px 18px',
         width,
+        // The grid gives every row the same height and every card fills it,
+        // so the blocks are identical whatever their names and descriptions
+        // happen to be — and no taller than the wordiest of them needs.
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         flex: 'none',
         boxSizing: 'border-box',
         borderRadius: 22,
@@ -316,7 +344,9 @@ function SkinCard({
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
+          flex: 1,
+          alignItems: compact ? 'center' : 'stretch',
+          flexDirection: compact ? 'row' : 'column',
           gap: 14,
           marginTop: compact ? 0 : 14,
         }}
@@ -329,14 +359,14 @@ function SkinCard({
             // to wrap and pushes itself out through the card's edge.
             minWidth: 0,
             display: 'flex',
-            flexDirection: compact ? 'column' : 'row',
-            alignItems: compact ? 'flex-start' : 'center',
+            flexDirection: 'column',
+            alignItems: 'stretch',
             gap: 12,
           }}
         >
           <div
             style={{
-              flex: compact ? 'none' : 1,
+              flex: 1,
               minWidth: 0,
               // Break a word only when it genuinely cannot fit; a name that
               // fits on two lines should read as two words, not as
@@ -346,7 +376,7 @@ function SkinCard({
           >
             {details}
           </div>
-          <ChooseButton selected={selected} onChosen={onChosen} fill={compact} />
+          <ChooseButton selected={selected} onChosen={onChosen} fill />
         </div>
       </div>
     </div>
@@ -419,6 +449,7 @@ const PREVIEW_HEIGHT = BoardPerspective.height + PREVIEW_MARGIN.top + PREVIEW_MA
 /** 430 design px, less the screen's 28px padding and the card's 16px, both
  * sides — see `AppearanceScreen` and `SkinCard`. */
 const PREVIEW_CARD_WIDTH = 430 - 28 * 2 - 16 * 2;
+
 
 /** Enough of a position to read as a game: three figures, three coins, and
  * the squares between them. */
