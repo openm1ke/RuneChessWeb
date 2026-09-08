@@ -20,6 +20,11 @@ const TRAY_HEADER_HEIGHT = 21;
 /** The portrait tray's box on the 430x932 design canvas. */
 export const TRAY_PORTRAIT = { left: 96, right: 96, bottom: 120, height: 104 };
 
+/** How tall the row of tiles is inside a panel `height` tall. */
+export function trayRowHeight(height: number): number {
+  return height - TRAY_PADDING_TOP - TRAY_HEADER_HEIGHT - TRAY_PADDING_BOTTOM;
+}
+
 /** The extent one tile takes, given how many the level started with — see
  * `Tray` for why it is the starting count and not the current one. */
 export function trayTileExtent(levelTrayCount: number, panelExtent: number): number {

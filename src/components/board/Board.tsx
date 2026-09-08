@@ -1,7 +1,8 @@
 import { useMemo, type PointerEvent, type ReactElement, type RefObject } from 'react';
 import type { DozorEngine, DozorSnapshot } from '../../game/dozorEngine';
 import { cellKey, type Beam, type Cell, type Piece } from '../../game/models';
-import { pieceOnBoardSize, pieceSkins, type PieceType } from '../../game/pieceTypes';
+import { pieceSkins, type PieceType } from '../../game/pieceTypes';
+import { FOOT_DROP_IN_CELLS, pieceDrawBox } from '../../game/pieceMetrics';
 import { useCosmeticSkin } from '../../game/cosmeticSkinContext';
 import { coinAsset, uprightRotationOf } from '../../game/cosmeticSkins';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from './boardPerspective';
@@ -238,22 +239,34 @@ function ActivatedBeaconAura() {
   );
 }
 
+/**
+ * Where a figure standing on `piece` is drawn, and how big.
+ *
+ * Everything comes from the square it stands on: the figure is a fraction
+ * of the square's height (see `pieceMetrics.ts`), so the 7×7 levels draw
+ * smaller figures than the 6×6 ones instead of the same ones overflowing a
+ * smaller square, and its feet land in the square rather than wherever its
+ * sprite canvas happened to end.
+ */
 function pieceScreenRect(piece: Cell, type: PieceType, cellPx: number) {
-  const dims = pieceOnBoardSize[type];
-  const spriteScale = type === 'bishop' ? 1.25 : 1.14;
-  const cellAnchorOffset = type === 'queen' ? 3.6 : type === 'pawn' ? 3.2 : 0;
   const source = { x: piece.c * cellPx + cellPx / 2, y: piece.r * cellPx + cellPx / 2 };
   const center = BoardPerspective.project(source);
   const scale = 0.94 + (0.18 * source.y) / BoardPerspective.sourceSize;
-  const artWidth = dims.width * 1.42 * spriteScale * scale;
-  const artHeight = dims.height * 1.28 * spriteScale * scale;
+  const cellHeight = (BoardPerspective.height * cellPx) / BoardPerspective.sourceSize;
+  const art = pieceDrawBox(type, cellHeight, scale);
+  const feet = center.y + FOOT_DROP_IN_CELLS * cellHeight * scale;
   return {
-    left: center.x - 30 * scale,
-    top: center.y - 58 * scale + cellAnchorOffset * scale,
-    width: 60 * scale,
-    height: 68 * scale,
-    artWidth,
-    artHeight,
+    left: center.x - art.width / 2,
+    top: feet + art.footInset - art.height,
+    width: art.width,
+    height: art.height,
+    artWidth: art.width,
+    artHeight: art.height,
+    // The shadow and the glows belong under the figure's feet, not under
+    // the sprite's bottom edge, and they are sized against the square like
+    // everything else here.
+    footInset: art.footInset,
+    cellHeight: cellHeight * scale,
     scale,
   };
 }
@@ -288,11 +301,11 @@ function PieceOnBoard({
           <div
             style={{
               position: 'absolute',
-              bottom: 3 * rect.scale,
+              bottom: rect.footInset - 0.06 * rect.cellHeight,
               left: '50%',
               transform: 'translateX(-50%)',
-              width: 40 * rect.scale,
-              height: 46 * rect.scale,
+              width: 0.78 * rect.cellHeight,
+              height: 0.9 * rect.cellHeight,
               borderRadius: '50%',
               pointerEvents: 'none',
               background: `radial-gradient(circle, ${pieceSkins[piece.type].color}${Math.round(
@@ -307,11 +320,11 @@ function PieceOnBoard({
           <div
             style={{
               position: 'absolute',
-              bottom: 0,
+              bottom: rect.footInset - 0.2 * rect.cellHeight,
               left: '50%',
               transform: 'translateX(-50%)',
-              width: 46 * rect.scale,
-              height: 20 * rect.scale,
+              width: 0.9 * rect.cellHeight,
+              height: 0.39 * rect.cellHeight,
               borderRadius: '50%',
               background: `radial-gradient(circle, ${pieceSkins[piece.type].glow} 0%, transparent 100%)`,
             }}
@@ -320,11 +333,11 @@ function PieceOnBoard({
         <div
           style={{
             position: 'absolute',
-            bottom: 2 * rect.scale,
+            bottom: rect.footInset - 0.13 * rect.cellHeight,
             left: '50%',
             transform: 'translateX(-50%)',
-            width: 39 * rect.scale,
-            height: 14 * rect.scale,
+            width: 0.76 * rect.cellHeight,
+            height: 0.27 * rect.cellHeight,
             borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(0,0,0,0.53) 0%, transparent 100%)',
           }}

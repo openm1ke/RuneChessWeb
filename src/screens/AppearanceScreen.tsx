@@ -14,7 +14,8 @@ import { RoundControl } from '../components/shared/RoundControl';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../components/board/boardPerspective';
 import { CosmeticSkinContext } from '../game/cosmeticSkinContext';
 import { coinAsset, cosmeticSkins, uprightRotationOf, type CosmeticSkin } from '../game/cosmeticSkins';
-import { pieceOnBoardSize, pieceSkins, type PieceType } from '../game/pieceTypes';
+import { pieceSkins, type PieceType } from '../game/pieceTypes';
+import { FOOT_DROP_IN_CELLS, pieceDrawBox } from '../game/pieceMetrics';
 import { BOARD_N } from '../game/attackRules';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
@@ -728,13 +729,15 @@ function PreviewPiece({
   c: number;
   r: number;
 }) {
-  const dims = pieceOnBoardSize[type];
-  const spriteScale = type === 'bishop' ? 1.25 : 1.14;
-  const anchor = type === 'queen' ? 3.6 : type === 'pawn' ? 3.2 : 0;
   const unit = BoardPerspective.sourceSize / BOARD_N;
   const source = { x: c * unit + unit / 2, y: r * unit + unit / 2 };
   const center = BoardPerspective.project(source);
   const scale = 0.94 + (0.18 * source.y) / BoardPerspective.sourceSize;
+  // The same geometry the board itself uses — the preview is a promise the
+  // game has to keep, sizes included.
+  const cellHeight = BoardPerspective.height / BOARD_N;
+  const art = pieceDrawBox(type, cellHeight, scale);
+  const feet = FOOT_DROP_IN_CELLS * cellHeight * scale;
   const glow = Math.round(skin.pieceAmbientGlow * 255)
     .toString(16)
     .padStart(2, '0');
@@ -742,21 +745,21 @@ function PreviewPiece({
     <div
       style={{
         position: 'absolute',
-        left: center.x - 30 * scale,
-        top: center.y - 58 * scale + anchor * scale,
-        width: 60 * scale,
-        height: 68 * scale,
+        left: center.x - art.width / 2,
+        top: center.y + feet + art.footInset - art.height,
+        width: art.width,
+        height: art.height,
       }}
     >
       {skin.pieceAmbientGlow > 0 && (
         <div
           style={{
             position: 'absolute',
-            bottom: 3 * scale,
+            bottom: art.footInset - 0.06 * cellHeight * scale,
             left: '50%',
             transform: 'translateX(-50%)',
-            width: 40 * scale,
-            height: 46 * scale,
+            width: 0.78 * cellHeight * scale,
+            height: 0.9 * cellHeight * scale,
             borderRadius: '50%',
             background: `radial-gradient(circle, ${pieceSkins[type].color}${glow} 0%, transparent 70%)`,
           }}
@@ -765,11 +768,11 @@ function PreviewPiece({
       <div
         style={{
           position: 'absolute',
-          bottom: 2 * scale,
+          bottom: art.footInset - 0.13 * cellHeight * scale,
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 39 * scale,
-          height: 14 * scale,
+          width: 0.76 * cellHeight * scale,
+          height: 0.27 * cellHeight * scale,
           borderRadius: '50%',
           background: 'radial-gradient(circle, rgba(0,0,0,0.53) 0%, transparent 100%)',
         }}
@@ -781,8 +784,8 @@ function PreviewPiece({
           position: 'absolute',
           bottom: 0,
           left: '50%',
-          width: dims.width * 1.42 * spriteScale * scale,
-          height: dims.height * 1.28 * spriteScale * scale,
+          width: art.width,
+          height: art.height,
           objectFit: 'contain',
           transform: `translateX(-50%) rotate(${uprightRotationOf(skin, type)}deg)`,
           transformOrigin: 'bottom center',

@@ -1,0 +1,133 @@
+/**
+ * How big a figure is drawn, in one place, for the board and the tray alike.
+ *
+ * It used to be two hand-tuned tables and a scatter of multipliers: a size
+ * per type for the board (times 1.42 wide, 1.28 tall, times 1.14 — 1.25 for
+ * the bishop), a second size for the tray that nothing actually used because
+ * the tray stretched every sprite to its tile, and a nudge for the queen and
+ * the pawn whose canvases carry more air than the rest. Three things went
+ * wrong with that:
+ *
+ * - the same figure came out one size in the tray and another on the board,
+ *   and in the tray every type was the same height, so a pawn stood as tall
+ *   as a king;
+ * - nothing was tied to the square it stands on, so the 7×7 levels drew the
+ *   same figure as the 6×6 ones on a square a seventh smaller — that is the
+ *   figure spilling out of its cell;
+ * - the sprite canvases are not the figures. The queen's canvas is 8% air
+ *   top and bottom, so sizing by the canvas drew her short and left her feet
+ *   hovering — which is what the per-type nudge was patching over.
+ *
+ * So: the figure's *content* (measured, not guessed — see
+ * `tool/measure_piece_metrics.py` in the Flutter repo) is given a height in
+ * cell heights, and everything else follows from the board's own geometry.
+ * Mirrors the Flutter app's `PieceMetrics`.
+ */
+import type { PieceType } from './pieceTypes';
+
+/** Canvas each set's prepared sprite is drawn on — identical across sets,
+ * which is what `tool/prepare_cosmetics.py` normalises them for. */
+const canvas: Record<PieceType, { width: number; height: number }> = {
+  rook: { width: 230, height: 377 },
+  bishop: { width: 201, height: 349 },
+  knight: { width: 207, height: 357 },
+  king: { width: 200, height: 400 },
+  queen: { width: 323, height: 512 },
+  pawn: { width: 330, height: 512 },
+};
+
+/** Where the figure actually is inside that canvas, as fractions of it. */
+const content: Record<PieceType, { top: number; bottom: number }> = {
+  rook: { top: 0.013, bottom: 0.995 },
+  bishop: { top: 0.008, bottom: 0.995 },
+  knight: { top: 0.011, bottom: 0.995 },
+  king: { top: 0.005, bottom: 0.996 },
+  queen: { top: 0.040, bottom: 0.961 },
+  pawn: { top: 0.040, bottom: 0.963 },
+};
+
+/**
+ * How tall each figure is next to the tallest of them. These are the
+ * proportions the pieces were drawn in and have always had on the board;
+ * only their absolute size is decided elsewhere.
+ */
+const figureRatio: Record<PieceType, number> = {
+  rook: 0.931,
+  bishop: 0.951,
+  knight: 0.884,
+  king: 1,
+  queen: 0.985,
+  pawn: 0.786,
+};
+
+/**
+ * The tallest figure's height, in cell heights, on the row nearest the
+ * player. One number decides how big every figure is everywhere: at 1 the
+ * king exactly spans a square and nothing ever overhangs more than the
+ * square it stands on.
+ */
+export const TALLEST_FIGURE_IN_CELLS = 1;
+
+/** The board's depth scale, near row over far row — see `BoardPerspective`. */
+export const NEAREST_DEPTH = 1.12;
+
+/** How far below the square's projected centre a figure's feet sit. Squares
+ * are drawn as if seen from in front and above, so a figure standing in the
+ * middle of one has its base a little below that middle. */
+export const FOOT_DROP_IN_CELLS = 0.19;
+
+export interface PieceDrawBox {
+  /** The sprite's own box — canvas, not figure. */
+  width: number;
+  height: number;
+  /** Distance from the sprite's bottom edge up to the figure's feet. */
+  footInset: number;
+}
+
+/**
+ * The sprite box to draw so that the figure inside it is the right height
+ * for a square `cellHeight` tall, at depth `depth` (1 = the board's far row).
+ */
+/**
+ * How tall the figure itself is on a square `cellHeight` tall, at `depth` —
+ * the number every rule here is actually about.
+ */
+export function pieceFigureHeight(
+  type: PieceType,
+  cellHeight: number,
+  depth = 1,
+): number {
+  return (
+    (figureRatio[type] * TALLEST_FIGURE_IN_CELLS * cellHeight * depth) / NEAREST_DEPTH
+  );
+}
+
+export function pieceDrawBox(
+  type: PieceType,
+  cellHeight: number,
+  depth = 1,
+): PieceDrawBox {
+  const box = content[type];
+  const height = pieceFigureHeight(type, cellHeight, depth) / (box.bottom - box.top);
+  return {
+    width: (height * canvas[type].width) / canvas[type].height,
+    height,
+    footInset: (1 - box.bottom) * height,
+  };
+}
+
+/**
+ * The square a tray tile stands in for: the board's own square, so a figure
+ * waiting in the tray is exactly the size it will be once it lands — unless
+ * the tile is too small to show it at that size, in which case the tile
+ * itself becomes the square and every figure shrinks together.
+ */
+export function trayCellHeight(tileHeight: number, boardCellHeight?: number): number {
+  const fits = (tileHeight * NEAREST_DEPTH) / TALLEST_FIGURE_IN_CELLS;
+  return boardCellHeight == null ? fits : Math.min(fits, boardCellHeight);
+}
+
+/** The square height a tile of `height` stands in for, on its own. */
+export function cellHeightForTile(height: number): number {
+  return (height * NEAREST_DEPTH) / TALLEST_FIGURE_IN_CELLS;
+}

@@ -5,7 +5,14 @@ import type { Cell, Piece, TrayItem } from '../../game/models';
 import { useCosmeticSkin } from '../../game/cosmeticSkinContext';
 import { uprightRotationOf } from '../../game/cosmeticSkins';
 import { BoardPerspective } from './boardPerspective';
+import { pieceDrawBox } from '../../game/pieceMetrics';
 import { playPieceLift, playPieceSet } from '../../services/musicService';
+
+/** The square a figure in the air is drawn against: the 6x6 board's own,
+ * a touch larger, so a lifted piece reads as lifted. */
+const DRAG_CELL_HEIGHT = (BoardPerspective.height / 6) * 1.15;
+/** How far below the cursor the figure's feet hang. */
+const DRAG_FOOT_DROP = 10;
 
 interface DragState {
   kind: 'board' | 'tray';
@@ -137,16 +144,20 @@ export function useDragController(
   };
 
   const type = drag?.piece?.type ?? drag?.item?.type;
-  const sprite = drag && type
+  // The figure in the air is the same figure, a touch larger than it will
+  // be once it lands — sized by the same rules as the board and the tray so
+  // it does not change shape between the three.
+  const held = type ? pieceDrawBox(type, DRAG_CELL_HEIGHT) : null;
+  const sprite = drag && type && held
     ? createElement('img', {
         src: skin.pieceAssets[type],
         alt: '',
         style: {
           position: 'fixed',
-          left: drag.x - 29,
-          top: drag.y - 60,
-          width: 58,
-          height: 70,
+          left: drag.x - held.width / 2,
+          top: drag.y + held.footInset - held.height + DRAG_FOOT_DROP,
+          width: held.width,
+          height: held.height,
           objectFit: 'contain',
           pointerEvents: 'none',
           zIndex: 1000,

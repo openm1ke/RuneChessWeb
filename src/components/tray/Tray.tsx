@@ -8,7 +8,9 @@ import {
 } from "../../game/pieceTypes";
 import { PieceArt } from "../board/PieceArt";
 import type { DragController } from "../board/useDragController";
-import { TILE_GAP, TRAY_PORTRAIT, trayTileExtent } from "./trayGeometry";
+import { TILE_GAP, TRAY_PORTRAIT, trayRowHeight, trayTileExtent } from "./trayGeometry";
+import { pieceDrawBox, trayCellHeight } from "../../game/pieceMetrics";
+import { BoardPerspective } from "../board/boardPerspective";
 import { useCosmeticSkin } from "../../game/cosmeticSkinContext";
 import { uprightRotationOf } from "../../game/cosmeticSkins";
 
@@ -19,6 +21,8 @@ function TrayItemTile({
   onPointerDown,
   vertical,
   extent,
+  height,
+  boardCellHeight,
 }: {
   type: PieceType;
   selected: boolean;
@@ -28,8 +32,18 @@ function TrayItemTile({
   /** Width (or height, in the vertical tray) this tile keeps for the whole
    * level — see `Tray`'s `tileExtent`. */
   extent: number;
+  /** How tall the tile is. The figure inside is drawn to the same rules the
+   * board uses, so a piece is the same size and the same shape in both
+   * places — the tray used to stretch every sprite to its tile, which drew a
+   * pawn as tall as a king and none of them the size they would land at. */
+  height: number;
+  /** The board's own square, which the figure is sized against whenever the
+   * tile has room for it. */
+  boardCellHeight: number;
 }) {
   const skin = useCosmeticSkin();
+  // The tile's border and its bottom padding are not the square.
+  const art = pieceDrawBox(type, trayCellHeight(height - 8, boardCellHeight));
   return (
     <div
       onClick={onClick}
@@ -78,7 +92,9 @@ function TrayItemTile({
       >
         <PieceArt
           type={type}
-          style={{ width: "auto", height: "92%", maxWidth: "100%" }}
+          width={art.width}
+          height={art.height}
+          style={{ maxWidth: "100%" }}
         />
       </div>
     </div>
@@ -227,6 +243,10 @@ export function Tray({
               }}
               vertical={vertical}
               extent={tileExtent}
+              height={vertical ? tileExtent : trayRowHeight(height)}
+              boardCellHeight={
+                (BoardPerspective.height * snapshot.cellPx) / BoardPerspective.sourceSize
+              }
             />
           ))
         )}

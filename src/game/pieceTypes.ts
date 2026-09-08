@@ -50,31 +50,6 @@ export const pieceAsset: Record<PieceType, string> = {
   pawn: asset('assets/images/p-pawn-android.webp'),
 };
 
-export interface SpriteSize {
-  width: number;
-  height: number;
-}
-
-/** On-board sprite size for each piece type (design px). */
-export const pieceOnBoardSize: Record<PieceType, SpriteSize> = {
-  rook: { width: 25.7, height: 42.1 },
-  bishop: { width: 22.5, height: 39.0 },
-  knight: { width: 23.1, height: 39.9 },
-  king: { width: 22.4, height: 44.8 },
-  queen: { width: 27.0, height: 48.2 },
-  pawn: { width: 22.0, height: 38.0 },
-};
-
-/** Tray sprite size for each piece type (design px). */
-export const pieceTraySize: Record<PieceType, SpriteSize> = {
-  rook: { width: 31.3, height: 51.3 },
-  bishop: { width: 27.4, height: 47.5 },
-  knight: { width: 28.2, height: 48.6 },
-  king: { width: 27.3, height: 54.5 },
-  queen: { width: 32.8, height: 58.4 },
-  pawn: { width: 26.0, height: 43.0 },
-};
-
 /**
  * What each figure is called, and how it strikes — one line each, mirroring
  * the mobile app's `pieceNames`/`pieceAttackSummary`.
