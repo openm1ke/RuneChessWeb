@@ -66,6 +66,34 @@ describe('RewardedAdsService', () => {
     expect(analytics.adRewarded).toHaveBeenCalledWith('extra_hint');
   });
 
+  it('reports a synchronous render error instead of "showing"', async () => {
+    // РСЯ answers WRONG_DOMAIN from inside `render()` itself when the block
+    // is not allowed on the page's domain — which is every domain but the
+    // live site, so this is what every developer and every preview build
+    // hits. Emitting "showing" after that left the offer card stuck on
+    // "Готовим ролик…" with no way back.
+    const analytics = analyticsSpy();
+    window.Ya = {
+      Context: {
+        AdvManager: {
+          getPlatform: () => 'desktop',
+          render: (received: RenderOptions) => {
+            received.onError?.({ code: 'WRONG_DOMAIN', message: 'Current domain is not allowed' });
+          },
+        },
+      },
+    };
+    const ads = new RewardedAdsService(analytics, blockIds);
+
+    const show = ads.show('bonusStar');
+    window.yaContextCb?.at(-1)?.();
+    await show;
+
+    expect(ads.stateOf('bonusStar')).toBe('error');
+    expect(analytics.adShown).not.toHaveBeenCalled();
+    expect(analytics.adShowFailed).toHaveBeenCalledWith('bonus_star', 'Current domain is not allowed');
+  });
+
   it('does not issue a reward when the desktop ad closes early', async () => {
     const analytics = analyticsSpy();
     let options: RenderOptions | undefined;

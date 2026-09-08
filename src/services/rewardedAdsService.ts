@@ -199,8 +199,17 @@ export class RewardedAdsService {
                 );
               },
             });
-            this.emit(placement, 'showing');
-            this.analytics.adShown(name);
+            // Only if the attempt is still open. `render()` can call
+            // `onError` *synchronously* — a block that is not allowed on
+            // this domain answers WRONG_DOMAIN before it returns — and
+            // emitting "showing" after that overwrote the error: the offer
+            // card sat on "Готовим ролик…" for good, the button stayed
+            // disabled, and the caller, reading the placement's state,
+            // never saw a failure it could recover from.
+            if (!settled) {
+              this.emit(placement, 'showing');
+              this.analytics.adShown(name);
+            }
             void Promise.resolve(result).catch((error: unknown) => {
               settle('error', () =>
                 this.analytics.adShowFailed(
