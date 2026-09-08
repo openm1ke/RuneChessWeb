@@ -1101,6 +1101,7 @@ export default function App() {
                 : 0
             }
             onBonusStarOffered={() => analyticsService.adOfferShown('bonus_star')}
+            onBonusStarFallbackGranted={(reason) => analyticsService.adFallbackGranted('bonus_star', reason)}
           />
           {freezeNotice && (
             <Toast message={freezeNotice} onDone={() => setFreezeNotice(null)} />

@@ -45,11 +45,12 @@ export interface RewardedBlockIds {
   touch: string;
 }
 
-/** Blocks created by РСЯ support for runechess.ru. The reward differs by
- * player intent, while the platform-specific ad block is shared. */
+/** The Rewarded blocks РСЯ approved for runechess.ru — desktop and mobile
+ * versions of the site. The reward differs by player intent, while the
+ * platform-specific ad block is shared. */
 export const RSYA_REWARDED_BLOCK_IDS: RewardedBlockIds = {
-  desktop: 'R-A-19847196-3',
-  touch: 'R-A-19847196-4',
+  desktop: 'R-A-19847196-2',
+  touch: 'R-A-19847196-1',
 };
 
 export type RewardedAdState =

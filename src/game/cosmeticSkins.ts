@@ -106,7 +106,9 @@ export const classicSkin: CosmeticSkin = {
   coinAssets: [0, 1, 2, 3, 4, 5].map((index) =>
     asset(`assets/images/coin-${index}.webp`),
   ),
-  uprightRotationDeg: { king: -6.5, rook: 4 },
+  // The king and the rook used to lean in the source art and were
+  // straightened here; they are drawn upright now.
+  uprightRotationDeg: {},
   pieceAmbientGlow: 0,
 };
 
@@ -143,10 +145,196 @@ export const obsidianAstralSkin: CosmeticSkin = {
   pieceAmbientGlow: 0.34,
 };
 
+export const woodenWorkshopSkin: CosmeticSkin = {
+  id: 'wooden_set',
+  name: 'Деревянная мастерская',
+  tagline: 'Морёный дуб, зелёное сукно и фигуры, крашенные вручную.',
+  boardAsset: asset('assets/images/cosmetics/wooden_set/board.webp'),
+  boardFrameAsset: asset('assets/images/cosmetics/wooden_set/board-frame.webp'),
+  wideBoardAsset: asset('assets/images/cosmetics/wooden_set/board-wide.webp'),
+  menuBackground: asset('assets/images/cosmetics/wooden_set/menu.webp'),
+  wideMenuBackground: asset('assets/images/cosmetics/wooden_set/menu-wide.webp'),
+  menuBackgroundLively: null,
+  backdrop: '#140a05',
+  lightCell: '#e8d5ae',
+  darkCell: '#5c3a24',
+  tableFadeTop: '#271004',
+  tableFadeBottom: '#0b0602',
+  pieceAssets: {
+    rook: asset('assets/images/cosmetics/wooden_set/rook.webp'),
+    bishop: asset('assets/images/cosmetics/wooden_set/bishop.webp'),
+    knight: asset('assets/images/cosmetics/wooden_set/knight.webp'),
+    king: asset('assets/images/cosmetics/wooden_set/king.webp'),
+    queen: asset('assets/images/cosmetics/wooden_set/queen.webp'),
+    pawn: asset('assets/images/cosmetics/wooden_set/pawn.webp'),
+  },
+  coinAssets: [0, 1, 2, 3, 4, 5].map((index) =>
+    asset(`assets/images/cosmetics/wooden_set/coin-${index}.webp`),
+  ),
+  uprightRotationDeg: {},
+  pieceAmbientGlow: 0,
+};
+
+export const pearlTideSkin: CosmeticSkin = {
+  id: 'pearl_tide',
+  name: 'Жемчужная',
+  tagline: 'Перламутр, морская синь и фигуры, гладкие как раковина.',
+  boardAsset: asset('assets/images/cosmetics/pearl_tide/board.webp'),
+  boardFrameAsset: asset('assets/images/cosmetics/pearl_tide/board-frame.webp'),
+  wideBoardAsset: asset('assets/images/cosmetics/pearl_tide/board-wide.webp'),
+  menuBackground: asset('assets/images/cosmetics/pearl_tide/menu.webp'),
+  wideMenuBackground: asset('assets/images/cosmetics/pearl_tide/menu-wide.webp'),
+  menuBackgroundLively: null,
+  backdrop: '#080e1a',
+  lightCell: '#e2e8f0',
+  darkCell: '#28426e',
+  tableFadeTop: '#0e1826',
+  tableFadeBottom: '#04070e',
+  pieceAssets: {
+    rook: asset('assets/images/cosmetics/pearl_tide/rook.webp'),
+    bishop: asset('assets/images/cosmetics/pearl_tide/bishop.webp'),
+    knight: asset('assets/images/cosmetics/pearl_tide/knight.webp'),
+    king: asset('assets/images/cosmetics/pearl_tide/king.webp'),
+    queen: asset('assets/images/cosmetics/pearl_tide/queen.webp'),
+    pawn: asset('assets/images/cosmetics/pearl_tide/pawn.webp'),
+  },
+  coinAssets: [0, 1, 2, 3, 4, 5].map((index) =>
+    asset(`assets/images/cosmetics/pearl_tide/coin-${index}.webp`),
+  ),
+  uprightRotationDeg: {},
+  pieceAmbientGlow: 0,
+};
+
+export const moonlitSilverSkin: CosmeticSkin = {
+  id: 'moonlit_silver',
+  name: 'Лунное серебро',
+  tagline: 'Кованое серебро, ночная синева и холодный лунный блеск.',
+  boardAsset: asset('assets/images/cosmetics/moonlit_silver/board.webp'),
+  boardFrameAsset: asset('assets/images/cosmetics/moonlit_silver/board-frame.webp'),
+  wideBoardAsset: asset('assets/images/cosmetics/moonlit_silver/board-wide.webp'),
+  menuBackground: asset('assets/images/cosmetics/moonlit_silver/menu.webp'),
+  wideMenuBackground: asset('assets/images/cosmetics/moonlit_silver/menu-wide.webp'),
+  menuBackgroundLively: null,
+  backdrop: '#070c16',
+  lightCell: '#a0b0c8',
+  darkCell: '#1a2640',
+  tableFadeTop: '#0b1524',
+  tableFadeBottom: '#03060c',
+  pieceAssets: {
+    rook: asset('assets/images/cosmetics/moonlit_silver/rook.webp'),
+    bishop: asset('assets/images/cosmetics/moonlit_silver/bishop.webp'),
+    knight: asset('assets/images/cosmetics/moonlit_silver/knight.webp'),
+    king: asset('assets/images/cosmetics/moonlit_silver/king.webp'),
+    queen: asset('assets/images/cosmetics/moonlit_silver/queen.webp'),
+    pawn: asset('assets/images/cosmetics/moonlit_silver/pawn.webp'),
+  },
+  coinAssets: [0, 1, 2, 3, 4, 5].map((index) =>
+    asset(`assets/images/cosmetics/moonlit_silver/coin-${index}.webp`),
+  ),
+  uprightRotationDeg: {},
+  pieceAmbientGlow: 0,
+};
+
+export const lavaForgeSkin: CosmeticSkin = {
+  id: 'lava_forge',
+  name: 'Лавовая кузница',
+  tagline: 'Остывший базальт с трещинами, за которыми ещё горит.',
+  boardAsset: asset('assets/images/cosmetics/lava_forge/board.webp'),
+  boardFrameAsset: asset('assets/images/cosmetics/lava_forge/board-frame.webp'),
+  wideBoardAsset: asset('assets/images/cosmetics/lava_forge/board-wide.webp'),
+  menuBackground: asset('assets/images/cosmetics/lava_forge/menu.webp'),
+  wideMenuBackground: asset('assets/images/cosmetics/lava_forge/menu-wide.webp'),
+  menuBackgroundLively: null,
+  backdrop: '#0c0705',
+  lightCell: '#967864',
+  darkCell: '#3a2a24',
+  tableFadeTop: '#170b06',
+  tableFadeBottom: '#060302',
+  pieceAssets: {
+    rook: asset('assets/images/cosmetics/lava_forge/rook.webp'),
+    bishop: asset('assets/images/cosmetics/lava_forge/bishop.webp'),
+    knight: asset('assets/images/cosmetics/lava_forge/knight.webp'),
+    king: asset('assets/images/cosmetics/lava_forge/king.webp'),
+    queen: asset('assets/images/cosmetics/lava_forge/queen.webp'),
+    pawn: asset('assets/images/cosmetics/lava_forge/pawn.webp'),
+  },
+  coinAssets: [0, 1, 2, 3, 4, 5].map((index) =>
+    asset(`assets/images/cosmetics/lava_forge/coin-${index}.webp`),
+  ),
+  uprightRotationDeg: {},
+  pieceAmbientGlow: 0.22,
+};
+
+export const amberWorkshopSkin: CosmeticSkin = {
+  id: 'amber_workshop',
+  name: 'Янтарная мастерская',
+  tagline: 'Тёплый янтарь, латунь и стружка на верстаке.',
+  boardAsset: asset('assets/images/cosmetics/amber_workshop/board.webp'),
+  boardFrameAsset: asset('assets/images/cosmetics/amber_workshop/board-frame.webp'),
+  wideBoardAsset: asset('assets/images/cosmetics/amber_workshop/board-wide.webp'),
+  menuBackground: asset('assets/images/cosmetics/amber_workshop/menu.webp'),
+  wideMenuBackground: asset('assets/images/cosmetics/amber_workshop/menu-wide.webp'),
+  menuBackgroundLively: null,
+  backdrop: '#120a04',
+  lightCell: '#eece96',
+  darkCell: '#5c3416',
+  tableFadeTop: '#1a0c04',
+  tableFadeBottom: '#070301',
+  pieceAssets: {
+    rook: asset('assets/images/cosmetics/amber_workshop/rook.webp'),
+    bishop: asset('assets/images/cosmetics/amber_workshop/bishop.webp'),
+    knight: asset('assets/images/cosmetics/amber_workshop/knight.webp'),
+    king: asset('assets/images/cosmetics/amber_workshop/king.webp'),
+    queen: asset('assets/images/cosmetics/amber_workshop/queen.webp'),
+    pawn: asset('assets/images/cosmetics/amber_workshop/pawn.webp'),
+  },
+  coinAssets: [0, 1, 2, 3, 4, 5].map((index) =>
+    asset(`assets/images/cosmetics/amber_workshop/coin-${index}.webp`),
+  ),
+  uprightRotationDeg: {},
+  pieceAmbientGlow: 0,
+};
+
+export const gzhelPorcelainSkin: CosmeticSkin = {
+  id: 'gzhel_porcelain',
+  name: 'Гжельский фарфор',
+  tagline: 'Белый фарфор с кобальтовой росписью, как сервиз из серванта.',
+  boardAsset: asset('assets/images/cosmetics/gzhel_porcelain/board.webp'),
+  boardFrameAsset: asset('assets/images/cosmetics/gzhel_porcelain/board-frame.webp'),
+  wideBoardAsset: asset('assets/images/cosmetics/gzhel_porcelain/board-wide.webp'),
+  menuBackground: asset('assets/images/cosmetics/gzhel_porcelain/menu.webp'),
+  wideMenuBackground: asset('assets/images/cosmetics/gzhel_porcelain/menu-wide.webp'),
+  menuBackgroundLively: null,
+  backdrop: '#060c1c',
+  lightCell: '#e2eaf7',
+  darkCell: '#263e78',
+  tableFadeTop: '#0a1428',
+  tableFadeBottom: '#03060e',
+  pieceAssets: {
+    rook: asset('assets/images/cosmetics/gzhel_porcelain/rook.webp'),
+    bishop: asset('assets/images/cosmetics/gzhel_porcelain/bishop.webp'),
+    knight: asset('assets/images/cosmetics/gzhel_porcelain/knight.webp'),
+    king: asset('assets/images/cosmetics/gzhel_porcelain/king.webp'),
+    queen: asset('assets/images/cosmetics/gzhel_porcelain/queen.webp'),
+    pawn: asset('assets/images/cosmetics/gzhel_porcelain/pawn.webp'),
+  },
+  coinAssets: [0, 1, 2, 3, 4, 5].map((index) =>
+    asset(`assets/images/cosmetics/gzhel_porcelain/coin-${index}.webp`),
+  ),
+  uprightRotationDeg: {},
+  pieceAmbientGlow: 0,
+};
+
 /** Every set the player can pick, in the order the appearance screen shows. */
 export const cosmeticSkins: readonly CosmeticSkin[] = [
   classicSkin,
   obsidianAstralSkin,
+  woodenWorkshopSkin,
+  pearlTideSkin,
+  moonlitSilverSkin,
+  lavaForgeSkin,
+  amberWorkshopSkin,
+  gzhelPorcelainSkin,
 ];
 
 /** The set stored under `id`, or the classic one for anything unknown — a

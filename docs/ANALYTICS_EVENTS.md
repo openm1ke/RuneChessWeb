@@ -60,6 +60,7 @@ AppMetrica показывает любое событие сама. Метрик
 | `ad_rewarded` | ✔ | ✔ | `placement` |
 | `ad_closed_without_reward` | ✔ | ✔ | `placement` |
 | `ad_unavailable` | ✔ | ✔ | `placement` |
+| `ad_fallback_granted` | ✔ | ✔ | `placement`, `reason` |
 | `bonus_star_granted` | ✔ | ✔ | `level`, `stars_before`, `stars_after` |
 | `service_failed` | ✔ | — | `component`, `stage`, `reason` |
 

@@ -54,17 +54,26 @@ describe('cosmetic skins', () => {
     expect(skinById(null)).toBe(classicSkin);
   });
 
-  it('matches the mobile catalogue: same ids, same corrections', () => {
+  it('matches the mobile catalogue: same ids, same order', () => {
     // The Flutter app's `CosmeticSkin.all`, in order. A set added on one
     // platform and not the other is the drift this catches.
     expect(cosmeticSkins.map((skin) => skin.id)).toEqual([
       'classic',
       'obsidian_astral',
+      'wooden_set',
+      'pearl_tide',
+      'moonlit_silver',
+      'lava_forge',
+      'amber_workshop',
+      'gzhel_porcelain',
     ]);
-    // The classic art is not drawn upright; the obsidian art is.
-    expect(uprightRotationOf(classicSkin, 'king')).toBe(-6.5);
-    expect(uprightRotationOf(classicSkin, 'rook')).toBe(4);
-    expect(uprightRotationOf(obsidianAstralSkin, 'king')).toBe(0);
+    // Every set's art is drawn upright now, the base figures included:
+    // the king and rook corrections are gone rather than carried forward.
+    for (const skin of cosmeticSkins) {
+      for (const type of ALL_PIECE_TYPES) {
+        expect(uprightRotationOf(skin, type), `${skin.id}/${type}`).toBe(0);
+      }
+    }
   });
 
   it('a set carved from one material lights its figures', () => {
@@ -72,6 +81,19 @@ describe('cosmetic skins', () => {
     // and without the halo they vanish into the squares.
     expect(classicSkin.pieceAmbientGlow).toBe(0);
     expect(obsidianAstralSkin.pieceAmbientGlow).toBeGreaterThan(0);
+  });
+
+  it('every set is a full set: no half-dressed board', () => {
+    // A set that named only some of its files would fall back to the
+    // classic room or table mid-scene.
+    for (const skin of cosmeticSkins) {
+      expect(skin.boardAsset, skin.id).toBeTruthy();
+      expect(skin.coinAssets.every(Boolean), skin.id).toBe(true);
+      expect(
+        ALL_PIECE_TYPES.every((type) => Boolean(skin.pieceAssets[type])),
+        skin.id,
+      ).toBe(true);
+    }
   });
 
   it('a set brings its own room and its own wide table', () => {

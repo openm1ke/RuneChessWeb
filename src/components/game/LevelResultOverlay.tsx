@@ -18,6 +18,7 @@ export function LevelResultOverlay({
   onRetry,
   bonusStarOffered = false,
   bonusStarEnabled = false,
+  bonusStarNotice = null,
   onBonusStarRequested,
   achievement = null,
   onAchievementRevealed,
@@ -33,6 +34,9 @@ export function LevelResultOverlay({
   /** Whether the block is currently tappable (a rewarded ad isn't already
    * loading/showing for this placement). */
   bonusStarEnabled?: boolean;
+  /** Explains that a technical ad failure was converted into the promised
+   * star. Kept inside the offer card so the result stays easy to scan. */
+  bonusStarNotice?: string | null;
   onBonusStarRequested?: () => void;
   /** A newly-unlocked achievement to reveal inline, above the star row —
    * mirrors the mobile app's `resultAchievement`. */
@@ -42,7 +46,9 @@ export function LevelResultOverlay({
   const scored = result.stars != null;
   const [t, setT] = useState(0);
   const [exiting, setExiting] = useState(false);
+  const [bonusStarReveal, setBonusStarReveal] = useState<{ index: number; progress: number } | null>(null);
   const playedChimes = useRef(new Set<number>());
+  const previousStars = useRef(result.stars);
   const startRef = useRef<number | null>(null);
   const duration = scored ? 1300 : 550;
 
@@ -72,6 +78,26 @@ export function LevelResultOverlay({
       }
     }
   }, [t, result.stars]);
+
+  // A rewarded/fallback star arrives after the initial ceremony. Animate
+  // that one empty star filling rather than making it appear abruptly.
+  useEffect(() => {
+    const before = previousStars.current;
+    const after = result.stars;
+    previousStars.current = after;
+    if (before == null || after == null || after <= before) return;
+    const index = before;
+    let raf = 0;
+    const startedAt = performance.now();
+    const tick = (time: number) => {
+      const progress = Math.min(1, (time - startedAt) / 620);
+      setBonusStarReveal({ index, progress });
+      if (progress < 1) raf = requestAnimationFrame(tick);
+      else playChime(0.55);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [result.stars]);
 
   const phase = (start: number, end: number) => Math.min(1, Math.max(0, (t - start) / (end - start)));
 
@@ -163,7 +189,9 @@ export function LevelResultOverlay({
                   <AnimatedResultStar
                     key={i}
                     filled={i < result.stars!}
-                    fill={phase(0.3 + i * 0.16, 0.3 + i * 0.16 + 0.28)}
+                    fill={bonusStarReveal?.index === i
+                      ? bonusStarReveal.progress
+                      : phase(0.3 + i * 0.16, 0.3 + i * 0.16 + 0.28)}
                   />
                 ))}
               </div>
@@ -178,6 +206,19 @@ export function LevelResultOverlay({
                   }}
                 >
                   {CAPTIONS[result.stars]}
+                </div>
+              )}
+              {bonusStarNotice && (
+                <div
+                  role="status"
+                  style={{
+                    marginTop: 10,
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: 'var(--gold-bright)',
+                  }}
+                >
+                  {bonusStarNotice}
                 </div>
               )}
             </>

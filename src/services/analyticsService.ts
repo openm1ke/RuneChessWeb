@@ -260,6 +260,14 @@ export class AnalyticsService {
     this.goal('ad_unavailable', { placement });
   }
 
+  /** A player asked for a rewarded bonus, but the ad network could not
+   * provide or display a creative. The game grants the promised bonus in
+   * this technical-failure case; an intentionally closed ad is tracked
+   * separately as `ad_closed_without_reward` and never reaches here. */
+  adFallbackGranted(placement: string, reason: 'error' | 'unavailable'): void {
+    this.goal('ad_fallback_granted', { placement, reason });
+  }
+
   bonusStarGranted(levelIndex: number, starsBefore: number, starsAfter: number): void {
     this.goal('bonus_star_granted', {
       level: levelIndex + 1,

@@ -23,6 +23,7 @@ export function GameScreen({
   engine,
   onBack,
   onBonusStarOffered,
+  onBonusStarFallbackGranted,
   onNextLevel,
   onSkipLevel,
   onResetOnboarding,
@@ -46,6 +47,10 @@ export function GameScreen({
    * put in front of the player — the step the rewarded funnel was missing.
    * See `AnalyticsService.adOfferShown`. */
   onBonusStarOffered?: () => void;
+  /** The requested rewarded creative was technically unavailable, so the
+   * promised star was granted without an ad. A player closing an opened ad
+   * is deliberately excluded. */
+  onBonusStarFallbackGranted?: (reason: 'error' | 'unavailable') => void;
   onNextLevel: () => void;
   onSkipLevel?: () => void;
   onResetOnboarding?: () => void;
@@ -83,6 +88,7 @@ export function GameScreen({
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [extraHintState, setExtraHintState] = useState<RewardedAdState>('idle');
   const [bonusStarState, setBonusStarState] = useState<RewardedAdState>('idle');
+  const [bonusStarNotice, setBonusStarNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (!rewardedAdsService) return;
@@ -157,11 +163,6 @@ export function GameScreen({
 
   const bonusStarOffered =
     rewardedAdsService != null &&
-    // Not once an attempt has already told us there is nothing to show: an
-    // offer that answers "Готовим ролик…" forever teaches the player to
-    // ignore every offer. (The web loads on demand, so "ready" is only ever
-    // knowable in hindsight — `unavailable` is that hindsight.)
-    bonusStarState !== 'unavailable' &&
     snapshot.solved &&
     engine.levelResult?.stars != null &&
     engine.levelResult.stars < 3;
@@ -177,9 +178,26 @@ export function GameScreen({
   }, [bonusStarOffered, onBonusStarOffered]);
 
   const requestBonusStar = () => {
-    if (!rewardedAdsService || bonusStarState === 'loading') return;
+    if (!rewardedAdsService || bonusStarState === 'loading' || bonusStarState === 'showing') return;
+    setBonusStarNotice(null);
     void rewardedAdsService.show('bonusStar').then(() => {
-      if (rewardedAdsService.stateOf('bonusStar') === 'rewarded') engine.applyBonusStar();
+      const state = rewardedAdsService.stateOf('bonusStar');
+      if (state === 'rewarded') {
+        engine.applyBonusStar();
+        return;
+      }
+      // The contract is kept if the network/loader fails. Closing an ad
+      // early reaches `closedWithoutReward`, which is intentionally not in
+      // this branch.
+      if (state === 'error' || state === 'unavailable') {
+        const before = engine.levelResult?.stars;
+        engine.applyBonusStar();
+        const after = engine.levelResult?.stars;
+        if (before != null && after != null && after > before) {
+          onBonusStarFallbackGranted?.(state);
+          setBonusStarNotice('Реклама сейчас недоступна — дарим звезду.');
+        }
+      }
     });
   };
 
@@ -233,7 +251,8 @@ export function GameScreen({
           onContinue={onNextLevel}
           onRetry={() => engine.resetLevel()}
           bonusStarOffered={bonusStarOffered}
-          bonusStarEnabled={bonusStarOffered && bonusStarState !== 'loading'}
+          bonusStarEnabled={bonusStarOffered && bonusStarState !== 'loading' && bonusStarState !== 'showing'}
+          bonusStarNotice={bonusStarNotice}
           onBonusStarRequested={requestBonusStar}
           achievement={achievement}
           onAchievementRevealed={onAchievementRevealed}
