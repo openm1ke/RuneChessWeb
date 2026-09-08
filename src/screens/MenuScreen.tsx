@@ -5,6 +5,7 @@ import { asset } from '../lib/assetUrl';
 import { RulesIcon, SettingsIcon } from '../components/shared/MenuIcons';
 import { playNavigationPress, playNavigationRelease } from '../services/musicService';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
+import { StarCounter } from '../components/shared/StarCounter';
 
 export function MenuScreen({
   onPlay,
@@ -15,6 +16,9 @@ export function MenuScreen({
   dailyChallengeSolvedToday = false,
   currentLevel,
   onRulesOpened,
+  onAppearance,
+  starsAvailable = 0,
+  starsEarned = 0,
 }: {
   onPlay: () => void;
   onLevels: () => void;
@@ -30,6 +34,12 @@ export function MenuScreen({
   /** Whether today's daily challenge already has a saved result — shows a
    * small checkmark badge on the button instead of a plain empty ring. */
   dailyChallengeSolvedToday?: boolean;
+  /** Opens the appearance picker — where the stars are spent, and where the
+   * counter's explainer offers to go. */
+  onAppearance: () => void;
+  /** Stars earned and not yet spent, and everything ever earned. */
+  starsAvailable?: number;
+  starsEarned?: number;
 }) {
   const skin = useCosmeticSkin();
   const viewport = useViewportSize();
@@ -46,6 +56,9 @@ export function MenuScreen({
         dailyChallengeSolvedToday={dailyChallengeSolvedToday}
         currentLevel={currentLevel}
         onRulesOpened={onRulesOpened}
+        onAppearance={onAppearance}
+        starsAvailable={starsAvailable}
+        starsEarned={starsEarned}
       />
     );
   }
@@ -133,7 +146,15 @@ export function MenuScreen({
         </div>
         {/* Rules are read once, so they sit with settings rather than
             taking a slot equal to the sections a player comes back to. */}
-        <div style={{ position: 'absolute', top: 24, right: 24, display: 'flex', gap: 12 }}>
+        <div style={{ position: 'absolute', top: 24, right: 24, display: 'flex', gap: 12, alignItems: 'center' }}>
+          {/* The purse sits with the two panels a player reaches for rather
+              than in the button stack: it is a number to notice, not a
+              section. */}
+          <StarCounter
+            available={starsAvailable}
+            earned={starsEarned}
+            onAppearance={onAppearance}
+          />
           <MenuIconButton
             label="Правила"
             href="how-to-play.html"
@@ -177,6 +198,9 @@ function LandscapeMenuScene({
   dailyChallengeSolvedToday,
   currentLevel,
   onRulesOpened,
+  onAppearance,
+  starsAvailable,
+  starsEarned,
 }: {
   onPlay: () => void;
   onLevels: () => void;
@@ -186,6 +210,9 @@ function LandscapeMenuScene({
   dailyChallengeSolvedToday: boolean;
   currentLevel: number;
   onRulesOpened?: (proceed: () => void) => void;
+  onAppearance: () => void;
+  starsAvailable: number;
+  starsEarned: number;
 }) {
   const skin = useCosmeticSkin();
   const { width, height } = useViewportSize();
@@ -300,7 +327,12 @@ function LandscapeMenuScene({
       <div style={slot(3, 0.84)}>
         <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={16} letterSpacing={1.4} />
       </div>
-      <div style={{ position: 'absolute', top: 18, right: 24, display: 'flex', gap: 12 }}>
+      <div style={{ position: 'absolute', top: 18, right: 24, display: 'flex', gap: 12, alignItems: 'center' }}>
+        <StarCounter
+          available={starsAvailable}
+          earned={starsEarned}
+          onAppearance={onAppearance}
+        />
         <MenuIconButton
           label="Правила"
           href="how-to-play.html"

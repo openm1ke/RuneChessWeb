@@ -117,6 +117,10 @@ export default function App() {
   const dailyReminderService = useMemo(() => new DailyReminderService(), []);
 
   const [screen, setScreen] = useState<Screen>(initialScreen);
+  // Where the appearance picker was opened from. Back has to return the
+  // player where they came from; landing them in Settings they never opened
+  // is the kind of small lie that makes an app feel unreliable.
+  const [appearanceFromMenu, setAppearanceFromMenu] = useState(false);
   const [unlockedLevels, setUnlockedLevels] = useState<Set<number>>(new Set([0]));
   const [seenOnboardingLevels, setSeenOnboardingLevels] = useState<Set<number>>(new Set());
   // Levels the player was handed by a skip instead of solving. Kept so the
@@ -1144,6 +1148,7 @@ export default function App() {
           onAnalyticsConsentChanged={setAnalyticsConsentAndSave}
           onAppearance={() => {
             analyticsService.appearanceOpened();
+            setAppearanceFromMenu(false);
             setScreen('appearance');
           }}
           skinName={skin.name}
@@ -1159,7 +1164,7 @@ export default function App() {
           onSkinUnlocked={unlockSkin}
           // Back to where it was opened from, without reporting
           // `settings_opened` a second time for the same visit.
-          onBack={() => setScreen('settings')}
+          onBack={() => setScreen(appearanceFromMenu ? 'menu' : 'settings')}
         />
       );
     case 'levels':
@@ -1235,6 +1240,15 @@ export default function App() {
           onRulesOpened={(proceed) => analyticsService.rulesOpened(proceed)}
           onDailyChallenge={openDailyChallenge}
           dailyChallengeSolvedToday={dailyChallengeHistory.has(dailyChallengeKey(new Date()))}
+          // The purse, and what it was earned from: a purchase moves the
+          // first and never the second — see `starWallet.ts`.
+          onAppearance={() => {
+            analyticsService.appearanceOpened();
+            setAppearanceFromMenu(true);
+            setScreen('appearance');
+          }}
+          starsAvailable={starsAvailable(wallet)}
+          starsEarned={wallet.earned}
         />
       );
   }
