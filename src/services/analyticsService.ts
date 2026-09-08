@@ -164,6 +164,18 @@ export class AnalyticsService {
     this.goal('skin_chosen', { skin_id: skinId });
   }
 
+  /** A set was bought with stars — reported apart from `skinChosen`,
+   * which happens over and over while a purchase happens once. */
+  skinUnlocked(skinId: string, price: number): void {
+    this.goal('skin_unlocked', { skin_id: skinId, price });
+  }
+
+  /** A bonus-star ad watched on a daily challenge: the star goes to the
+   * purse, not to the day's record. */
+  dailyBonusStarGranted(date: string): void {
+    this.goal('daily_bonus_star_granted', { date });
+  }
+
   progressResetConfirmed(): void {
     this.goal('progress_reset_confirmed', {});
   }

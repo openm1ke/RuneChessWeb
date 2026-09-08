@@ -20,15 +20,50 @@ import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
 export function AppearanceScreen({
   selectedSkinId,
+  unlockedSkinIds,
+  starsAvailable,
   onSkinChosen,
+  onSkinUnlocked,
   onBack,
 }: {
   selectedSkinId: string;
+  /** The sets the player owns. Everything else shows its price instead of
+   * a "выбрать" button. */
+  unlockedSkinIds: ReadonlySet<string>;
+  /** Stars earned and not yet spent — the number the header shows and the
+   * one every price is measured against. */
+  starsAvailable: number;
   onSkinChosen: (skin: CosmeticSkin) => void;
+  onSkinUnlocked: (skin: CosmeticSkin) => void;
   onBack: () => void;
 }) {
   const skin = useCosmeticSkin();
   const viewport = useViewportSize();
+
+  // Buying is a one-way spend of something slow to earn, so it asks first —
+  // and says what will be left afterwards, which is the number the player is
+  // really deciding on.
+  const confirmUnlock = (entry: CosmeticSkin) => {
+    if (starsAvailable < entry.price) return;
+    const left = starsAvailable - entry.price;
+    if (
+      window.confirm(
+        `Открыть «${entry.name}» за ${entry.price}★?\nОстанется ${left}★.`,
+      )
+    ) {
+      onSkinUnlocked(entry);
+    }
+  };
+
+  /** One card, wired to this screen's purse. */
+  const cardProps = (entry: CosmeticSkin) => ({
+    skin: entry,
+    selected: entry.id === selectedSkinId,
+    unlocked: unlockedSkinIds.has(entry.id),
+    starsAvailable,
+    onChosen: () => onSkinChosen(entry),
+    onUnlock: () => confirmUnlock(entry),
+  });
 
   const isLandscape = viewport.width > viewport.height;
   // A desktop window or a tablet gets a grid: every set fully visible,
@@ -95,11 +130,13 @@ export function AppearanceScreen({
               color: '#b9c6e6',
             }}
           >
-            Оформление доски, фигур и монет. На прогресс и звёзды не влияет.
+            Оформление доски, фигур и монет. На сложность и прогресс не влияет.
           </p>
+          <StarBalance stars={starsAvailable} />
           <div
             style={{
               display: 'grid',
+              marginTop: 22,
               gridTemplateColumns: `repeat(${columns}, ${cardWidth}px)`,
               gridAutoRows: '1fr',
               justifyContent: 'center',
@@ -107,13 +144,7 @@ export function AppearanceScreen({
             }}
           >
             {cosmeticSkins.map((entry) => (
-              <SkinCard
-                key={entry.id}
-                skin={entry}
-                selected={entry.id === selectedSkinId}
-                onChosen={() => onSkinChosen(entry)}
-                width={cardWidth}
-              />
+              <SkinCard key={entry.id} {...cardProps(entry)} width={cardWidth} />
             ))}
           </div>
         </div>
@@ -156,29 +187,31 @@ export function AppearanceScreen({
         >
           <div
             style={{
-              textAlign: 'center',
-              fontFamily: 'var(--font-display)',
-              fontSize: 20,
-              letterSpacing: 2,
-              color: 'var(--gold-bright)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 14,
               marginBottom: 10,
             }}
           >
-            ВНЕШНИЙ ВИД
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 20,
+                letterSpacing: 2,
+                color: 'var(--gold-bright)',
+              }}
+            >
+              ВНЕШНИЙ ВИД
+            </div>
+            <StarBalance stars={starsAvailable} inline />
           </div>
           <div
             className="dozor-scroll-panel"
             style={{ display: 'flex', gap, overflowX: 'auto', alignItems: 'flex-start' }}
           >
             {cosmeticSkins.map((entry) => (
-              <SkinCard
-                key={entry.id}
-                skin={entry}
-                selected={entry.id === selectedSkinId}
-                onChosen={() => onSkinChosen(entry)}
-                width={cardWidth}
-                compact
-              />
+              <SkinCard key={entry.id} {...cardProps(entry)} width={cardWidth} compact />
             ))}
           </div>
         </div>
@@ -225,15 +258,12 @@ export function AppearanceScreen({
               color: '#b9c6e6',
             }}
           >
-            Оформление доски, фигур и монет. На прогресс и звёзды не влияет.
+            Оформление доски, фигур и монет. На сложность и прогресс не влияет.
           </p>
-          {cosmeticSkins.map((skin) => (
-            <div key={skin.id} style={{ marginBottom: 18 }}>
-              <SkinCard
-                skin={skin}
-                selected={skin.id === selectedSkinId}
-                onChosen={() => onSkinChosen(skin)}
-              />
+          <StarBalance stars={starsAvailable} />
+          {cosmeticSkins.map((entry) => (
+            <div key={entry.id} style={{ marginTop: 18 }}>
+              <SkinCard {...cardProps(entry)} />
             </div>
           ))}
         </div>
@@ -252,12 +282,20 @@ function SkinCard({
   skin,
   selected,
   onChosen,
+  unlocked = true,
+  starsAvailable = 0,
+  onUnlock,
   width = PREVIEW_CARD_WIDTH,
   compact = false,
 }: {
   skin: CosmeticSkin;
   selected: boolean;
   onChosen: () => void;
+  /** Whether the player owns this set. A locked card still shows its board
+   * in full — the point of a price is that you can see what it buys. */
+  unlocked?: boolean;
+  starsAvailable?: number;
+  onUnlock?: () => void;
   /** Outer width of the card; the preview scales itself to fit inside it. */
   width?: number;
   /** Landscape has width to spare and no height: the board goes beside the
@@ -269,9 +307,11 @@ function SkinCard({
   // to be: a row of cards each a different height reads as a mistake, and
   // the eye has nothing to compare the boards against.
   const previewHeight = (PREVIEW_HEIGHT * previewWidth) / PREVIEW_WIDTH;
+  const affordable = starsAvailable >= skin.price;
   const preview = (
     <div
       style={{
+        position: 'relative',
         borderRadius: 14,
         overflow: 'hidden',
         flex: 'none',
@@ -280,6 +320,23 @@ function SkinCard({
       }}
     >
       <SkinPreview skin={skin} width={previewWidth} />
+      {/* A locked set is dimmed, not hidden: the player is being sold this
+          picture, and a padlock over a grey box sells nothing. */}
+      {unlocked ? null : (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(2,8,23,0.4)',
+            fontSize: 22,
+          }}
+        >
+          🔒
+        </div>
+      )}
     </div>
   );
   const details = (
@@ -319,8 +376,12 @@ function SkinCard({
     <div
       role="button"
       aria-pressed={selected}
-      aria-label={`${skin.name}${selected ? ', выбрано' : ''}`}
-      onClick={selected ? undefined : onChosen}
+      aria-label={
+        unlocked
+          ? `${skin.name}${selected ? ', выбрано' : ''}`
+          : `${skin.name}, закрыто, ${skin.price} звёзд`
+      }
+      onClick={unlocked ? (selected ? undefined : onChosen) : affordable ? onUnlock : undefined}
       style={{
         padding: '16px 16px 18px',
         width,
@@ -336,7 +397,7 @@ function SkinCard({
         background: 'linear-gradient(to bottom, rgba(29,49,103,0.96), rgba(12,23,52,0.96))',
         border: selected ? '2.5px solid #ffd77a' : '1.5px solid rgba(207,162,68,0.4)',
         boxShadow: selected ? '0 12px 22px rgba(255,215,122,0.35)' : '0 12px 26px rgba(0,0,0,0.57)',
-        cursor: selected ? 'default' : 'pointer',
+        cursor: unlocked ? (selected ? 'default' : 'pointer') : affordable ? 'pointer' : 'default',
         transition: 'border-color 180ms, box-shadow 180ms',
       }}
     >
@@ -376,7 +437,11 @@ function SkinCard({
           >
             {details}
           </div>
-          <ChooseButton selected={selected} onChosen={onChosen} fill />
+          {unlocked ? (
+            <ChooseButton selected={selected} onChosen={onChosen} fill />
+          ) : (
+            <PriceButton price={skin.price} starsAvailable={starsAvailable} onUnlock={onUnlock} />
+          )}
         </div>
       </div>
     </div>
@@ -438,6 +503,84 @@ function ChooseButton({
     >
       ВЫБРАТЬ
     </button>
+  );
+}
+
+/**
+ * What a locked set costs, or how far off it still is.
+ *
+ * The two states are one control on purpose: the player who cannot afford a
+ * set yet should be looking at the same button they will eventually press,
+ * with the gap written on it, rather than at a different widget saying "нет".
+ */
+function PriceButton({
+  price,
+  starsAvailable,
+  onUnlock,
+}: {
+  price: number;
+  starsAvailable: number;
+  onUnlock?: () => void;
+}) {
+  const affordable = starsAvailable >= price;
+  return (
+    <button
+      type="button"
+      disabled={!affordable}
+      onClick={onUnlock}
+      style={{
+        minHeight: 40,
+        padding: '0 10px',
+        width: '100%',
+        boxSizing: 'border-box',
+        borderRadius: 12,
+        border: affordable ? '1.5px solid #ffd77a' : '1.5px solid rgba(207,162,68,0.33)',
+        background: affordable ? '#ffd77a' : 'rgba(27,46,99,0.33)',
+        color: affordable ? '#06122e' : '#9fb0d8',
+        fontFamily: 'var(--font-display)',
+        fontSize: 12,
+        letterSpacing: 0.8,
+        cursor: affordable ? 'pointer' : 'default',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {affordable ? `ОТКРЫТЬ ЗА ${price}★` : `${starsAvailable} / ${price}★`}
+    </button>
+  );
+}
+
+/** The purse, at the top of the picker. Without it a price is a number the
+ * player has no way to measure themselves against. */
+function StarBalance({ stars, inline = false }: { stars: number; inline?: boolean }) {
+  return (
+    <div
+      aria-label={`Доступно ${stars} звёзд`}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        margin: inline ? 0 : '0 auto',
+        width: 'fit-content',
+        padding: '8px 16px',
+        borderRadius: 999,
+        background: 'rgba(16,32,67,0.4)',
+        border: '1.2px solid rgba(207,162,68,0.4)',
+      }}
+    >
+      <span style={{ fontSize: 15, color: '#ffd77a' }}>★</span>
+      <span
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 14,
+          letterSpacing: 0.6,
+          color: '#ffe2a4',
+        }}
+      >
+        {stars}
+      </span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: '#b9c6e6' }}>звёзд свободно</span>
+    </div>
   );
 }
 

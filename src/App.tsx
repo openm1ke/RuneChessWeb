@@ -29,7 +29,8 @@ import { LevelSelectScreen } from './screens/LevelSelectScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { AppearanceScreen } from './screens/AppearanceScreen';
 import { CosmeticSkinContext } from './game/cosmeticSkinContext';
-import { skinById, type CosmeticSkin } from './game/cosmeticSkins';
+import { freeSkinIds, skinById, type CosmeticSkin } from './game/cosmeticSkins';
+import { canAfford, spendStars, starsAvailable, starsEarned } from './game/starWallet';
 import { GameScreen } from './screens/GameScreen';
 import { CampaignCompleteScreen } from './screens/CampaignCompleteScreen';
 import { TutorialCompleteScreen } from './screens/TutorialCompleteScreen';
@@ -127,6 +128,13 @@ export default function App() {
   // preference, not progress: resetting the campaign does not undress the
   // board.
   const [skin, setSkin] = useState<CosmeticSkin>(() => skinById(null));
+  // The sets the player owns: the free ones, plus whatever has been bought.
+  const [unlockedSkins, setUnlockedSkins] = useState<Set<string>>(() => new Set(freeSkinIds));
+  // The two halves of the purse that have to be stored — what has been
+  // spent on sets, and what rewarded ads added to daily challenges. What was
+  // *earned* is computed from progress itself, so it cannot drift from it.
+  const [starsSpent, setStarsSpent] = useState(0);
+  const [dailyBonusStars, setDailyBonusStars] = useState(0);
   const [levelStars, setLevelStars] = useState<Map<number, number>>(new Map());
   const [tutorialComplete, setTutorialComplete] = useState(false);
   const [highestLevel, setHighestLevel] = useState(0);
@@ -207,7 +215,20 @@ export default function App() {
     setSeenOnboardingLevels(snapshot.seenOnboardingLevels);
     setSkippedLevels(snapshot.skippedLevels);
     skippedRef.current = snapshot.skippedLevels;
-    setSkin(skinById(progressRepository.loadCosmeticSkinId()));
+    const storedSkin = skinById(progressRepository.loadCosmeticSkinId());
+    setSkin(storedSkin);
+    setStarsSpent(progressRepository.loadStarsSpent());
+    setDailyBonusStars(progressRepository.loadDailyBonusStars());
+    setUnlockedSkins(
+      new Set([
+        ...freeSkinIds,
+        ...progressRepository.loadUnlockedSkinIds(),
+        // Sets were free before there was anything to spend stars on.
+        // Whatever the player is wearing stays theirs: an update that takes
+        // back the look they chose is a bad trade for them.
+        storedSkin.id,
+      ]),
+    );
     setTutorialComplete(snapshot.tutorialComplete);
     setLevelStars(snapshot.levelStars);
     levelStarsRef.current = snapshot.levelStars;
@@ -339,6 +360,22 @@ export default function App() {
       });
     };
     engine.onBonusStarApplied = (levelIndex, starsBefore, starsAfter) => {
+      // A daily challenge carries whatever `levelIndex` the player entered
+      // it from — it is not a campaign level and has no slot in
+      // `levelStars`. Its bonus star goes to the purse instead, where it is
+      // spendable on cosmetic sets without inventing a campaign result
+      // nobody earned; the day's own record keeps what the puzzle was
+      // actually solved for, so the calendar never overstates it.
+      if (engine.isDailyChallenge) {
+        setDailyBonusStars((previous) => {
+          const next = previous + 1;
+          progressRepository.saveDailyBonusStars(next);
+          return next;
+        });
+        const date = dailyChallengeDateRef.current;
+        if (date != null) analyticsService.dailyBonusStarGranted(dailyChallengeKey(date));
+        return;
+      }
       analyticsService.bonusStarGranted(levelIndex, starsBefore, starsAfter);
 
       const newProgress = recordBonusStarApplied(achievementProgressRef.current, levelIndex, starsAfter);
@@ -923,10 +960,45 @@ export default function App() {
     else analyticsService.disable();
   };
 
+  // The purse: everything ever earned, minus everything ever spent on
+  // cosmetic sets. Earnings are derived rather than stored so they can never
+  // drift from the progress they come from — see `starWallet.ts`.
+  const wallet = {
+    earned: starsEarned({
+      campaignStars: [...levelStars.values()].reduce((sum, stars) => sum + stars, 0),
+      dailyStars: [...dailyChallengeHistory.values()].reduce((sum, result) => sum + result.stars, 0),
+      dailyBonusStars,
+    }),
+    spent: starsSpent,
+  };
+
   const chooseSkin = (chosen: CosmeticSkin) => {
     if (chosen.id === skin.id) return;
+    // Ownership is checked here as well as in the picker: a set the player
+    // has not paid for must not become wearable through any other door.
+    if (!unlockedSkins.has(chosen.id)) return;
     setSkin(chosen);
     progressRepository.saveCosmeticSkinId(chosen.id);
+    analyticsService.skinChosen(chosen.id);
+  };
+
+  /** Buys a set and puts it on straight away — a player who just spent 300
+   * stars wants to see what they bought, not to click a second button. */
+  const unlockSkin = (chosen: CosmeticSkin) => {
+    if (unlockedSkins.has(chosen.id)) {
+      chooseSkin(chosen);
+      return;
+    }
+    if (!canAfford(wallet, chosen.price)) return;
+    const spent = spendStars(wallet, chosen.price).spent;
+    const unlocked = new Set([...unlockedSkins, chosen.id]);
+    setStarsSpent(spent);
+    setUnlockedSkins(unlocked);
+    setSkin(chosen);
+    progressRepository.saveStarsSpent(spent);
+    progressRepository.saveUnlockedSkinIds(unlocked);
+    progressRepository.saveCosmeticSkinId(chosen.id);
+    analyticsService.skinUnlocked(chosen.id, chosen.price);
     analyticsService.skinChosen(chosen.id);
   };
 
@@ -1057,7 +1129,10 @@ export default function App() {
       return withConsent(
         <AppearanceScreen
           selectedSkinId={skin.id}
+          unlockedSkinIds={unlockedSkins}
+          starsAvailable={starsAvailable(wallet)}
           onSkinChosen={chooseSkin}
+          onSkinUnlocked={unlockSkin}
           // Back to where it was opened from, without reporting
           // `settings_opened` a second time for the same visit.
           onBack={() => setScreen('settings')}

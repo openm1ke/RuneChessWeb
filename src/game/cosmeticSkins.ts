@@ -75,12 +75,19 @@ export interface CosmeticSkin {
    * tells a rook from a bishop everywhere else in the game.
    */
   pieceAmbientGlow: number;
+  /**
+   * What it costs in stars, or zero for a set the player already owns.
+   * Mirrors the Flutter app's prices exactly — see
+   * docs/COSMETIC_SKINS.md, «Звёзды и цены» there.
+   */
+  price: number;
 }
 
 const OBSIDIAN = 'assets/images/cosmetics/obsidian_astral';
 
 export const classicSkin: CosmeticSkin = {
   id: 'classic',
+  price: 0,
   name: 'Классика',
   tagline: 'Дубовый стол и золочёная рама — то, с чего всё началось.',
   boardAsset: asset('assets/images/isometric-table.webp'),
@@ -114,6 +121,7 @@ export const classicSkin: CosmeticSkin = {
 
 export const obsidianAstralSkin: CosmeticSkin = {
   id: 'obsidian_astral',
+  price: 300,
   name: 'Обсидиановый астрал',
   tagline: 'Чёрное стекло, золото и звёздная пыль внутри фигур.',
   boardAsset: asset(`${OBSIDIAN}/board.webp`),
@@ -147,6 +155,7 @@ export const obsidianAstralSkin: CosmeticSkin = {
 
 export const woodenWorkshopSkin: CosmeticSkin = {
   id: 'wooden_set',
+  price: 0,
   name: 'Деревянная мастерская',
   tagline: 'Морёный дуб, зелёное сукно и фигуры, крашенные вручную.',
   boardAsset: asset('assets/images/cosmetics/wooden_set/board.webp'),
@@ -177,6 +186,7 @@ export const woodenWorkshopSkin: CosmeticSkin = {
 
 export const pearlTideSkin: CosmeticSkin = {
   id: 'pearl_tide',
+  price: 60,
   name: 'Жемчужная',
   tagline: 'Перламутр, морская синь и фигуры, гладкие как раковина.',
   boardAsset: asset('assets/images/cosmetics/pearl_tide/board.webp'),
@@ -207,6 +217,7 @@ export const pearlTideSkin: CosmeticSkin = {
 
 export const moonlitSilverSkin: CosmeticSkin = {
   id: 'moonlit_silver',
+  price: 140,
   name: 'Лунное серебро',
   tagline: 'Кованое серебро, ночная синева и холодный лунный блеск.',
   boardAsset: asset('assets/images/cosmetics/moonlit_silver/board.webp'),
@@ -237,6 +248,7 @@ export const moonlitSilverSkin: CosmeticSkin = {
 
 export const lavaForgeSkin: CosmeticSkin = {
   id: 'lava_forge',
+  price: 220,
   name: 'Лавовая кузница',
   tagline: 'Остывший базальт с трещинами, за которыми ещё горит.',
   boardAsset: asset('assets/images/cosmetics/lava_forge/board.webp'),
@@ -267,6 +279,7 @@ export const lavaForgeSkin: CosmeticSkin = {
 
 export const amberWorkshopSkin: CosmeticSkin = {
   id: 'amber_workshop',
+  price: 100,
   name: 'Янтарная мастерская',
   tagline: 'Тёплый янтарь, латунь и стружка на верстаке.',
   boardAsset: asset('assets/images/cosmetics/amber_workshop/board.webp'),
@@ -297,6 +310,7 @@ export const amberWorkshopSkin: CosmeticSkin = {
 
 export const gzhelPorcelainSkin: CosmeticSkin = {
   id: 'gzhel_porcelain',
+  price: 180,
   name: 'Гжельский фарфор',
   tagline: 'Белый фарфор с кобальтовой росписью, как сервиз из серванта.',
   boardAsset: asset('assets/images/cosmetics/gzhel_porcelain/board.webp'),
@@ -326,16 +340,24 @@ export const gzhelPorcelainSkin: CosmeticSkin = {
 };
 
 /** Every set the player can pick, in the order the appearance screen shows. */
+/** Picker order: the two free sets first, then the rest by price. */
 export const cosmeticSkins: readonly CosmeticSkin[] = [
   classicSkin,
-  obsidianAstralSkin,
   woodenWorkshopSkin,
   pearlTideSkin,
-  moonlitSilverSkin,
-  lavaForgeSkin,
   amberWorkshopSkin,
+  moonlitSilverSkin,
   gzhelPorcelainSkin,
+  lavaForgeSkin,
+  obsidianAstralSkin,
 ];
+
+/**
+ * The sets a player owns before spending anything: the classic look, and
+ * one more so that the picker is a choice from the first minute rather
+ * than a shop window.
+ */
+export const freeSkinIds: ReadonlySet<string> = new Set(['classic', 'wooden_set']);
 
 /** The set stored under `id`, or the classic one for anything unknown — a
  * set removed in a later build must not leave the game unplayable. */

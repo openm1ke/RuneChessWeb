@@ -14,6 +14,7 @@ import {
   classicSkin,
   coinAsset,
   cosmeticSkins,
+  freeSkinIds,
   obsidianAstralSkin,
   skinById,
   uprightRotationOf,
@@ -59,14 +60,22 @@ describe('cosmetic skins', () => {
     // platform and not the other is the drift this catches.
     expect(cosmeticSkins.map((skin) => skin.id)).toEqual([
       'classic',
-      'obsidian_astral',
       'wooden_set',
       'pearl_tide',
-      'moonlit_silver',
-      'lava_forge',
       'amber_workshop',
+      'moonlit_silver',
       'gzhel_porcelain',
+      'lava_forge',
+      'obsidian_astral',
     ]);
+    // And the same prices: a set that costs 300 stars here and 60 there
+    // would be a different game depending on which one the player opened.
+    expect(cosmeticSkins.map((skin) => skin.price)).toEqual([
+      0, 0, 60, 100, 140, 180, 220, 300,
+    ]);
+    for (const skin of cosmeticSkins) {
+      expect(skin.price === 0, `${skin.id} free/paid`).toBe(freeSkinIds.has(skin.id));
+    }
     // Every set's art is drawn upright now, the base figures included:
     // the king and rook corrections are gone rather than carried forward.
     for (const skin of cosmeticSkins) {

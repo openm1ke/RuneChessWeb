@@ -57,9 +57,28 @@ const KEYS = {
   // Which cosmetic set the player is wearing (`CosmeticSkin.id`). A
   // preference, not progress: a full reset leaves it alone.
   cosmeticSkin: 'dozor.cosmetic_skin_v1',
+  // The star economy: which sets have been bought, everything ever paid
+  // for them, and the stars rewarded ads added to daily challenges. What
+  // was *earned* is never stored — it is computed from progress itself.
+  unlockedSkins: 'dozor.unlocked_skins_v1',
+  starsSpent: 'dozor.stars_spent_v1',
+  dailyBonusStars: 'dozor.daily_bonus_stars_v1',
 } as const;
 
 const DEFAULT_DAILY_REMINDER_HOUR = 11;
+
+/** A stored non-negative whole number, or zero for anything else. */
+function readCount(key: string): number {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (raw == null) return 0;
+    const value = Number.parseInt(raw, 10);
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  } catch (error) {
+    logError(`read ${key}`, error);
+    return 0;
+  }
+}
 
 function readStreak(key: string): StreakState {
   try {
@@ -302,6 +321,43 @@ export class ProgressRepository {
     } catch (error) {
       logError('save cosmetic skin', error);
     }
+  }
+
+  /** The sets the player has bought — the free ones are not stored. */
+  loadUnlockedSkinIds(): Set<string> {
+    try {
+      const raw = window.localStorage.getItem(KEYS.unlockedSkins);
+      if (raw == null) return new Set();
+      const decoded: unknown = JSON.parse(raw);
+      if (!Array.isArray(decoded)) return new Set();
+      return new Set(decoded.filter((id): id is string => typeof id === 'string'));
+    } catch (error) {
+      logError('load unlocked skins', error);
+      return new Set();
+    }
+  }
+
+  saveUnlockedSkinIds(ids: Set<string>): void {
+    writeJson(KEYS.unlockedSkins, [...ids].sort());
+  }
+
+  /** Everything ever paid out for cosmetic sets. */
+  loadStarsSpent(): number {
+    return readCount(KEYS.starsSpent);
+  }
+
+  saveStarsSpent(spent: number): void {
+    writeJson(KEYS.starsSpent, spent);
+  }
+
+  /** Stars rewarded ads added to daily challenges — kept out of the day's
+   * own result so the calendar shows what the puzzle was solved for. */
+  loadDailyBonusStars(): number {
+    return readCount(KEYS.dailyBonusStars);
+  }
+
+  saveDailyBonusStars(stars: number): void {
+    writeJson(KEYS.dailyBonusStars, stars);
   }
 
   saveMusicSettings(args: { musicEnabled: boolean; musicVolume: number }): void {
