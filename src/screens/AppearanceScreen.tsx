@@ -30,17 +30,110 @@ export function AppearanceScreen({
   const skin = useCosmeticSkin();
   const viewport = useViewportSize();
 
-  // Landscape lays the sets out side by side instead of scaling the
-  // portrait column down to a strip: a set is a picture, and a wide screen
-  // is exactly where there is room to show two of them properly.
-  if (viewport.width > viewport.height) {
+  const isLandscape = viewport.width > viewport.height;
+  // A desktop window or a tablet gets a grid: every set fully visible,
+  // nothing clipped, nothing to scroll sideways for. A browser window can
+  // be wide and short — wider than any phone and half as tall — and that is
+  // still a desktop, so width alone is enough to earn the grid; a tall
+  // landscape window earns it too. Only a phone held sideways, which has
+  // neither, keeps the single row of compact cards below.
+  const roomForGrid =
+    isLandscape && (viewport.width >= 1000 || viewport.height >= 560);
+
+  if (roomForGrid) {
+    const gap = 24;
+    const padding = { x: 48, top: 18, bottom: 28 };
+    const usable = viewport.width - padding.x * 2;
+    // Cards wide enough for the board on them to read as a board.
+    const columns = Math.max(2, Math.min(4, Math.floor((usable + gap) / (320 + gap))));
+    const cardWidth = Math.min(
+      420,
+      Math.max(280, (usable - gap * (columns - 1)) / columns),
+    );
+    return (
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', background: '#05091a' }}>
+        <img
+          src={skin.wideMenuBackground}
+          alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          draggable={false}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(rgba(3,7,20,0.55), rgba(3,7,20,0.78))',
+          }}
+        />
+        <div
+          className="dozor-scroll-panel"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            overflowY: 'auto',
+            padding: `${padding.top}px ${padding.x}px ${padding.bottom}px`,
+          }}
+        >
+          <div
+            style={{
+              textAlign: 'center',
+              fontFamily: 'var(--font-display)',
+              fontSize: 26,
+              letterSpacing: 2.4,
+              color: 'var(--gold-bright)',
+            }}
+          >
+            ВНЕШНИЙ ВИД
+          </div>
+          <p
+            style={{
+              margin: '10px 0 24px',
+              textAlign: 'center',
+              fontSize: 14,
+              fontWeight: 700,
+              color: '#b9c6e6',
+            }}
+          >
+            Оформление доски, фигур и монет. На прогресс и звёзды не влияет.
+          </p>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${columns}, ${cardWidth}px)`,
+              justifyContent: 'center',
+              gap,
+            }}
+          >
+            {cosmeticSkins.map((entry) => (
+              <SkinCard
+                key={entry.id}
+                skin={entry}
+                selected={entry.id === selectedSkinId}
+                onChosen={() => onSkinChosen(entry)}
+                width={cardWidth}
+              />
+            ))}
+          </div>
+        </div>
+        <div style={{ position: 'absolute', left: 24, top: 20 }}>
+          <RoundControl onClick={onBack} label="Назад">
+            ‹
+          </RoundControl>
+        </div>
+      </div>
+    );
+  }
+
+  // A phone held sideways: the width is there, the height is not, so the
+  // sets go in one row with the board beside the name rather than above it.
+  if (isLandscape) {
     const gap = 20;
     const padding = { left: 76, right: 28, top: 14, bottom: 16 };
     const available =
       viewport.width - padding.left - padding.right - gap * (cosmeticSkins.length - 1);
     const cardWidth = Math.min(
       460,
-      Math.max(260, available / cosmeticSkins.length),
+      Math.max(300, available / cosmeticSkins.length),
     );
     return (
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', background: '#05091a' }}>
@@ -169,7 +262,7 @@ function SkinCard({
    * name rather than above it. */
   compact?: boolean;
 }) {
-  const previewWidth = compact ? Math.round((width - 32) * 0.55) : width - 32;
+  const previewWidth = compact ? Math.round((width - 32) * 0.5) : width - 32;
   const preview = (
     <div
       style={{
@@ -185,7 +278,14 @@ function SkinCard({
   );
   const details = (
     <>
-      <div style={{ fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8, color: '#f4d8a1' }}>
+      <div
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: compact ? 13.5 : 15,
+          letterSpacing: compact ? 0.4 : 0.8,
+          color: '#f4d8a1',
+        }}
+      >
         {skin.name.toUpperCase()}
       </div>
       <div style={{ marginTop: 6, fontSize: 12.5, fontWeight: 700, lineHeight: 1.25, color: '#c6d3ed' }}>
@@ -222,21 +322,56 @@ function SkinCard({
         }}
       >
         {compact ? preview : null}
-        <div style={{ flex: 1, display: 'flex', flexDirection: compact ? 'column' : 'row', alignItems: compact ? 'flex-start' : 'center', gap: 12 }}>
-          <div style={{ flex: compact ? 'none' : 1 }}>{details}</div>
-          <ChooseButton selected={selected} onChosen={onChosen} />
+        <div
+          style={{
+            flex: 1,
+            // Without this a long set name ("Обсидиановый астрал") refuses
+            // to wrap and pushes itself out through the card's edge.
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: compact ? 'column' : 'row',
+            alignItems: compact ? 'flex-start' : 'center',
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              flex: compact ? 'none' : 1,
+              minWidth: 0,
+              // Break a word only when it genuinely cannot fit; a name that
+              // fits on two lines should read as two words, not as
+              // "ОБСИДИА / НОВЫЙ".
+              overflowWrap: 'break-word',
+            }}
+          >
+            {details}
+          </div>
+          <ChooseButton selected={selected} onChosen={onChosen} fill={compact} />
         </div>
       </div>
     </div>
   );
 }
 
-function ChooseButton({ selected, onChosen }: { selected: boolean; onChosen: () => void }) {
+function ChooseButton({
+  selected,
+  onChosen,
+  fill = false,
+}: {
+  selected: boolean;
+  onChosen: () => void;
+  /** In a narrow column the label needs the whole width rather than its own
+   * natural one, which used to push it out through the card's edge. */
+  fill?: boolean;
+}) {
   if (selected) {
     return (
       <div
         style={{
           padding: '10px 14px',
+          width: fill ? '100%' : undefined,
+          boxSizing: 'border-box',
+          textAlign: 'center',
           borderRadius: 12,
           background: 'rgba(255,215,122,0.2)',
           border: '1.5px solid #ffd77a',
@@ -257,7 +392,9 @@ function ChooseButton({ selected, onChosen }: { selected: boolean; onChosen: () 
       onClick={onChosen}
       style={{
         minHeight: 40,
-        padding: '0 16px',
+        padding: fill ? '0 10px' : '0 16px',
+        width: fill ? '100%' : undefined,
+        boxSizing: 'border-box',
         borderRadius: 12,
         border: '1.5px solid rgba(207,162,68,0.86)',
         background: 'rgba(27,46,99,0.67)',
