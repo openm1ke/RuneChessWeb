@@ -49,6 +49,7 @@ AppMetrica показывает любое событие сама. Метрик
 | `skin_chosen` | ✔ | ✔ | `skin_id` |
 | `skin_unlocked` | ✔ | ✔ | `skin_id`, `price` |
 | `daily_bonus_star_granted` | ✔ | ✔ | `date` |
+| `daily_stars_doubled` | ✔ | ✔ | `date`, `bonus` |
 | `notification_opened` | ✔ | — | — |
 | `daily_challenge_opened` | ✔ | ✔ | `date` |
 | `daily_challenge_started` | ✔ | ✔ | `date` |

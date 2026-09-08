@@ -63,6 +63,7 @@ const KEYS = {
   unlockedSkins: 'dozor.unlocked_skins_v1',
   starsSpent: 'dozor.stars_spent_v1',
   dailyBonusStars: 'dozor.daily_bonus_stars_v1',
+  dailyDoubledDates: 'dozor.daily_doubled_dates_v1',
 } as const;
 
 const DEFAULT_DAILY_REMINDER_HOUR = 11;
@@ -358,6 +359,25 @@ export class ProgressRepository {
 
   saveDailyBonusStars(stars: number): void {
     writeJson(KEYS.dailyBonusStars, stars);
+  }
+
+  /** The days already doubled by an ad — dates, not a count, so the offer
+   * cannot be taken twice for one day however the page is reloaded. */
+  loadDailyDoubledDates(): Set<string> {
+    try {
+      const raw = window.localStorage.getItem(KEYS.dailyDoubledDates);
+      if (raw == null) return new Set();
+      const decoded: unknown = JSON.parse(raw);
+      if (!Array.isArray(decoded)) return new Set();
+      return new Set(decoded.filter((day): day is string => typeof day === 'string'));
+    } catch (error) {
+      logError('load daily doubled dates', error);
+      return new Set();
+    }
+  }
+
+  saveDailyDoubledDates(dates: Set<string>): void {
+    writeJson(KEYS.dailyDoubledDates, [...dates].sort());
   }
 
   saveMusicSettings(args: { musicEnabled: boolean; musicVolume: number }): void {

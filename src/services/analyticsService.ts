@@ -170,6 +170,12 @@ export class AnalyticsService {
     this.goal('skin_unlocked', { skin_id: skinId, price });
   }
 
+  /** An ad watched to double what a daily challenge paid out. `bonus` is
+   * what the ad added, which is also what the day itself was worth. */
+  dailyStarsDoubled(date: string, bonus: number): void {
+    this.goal('daily_stars_doubled', { date, bonus });
+  }
+
   /** A bonus-star ad watched on a daily challenge: the star goes to the
    * purse, not to the day's record. */
   dailyBonusStarGranted(date: string): void {

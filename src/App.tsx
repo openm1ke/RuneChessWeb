@@ -135,6 +135,9 @@ export default function App() {
   // *earned* is computed from progress itself, so it cannot drift from it.
   const [starsSpent, setStarsSpent] = useState(0);
   const [dailyBonusStars, setDailyBonusStars] = useState(0);
+  // The days already doubled by an ad — dates, not a count, so the offer
+  // cannot be taken twice for one day however the page is reloaded.
+  const [dailyDoubledDates, setDailyDoubledDates] = useState<Set<string>>(() => new Set());
   const [levelStars, setLevelStars] = useState<Map<number, number>>(new Map());
   const [tutorialComplete, setTutorialComplete] = useState(false);
   const [highestLevel, setHighestLevel] = useState(0);
@@ -219,6 +222,7 @@ export default function App() {
     setSkin(storedSkin);
     setStarsSpent(progressRepository.loadStarsSpent());
     setDailyBonusStars(progressRepository.loadDailyBonusStars());
+    setDailyDoubledDates(progressRepository.loadDailyDoubledDates());
     setUnlockedSkins(
       new Set([
         ...freeSkinIds,
@@ -972,6 +976,26 @@ export default function App() {
     spent: starsSpent,
   };
 
+  /** Doubles what today's daily challenge paid out, after the ad for it has
+   * actually been watched.
+   *
+   * The extra goes to the purse and never into the day's own record: the
+   * calendar shows what the puzzle was solved for, and a "6 stars" day would
+   * be a lie about the puzzle. */
+  const doubleDailyStars = (stars: number) => {
+    const date = dailyChallengeDateRef.current;
+    if (date == null || stars <= 0) return;
+    const key = dailyChallengeKey(date);
+    if (dailyDoubledDates.has(key)) return;
+    const bonus = dailyBonusStars + stars;
+    const doubled = new Set([...dailyDoubledDates, key]);
+    setDailyBonusStars(bonus);
+    setDailyDoubledDates(doubled);
+    progressRepository.saveDailyBonusStars(bonus);
+    progressRepository.saveDailyDoubledDates(doubled);
+    analyticsService.dailyStarsDoubled(key, stars);
+  };
+
   const chooseSkin = (chosen: CosmeticSkin) => {
     if (chosen.id === skin.id) return;
     // Ownership is checked here as well as in the picker: a set the player
@@ -1176,6 +1200,12 @@ export default function App() {
                 : 0
             }
             onBonusStarOffered={() => analyticsService.adOfferShown('bonus_star')}
+            onDailyStarsDoubled={
+              dailyChallengeDateRef.current != null &&
+              !dailyDoubledDates.has(dailyChallengeKey(dailyChallengeDateRef.current))
+                ? doubleDailyStars
+                : undefined
+            }
             onBonusStarFallbackGranted={(reason) => analyticsService.adFallbackGranted('bonus_star', reason)}
           />
           {freezeNotice && (

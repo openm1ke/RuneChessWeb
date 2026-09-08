@@ -40,6 +40,7 @@ export function GameScreen({
   onSkipForAd,
   onSkipOffered,
   skipAfterResets = 3,
+  onDailyStarsDoubled,
 }: {
   engine: DozorEngine;
   onBack: () => void;
@@ -79,6 +80,10 @@ export function GameScreen({
   onSkipOffered?: () => void;
   /** Resets of one level before the game offers a way past it. */
   skipAfterResets?: number;
+  /** Doubles what today's daily challenge paid out, once the ad has been
+   * watched. Null when there is nothing to double — no service, or today
+   * has already been doubled. */
+  onDailyStarsDoubled?: (stars: number) => void;
 }) {
   const { snapshot } = useDozorEngine(engine);
   const boardRef = useRef<HTMLDivElement>(null!);
@@ -89,6 +94,8 @@ export function GameScreen({
   const [extraHintState, setExtraHintState] = useState<RewardedAdState>('idle');
   const [bonusStarState, setBonusStarState] = useState<RewardedAdState>('idle');
   const [bonusStarNotice, setBonusStarNotice] = useState<string | null>(null);
+  const [dailyDoubleState, setDailyDoubleState] = useState<RewardedAdState>('idle');
+  const [dailyDoubleGranted, setDailyDoubleGranted] = useState(false);
 
   useEffect(() => {
     if (!rewardedAdsService) return;
@@ -97,6 +104,7 @@ export function GameScreen({
     return rewardedAdsService.addListener((placement, state) => {
       if (placement === 'extraHint') setExtraHintState(state);
       else if (placement === 'bonusStar') setBonusStarState(state);
+      else if (placement === 'dailyDouble') setDailyDoubleState(state);
     });
   }, [rewardedAdsService]);
 
@@ -161,8 +169,22 @@ export function GameScreen({
     });
   };
 
+  // A solved daily challenge can be doubled once, whatever it scored —
+  // three stars included, which is exactly when a player is pleased enough
+  // to watch something and the old "+1 star" offer said nothing at all.
+  const dailyDoubleOffered =
+    rewardedAdsService != null &&
+    engine.isDailyChallenge &&
+    snapshot.solved &&
+    onDailyStarsDoubled != null &&
+    !dailyDoubleGranted &&
+    (engine.levelResult?.stars ?? 0) > 0;
+
   const bonusStarOffered =
     rewardedAdsService != null &&
+    // A solved daily challenge gets the doubling offer instead: two star
+    // ads on one card is a choice nobody asked for.
+    !engine.isDailyChallenge &&
     snapshot.solved &&
     engine.levelResult?.stars != null &&
     engine.levelResult.stars < 3;
@@ -197,6 +219,29 @@ export function GameScreen({
           onBonusStarFallbackGranted?.(state);
           setBonusStarNotice('Реклама сейчас недоступна — дарим звезду.');
         }
+      }
+    });
+  };
+
+  /** Starts the doubling ad. Unlike the bonus star there is no free
+   * fallback: a bonus star restores a result the player very nearly had,
+   * while doubling is pure extra — handing it out when the network is down
+   * would make the ad pointless. The player is told instead. */
+  const requestDailyDouble = () => {
+    if (!rewardedAdsService) return;
+    if (dailyDoubleState === 'loading' || dailyDoubleState === 'showing') return;
+    setBonusStarNotice(null);
+    void rewardedAdsService.show('dailyDouble').then(() => {
+      const state = rewardedAdsService.stateOf('dailyDouble');
+      const stars = engine.levelResult?.stars ?? 0;
+      if (state === 'rewarded' && stars > 0) {
+        setDailyDoubleGranted(true);
+        setBonusStarNotice(`Звёзды удвоены: +${stars}★ в копилку.`);
+        onDailyStarsDoubled?.(stars);
+        return;
+      }
+      if (state === 'error' || state === 'unavailable') {
+        setBonusStarNotice('Реклама сейчас недоступна — попробуйте позже.');
       }
     });
   };
@@ -250,10 +295,17 @@ export function GameScreen({
           result={engine.levelResult}
           onContinue={onNextLevel}
           onRetry={() => engine.resetLevel()}
-          bonusStarOffered={bonusStarOffered}
-          bonusStarEnabled={bonusStarOffered && bonusStarState !== 'loading' && bonusStarState !== 'showing'}
+          bonusStarOffered={bonusStarOffered || dailyDoubleOffered}
+          bonusStarEnabled={
+            dailyDoubleOffered
+              ? dailyDoubleState !== 'loading' && dailyDoubleState !== 'showing'
+              : bonusStarOffered &&
+                bonusStarState !== 'loading' &&
+                bonusStarState !== 'showing'
+          }
           bonusStarNotice={bonusStarNotice}
-          onBonusStarRequested={requestBonusStar}
+          onBonusStarRequested={dailyDoubleOffered ? requestDailyDouble : requestBonusStar}
+          doublesDailyStars={dailyDoubleOffered}
           achievement={achievement}
           onAchievementRevealed={onAchievementRevealed}
         />

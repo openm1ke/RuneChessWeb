@@ -117,17 +117,11 @@ export function pieceDrawBox(
 }
 
 /**
- * The square a tray tile stands in for: the board's own square, so a figure
- * waiting in the tray is exactly the size it will be once it lands — unless
- * the tile is too small to show it at that size, in which case the tile
- * itself becomes the square and every figure shrinks together.
+ * The square a tray tile stands in for: the tile itself, so the tallest
+ * figure fills it and the rest keep their proportions to it. The tray is a
+ * display case, not a square on the board — a figure is shown there at its
+ * best size, and only the board is bound by the cell.
  */
-export function trayCellHeight(tileHeight: number, boardCellHeight?: number): number {
-  const fits = (tileHeight * NEAREST_DEPTH) / TALLEST_FIGURE_IN_CELLS;
-  return boardCellHeight == null ? fits : Math.min(fits, boardCellHeight);
-}
-
-/** The square height a tile of `height` stands in for, on its own. */
 export function cellHeightForTile(height: number): number {
   return (height * NEAREST_DEPTH) / TALLEST_FIGURE_IN_CELLS;
 }

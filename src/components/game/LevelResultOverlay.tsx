@@ -20,6 +20,7 @@ export function LevelResultOverlay({
   bonusStarEnabled = false,
   bonusStarNotice = null,
   onBonusStarRequested,
+  doublesDailyStars = false,
   achievement = null,
   onAchievementRevealed,
 }: {
@@ -38,6 +39,10 @@ export function LevelResultOverlay({
    * star. Kept inside the offer card so the result stays easy to scan. */
   bonusStarNotice?: string | null;
   onBonusStarRequested?: () => void;
+  /** Whether that offer is the daily challenge's "double what today paid"
+   * rather than the campaign's "+1 star" — see the mobile app's
+   * `LevelResultOverlay.doublesDailyStars`. */
+  doublesDailyStars?: boolean;
   /** A newly-unlocked achievement to reveal inline, above the star row —
    * mirrors the mobile app's `resultAchievement`. */
   achievement?: AchievementDefinition | null;
@@ -245,7 +250,11 @@ export function LevelResultOverlay({
                 type="button"
                 disabled={!bonusStarEnabled}
                 onClick={onBonusStarRequested}
-                aria-label="Получить звезду за просмотр рекламы"
+                aria-label={
+                  doublesDailyStars
+                    ? 'Удвоить звёзды за просмотр рекламы'
+                    : 'Получить звезду за просмотр рекламы'
+                }
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -278,7 +287,7 @@ export function LevelResultOverlay({
                   }}
                   aria-hidden="true"
                 >
-                  ★
+                  {doublesDailyStars ? '✦' : '★'}
                 </span>
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span
@@ -290,7 +299,9 @@ export function LevelResultOverlay({
                       color: 'var(--gold-bright)',
                     }}
                   >
-                    Получить звезду
+                    {doublesDailyStars
+                      ? `Удвоить звёзды: +${result.stars ?? 0}`
+                      : 'Получить звезду'}
                   </span>
                   <span
                     style={{

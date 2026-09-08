@@ -9,8 +9,7 @@ import {
 import { PieceArt } from "../board/PieceArt";
 import type { DragController } from "../board/useDragController";
 import { TILE_GAP, TRAY_PORTRAIT, trayRowHeight, trayTileExtent } from "./trayGeometry";
-import { pieceDrawBox, trayCellHeight } from "../../game/pieceMetrics";
-import { BoardPerspective } from "../board/boardPerspective";
+import { cellHeightForTile, pieceDrawBox } from "../../game/pieceMetrics";
 import { useCosmeticSkin } from "../../game/cosmeticSkinContext";
 import { uprightRotationOf } from "../../game/cosmeticSkins";
 
@@ -22,7 +21,6 @@ function TrayItemTile({
   vertical,
   extent,
   height,
-  boardCellHeight,
 }: {
   type: PieceType;
   selected: boolean;
@@ -33,17 +31,14 @@ function TrayItemTile({
    * level — see `Tray`'s `tileExtent`. */
   extent: number;
   /** How tall the tile is. The figure inside is drawn to the same rules the
-   * board uses, so a piece is the same size and the same shape in both
-   * places — the tray used to stretch every sprite to its tile, which drew a
-   * pawn as tall as a king and none of them the size they would land at. */
+   * board uses: the tallest type fills the tile and the rest keep their
+   * proportions to it. The tray used to stretch every sprite to its own
+   * tile instead, which drew a pawn as tall as a king. */
   height: number;
-  /** The board's own square, which the figure is sized against whenever the
-   * tile has room for it. */
-  boardCellHeight: number;
 }) {
   const skin = useCosmeticSkin();
   // The tile's border and its bottom padding are not the square.
-  const art = pieceDrawBox(type, trayCellHeight(height - 8, boardCellHeight));
+  const art = pieceDrawBox(type, cellHeightForTile(height - 8));
   return (
     <div
       onClick={onClick}
@@ -244,9 +239,6 @@ export function Tray({
               vertical={vertical}
               extent={tileExtent}
               height={vertical ? tileExtent : trayRowHeight(height)}
-              boardCellHeight={
-                (BoardPerspective.height * snapshot.cellPx) / BoardPerspective.sourceSize
-              }
             />
           ))
         )}

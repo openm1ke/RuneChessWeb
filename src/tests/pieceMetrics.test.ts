@@ -43,11 +43,18 @@ describe('figure geometry', () => {
     }
   });
 
-  it('shows the same figure in a tray tile as on a square', () => {
-    const tile = cellHeightForTile(CELL / NEAREST_DEPTH);
+  it('fills a tray tile, in the same proportions the board uses', () => {
+    // The tray is a display case, not a square: the tallest figure fills
+    // the tile, and the rest keep their proportions to it.
+    const tileHeight = 57;
+    const unit = cellHeightForTile(tileHeight);
+    expect(pieceFigureHeight('king', unit)).toBeCloseTo(tileHeight, 5);
     for (const type of ALL_PIECE_TYPES) {
-      expect(pieceFigureHeight(type, tile), type).toBeCloseTo(
-        pieceFigureHeight(type, CELL),
+      expect(
+        pieceFigureHeight(type, unit) / pieceFigureHeight('king', unit),
+        type,
+      ).toBeCloseTo(
+        pieceFigureHeight(type, CELL) / pieceFigureHeight('king', CELL),
         5,
       );
     }

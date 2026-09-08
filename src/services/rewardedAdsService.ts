@@ -28,12 +28,15 @@ interface YandexAdvManagerRenderOptions {
 
 type YandexAdvManager = NonNullable<Window['Ya']>['Context']['AdvManager'];
 
-export type AdPlacement = 'extraHint' | 'bonusStar' | 'skipLevel';
+export type AdPlacement = 'extraHint' | 'bonusStar' | 'skipLevel' | 'dailyDouble';
 
 const ANALYTICS_NAME: Record<AdPlacement, string> = {
   extraHint: 'extra_hint',
   bonusStar: 'bonus_star',
   skipLevel: 'skip_level',
+  // Offered once a daily challenge is solved — on a perfect run too, which
+  // is exactly when a player is pleased enough to watch something.
+  dailyDouble: 'daily_double',
 };
 
 function analyticsName(placement: AdPlacement): string {
@@ -103,11 +106,13 @@ export class RewardedAdsService {
     extraHint: 'idle',
     bonusStar: 'idle',
     skipLevel: 'idle',
+    dailyDouble: 'idle',
   };
   private readonly showInFlight: Record<AdPlacement, boolean> = {
     extraHint: false,
     bonusStar: false,
     skipLevel: false,
+    dailyDouble: false,
   };
   private readonly listeners = new Set<RewardedAdListener>();
 
