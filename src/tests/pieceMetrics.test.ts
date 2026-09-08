@@ -7,7 +7,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   NEAREST_DEPTH,
+  TALLEST_FIGURE_IN_CELLS,
   cellHeightForTile,
+  pieceDrawBox,
   pieceFigureHeight,
 } from '../game/pieceMetrics';
 import { ALL_PIECE_TYPES } from '../game/pieceTypes';
@@ -15,17 +17,20 @@ import { ALL_PIECE_TYPES } from '../game/pieceTypes';
 const CELL = 51.17; // a 6x6 board's square, on the design canvas
 
 describe('figure geometry', () => {
-  it('never draws a figure taller than its square', () => {
+  it('never spills sideways onto the next square', () => {
+    // A standing figure is taller than its square; what it must never be is
+    // wider than one, which is when it starts covering its neighbours.
+    const cellWidth = 298 / 6;
     for (const type of ALL_PIECE_TYPES) {
-      expect(pieceFigureHeight(type, CELL, NEAREST_DEPTH), type).toBeLessThanOrEqual(
-        CELL + 0.01,
+      expect(pieceDrawBox(type, CELL, NEAREST_DEPTH).width, type).toBeLessThan(
+        cellWidth,
       );
     }
   });
 
   it('keeps the pieces in proportion to each other', () => {
     const king = pieceFigureHeight('king', CELL, NEAREST_DEPTH);
-    expect(king).toBeCloseTo(CELL, 1);
+    expect(king).toBeCloseTo(CELL * TALLEST_FIGURE_IN_CELLS, 1);
     // A pawn is a smaller piece and has to read as one — in every place it
     // is drawn, which is what the tray was getting wrong.
     expect(pieceFigureHeight('pawn', CELL, NEAREST_DEPTH) / king).toBeCloseTo(0.786, 2);
@@ -34,9 +39,10 @@ describe('figure geometry', () => {
   it('draws smaller figures on a smaller board', () => {
     const smaller = 307 / 7;
     for (const type of ALL_PIECE_TYPES) {
-      expect(pieceFigureHeight(type, smaller, NEAREST_DEPTH), type).toBeLessThanOrEqual(
-        smaller + 0.01,
-      );
+      expect(
+        pieceDrawBox(type, smaller, NEAREST_DEPTH).width,
+        type,
+      ).toBeLessThan(298 / 7);
       expect(
         pieceFigureHeight(type, smaller) / pieceFigureHeight(type, CELL),
       ).toBeCloseTo(smaller / CELL, 3);

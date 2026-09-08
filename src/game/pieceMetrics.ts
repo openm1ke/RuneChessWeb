@@ -62,11 +62,16 @@ const figureRatio: Record<PieceType, number> = {
 
 /**
  * The tallest figure's height, in cell heights, on the row nearest the
- * player. One number decides how big every figure is everywhere: at 1 the
- * king exactly spans a square and nothing ever overhangs more than the
- * square it stands on.
+ * player. One number decides how big every figure is everywhere.
+ *
+ * A standing figure is taller than the square it stands on — that is what
+ * standing looks like from in front and above — so this is above 1. What it
+ * must never do is spill *sideways* onto a neighbouring square, and at this
+ * height no figure is anywhere near as wide as a cell (the widest, the
+ * queen, comes to about two thirds of one). At exactly 1 the pieces read as
+ * small counters rather than figures; the board looked like a draughts set.
  */
-export const TALLEST_FIGURE_IN_CELLS = 1;
+export const TALLEST_FIGURE_IN_CELLS = 1.25;
 
 /** The board's depth scale, near row over far row — see `BoardPerspective`. */
 export const NEAREST_DEPTH = 1.12;
