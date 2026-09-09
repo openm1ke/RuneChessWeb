@@ -15,7 +15,11 @@ import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../components/board/boa
 import { CosmeticSkinContext } from '../game/cosmeticSkinContext';
 import { coinAsset, cosmeticSkins, uprightRotationOf, type CosmeticSkin } from '../game/cosmeticSkins';
 import { pieceSkins, type PieceType } from '../game/pieceTypes';
-import { FOOT_DROP_IN_CELLS, pieceDrawBox } from '../game/pieceMetrics';
+import {
+  FOOT_DROP_IN_CELLS,
+  pieceDrawBox,
+  pieceFigureWidth,
+} from '../game/pieceMetrics';
 import { BOARD_N } from '../game/attackRules';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
@@ -320,9 +324,14 @@ function SkinCard({
         height: previewHeight,
       }}
     >
-      <SkinPreview skin={skin} width={previewWidth} />
       {/* A locked set is dimmed, not hidden: the player is being sold this
-          picture, and a padlock over a grey box sells nothing. */}
+          picture, and a padlock over a grey box sells nothing. But it has to
+          read as locked at a glance in a grid of eight — the veil was so
+          thin that the lock, gold on gold, was the only clue and it was easy
+          to miss. */}
+      <div style={unlocked ? undefined : { filter: 'saturate(0.45) brightness(0.5)' }}>
+        <SkinPreview skin={skin} width={previewWidth} />
+      </div>
       {unlocked ? null : (
         <div
           style={{
@@ -331,11 +340,24 @@ function SkinCard({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(2,8,23,0.4)',
-            fontSize: 22,
           }}
         >
-          🔒
+          <span
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 20,
+              background: 'rgba(4,13,39,0.82)',
+              border: '1.6px solid rgba(255,215,122,0.8)',
+              boxShadow: '0 0 12px rgba(0,0,0,0.55)',
+            }}
+          >
+            🔒
+          </span>
         </div>
       )}
     </div>
@@ -768,11 +790,11 @@ function PreviewPiece({
       <div
         style={{
           position: 'absolute',
-          bottom: art.footInset - 0.13 * cellHeight * scale,
+          bottom: art.footInset - pieceFigureWidth(type, cellHeight, scale) * 1.34 * 0.34 * 0.48,
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 0.76 * cellHeight * scale,
-          height: 0.27 * cellHeight * scale,
+          width: pieceFigureWidth(type, cellHeight, scale) * 1.34,
+          height: pieceFigureWidth(type, cellHeight, scale) * 1.34 * 0.34,
           borderRadius: '50%',
           background: 'radial-gradient(circle, rgba(0,0,0,0.53) 0%, transparent 100%)',
         }}

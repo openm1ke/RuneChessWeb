@@ -424,18 +424,21 @@ function PrivacyCard({
           background: 'rgba(255,255,255,0.12)',
           border: '1.2px solid rgba(207,162,68,0.35)',
           display: 'flex',
-          alignItems: 'flex-start',
-          gap: 12,
+          alignItems: 'center',
+          gap: 10,
         }}
       >
-        <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 0.4, color: 'var(--gold-bright)' }}>
-            Аналитика
-          </div>
-          <div style={{ marginTop: 5, fontSize: 12.5, lineHeight: 1.4, fontWeight: 700, color: '#c6d3ed' }}>
-            Помогать улучшать игру: отправлять обезличенные сведения об использовании уровней и функций.
-          </div>
+        {/* The explanation lives behind a question mark rather than under
+            the title: two lines of prose the player reads once and scrolls
+            past for ever after used to push the rest of the page down. The
+            mark waits by the switch, the same place on every row. */}
+        <div style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 0.4, color: 'var(--gold-bright)' }}>
+          Аналитика
         </div>
+        <HintBadge
+          title="Аналитика"
+          hint="Помогать улучшать игру: отправлять обезличенные сведения о том, какие уровни проходятся быстро, а где игра буксует. Имя, email и телефон не собираются."
+        />
         <RuneToggle
           value={analyticsConsent === true}
           onChange={onAnalyticsConsentChanged}
@@ -596,5 +599,63 @@ function RuneToggle({ value, onChange, label }: { value: boolean; onChange: (val
         }}
       />
     </button>
+  );
+}
+
+/** The question mark that carries an explanation — a tap, not a hover: a
+ * hint nobody can find is the same as no hint, and on a touch screen there
+ * is no hover at all. Mirrors the mobile app's `HintBadge`. */
+function HintBadge({ title, hint }: { title: string; hint: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span style={{ position: 'relative', flex: '0 0 auto' }}>
+      <button
+        type="button"
+        aria-label={`${title} — что это значит`}
+        aria-expanded={open}
+        onClick={() => setOpen((was) => !was)}
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(255,215,122,0.18)',
+          border: '1.2px solid rgba(255,215,122,0.54)',
+          color: 'var(--gold-bright)',
+          fontFamily: 'var(--font-display)',
+          fontSize: 12,
+          cursor: 'pointer',
+        }}
+      >
+        ?
+      </button>
+      {open && (
+        <span
+          role="tooltip"
+          onClick={() => setOpen(false)}
+          style={{
+            position: 'absolute',
+            right: -8,
+            bottom: 30,
+            width: 260,
+            padding: '11px 14px',
+            borderRadius: 14,
+            background: 'linear-gradient(to bottom, rgba(30,48,104,0.96), rgba(15,26,60,0.96))',
+            border: '1.4px solid rgba(207,156,60,0.7)',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.55)',
+            color: '#e2ebff',
+            fontFamily: 'var(--font-body)',
+            fontSize: 12.5,
+            fontWeight: 700,
+            lineHeight: 1.4,
+            zIndex: 20,
+          }}
+        >
+          {hint}
+        </span>
+      )}
+    </span>
   );
 }
