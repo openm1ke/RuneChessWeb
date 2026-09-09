@@ -91,7 +91,7 @@ export function AppearanceScreen({
     return (
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', background: '#05091a' }}>
         <img
-          src={skin.wideMenuBackground}
+          src={skin.adaptiveMenu.ultrawide}
           alt=""
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           draggable={false}
@@ -173,7 +173,7 @@ export function AppearanceScreen({
     return (
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', background: '#05091a' }}>
         <img
-          src={skin.wideMenuBackground}
+          src={skin.adaptiveMenu.ultrawide}
           alt=""
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           draggable={false}

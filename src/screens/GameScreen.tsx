@@ -552,7 +552,9 @@ function LandscapeGameBackdrop({
   if (skin.wideBoardAsset) {
     return (
       <img
-        src={skin.wideBoardAsset}
+        // The same painting at twice the resolution: measured, its felt sits
+      // at the same fractions the frame maths below is written against.
+      src={skin.adaptiveBoard.ultrawide}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
         draggable={false}
