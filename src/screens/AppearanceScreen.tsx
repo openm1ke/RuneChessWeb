@@ -686,14 +686,18 @@ export function SkinPreview({
             screen, where the board sits at (BOARD_LEFT, BOARD_TOP) of the
             430×764 art. */}
         <img
-          src={skin.boardAsset}
+          // The painting the game itself puts on a phone: the older single
+          // picture is the same room a shade darker, and a preview that does
+          // not match what the set looks like in play is the one thing a
+          // picker must not do.
+          src={skin.adaptiveBoard.tall}
           alt=""
           style={{
             position: 'absolute',
             left: PREVIEW_MARGIN.left - BOARD_LEFT,
             top: PREVIEW_MARGIN.top - BOARD_TOP,
             width: 430,
-            height: 764,
+            height: 932,
             objectFit: 'fill',
           }}
           draggable={false}
