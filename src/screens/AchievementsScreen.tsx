@@ -112,7 +112,15 @@ function PortraitAchievementsScene({
 }) {
   return (
     <DesignCanvas>
-      <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
+      {(canvas) => (
+      <div
+        style={{
+          position: 'relative',
+          width: canvas.width,
+          height: canvas.height,
+          overflow: 'hidden',
+        }}
+      >
         <div style={{ position: 'absolute', inset: 0, background: '#000' }} />
         <div
           style={{
@@ -166,6 +174,7 @@ function PortraitAchievementsScene({
           {grid}
         </div>
       </div>
+      )}
     </DesignCanvas>
   );
 }

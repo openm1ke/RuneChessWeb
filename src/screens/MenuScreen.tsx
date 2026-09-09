@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
+import { artForCanvas } from '../game/cosmeticSkins';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { asset } from '../lib/assetUrl';
 import { RulesIcon, SettingsIcon } from '../components/shared/MenuIcons';
@@ -65,35 +66,28 @@ export function MenuScreen({
 
   return (
     <DesignCanvas>
-      <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
+      {(canvas) => {
+        // What keeps the width it was drawn at, centred on the canvas: a
+        // button is a button however much room the screen has, and a menu of
+        // four bars across a desktop window is not a wider menu.
+        const buttonInset = (canvas.width - 274) / 2;
+        const wideButtonInset = (canvas.width - 246) / 2;
+        return (
+      <div
+        style={{
+          position: 'relative',
+          width: canvas.width,
+          height: canvas.height,
+          overflow: 'hidden',
+        }}
+      >
         <div style={{ position: 'absolute', inset: 0, background: '#000' }} />
         <img
-          src={skin.menuBackground}
+          src={artForCanvas(skin.adaptiveMenu, canvas)}
           alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           draggable={false}
         />
-        {/* The same room, brighter, breathed in and out underneath the menu
-            — see `.menu-backdrop-breath`. Never fully revealed: the motion
-            stays at the edge of perception and the menu's controls stay in
-            charge. A set without a brighter twin simply keeps still. */}
-        {skin.menuBackgroundLively && (
-          <img
-            className="menu-backdrop-breath"
-            src={skin.menuBackgroundLively}
-            alt=""
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-              opacity: 0,
-              pointerEvents: 'none',
-            }}
-            draggable={false}
-          />
-        )}
         <div
           style={{
             position: 'absolute',
@@ -117,7 +111,15 @@ export function MenuScreen({
         <div style={{ position: 'absolute', top: 126, left: 0, right: 0 }}>
           <MenuBrand orbSize={124} />
         </div>
-        <div style={{ position: 'absolute', top: 366, left: 78, right: 78, height: 72 }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 366,
+            left: buttonInset,
+            right: buttonInset,
+            height: 72,
+          }}
+        >
           <MenuActionButton
             label="ЗАДАНИЕ ДНЯ"
             onClick={onDailyChallenge}
@@ -127,7 +129,15 @@ export function MenuScreen({
             badge={<DailyChallengeSolvedBadge solved={dailyChallengeSolvedToday} />}
           />
         </div>
-        <div style={{ position: 'absolute', top: 450, left: 78, right: 78, height: 104 }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 450,
+            left: buttonInset,
+            right: buttonInset,
+            height: 104,
+          }}
+        >
           <MenuActionButton
             label="ИГРАТЬ"
             subtitle={`УРОВЕНЬ ${currentLevel}`}
@@ -135,10 +145,26 @@ export function MenuScreen({
             prominent
           />
         </div>
-        <div style={{ position: 'absolute', top: 566, left: 92, right: 92, height: 72 }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 566,
+            left: wideButtonInset,
+            right: wideButtonInset,
+            height: 72,
+          }}
+        >
           <MenuActionButton label="УРОВНИ" onClick={onLevels} />
         </div>
-        <div style={{ position: 'absolute', top: 650, left: 92, right: 92, height: 72 }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 650,
+            left: wideButtonInset,
+            right: wideButtonInset,
+            height: 72,
+          }}
+        >
           <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={17} letterSpacing={1.8} />
         </div>
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 36, textAlign: 'center' }}>
@@ -179,6 +205,8 @@ export function MenuScreen({
           версия 1.0.0
         </div>
       </div>
+        );
+      }}
     </DesignCanvas>
   );
 }

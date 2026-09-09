@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
+import { artForCanvas } from '../game/cosmeticSkins';
 import { RoundControl } from '../components/shared/RoundControl';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { formatHourWindow } from '../services/dailyReminderMessages';
@@ -77,11 +78,19 @@ function PortraitSettingsScene({
   const skin = useCosmeticSkin();
   return (
     <DesignCanvas>
-      <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
+      {(canvas) => (
+      <div
+        style={{
+          position: 'relative',
+          width: canvas.width,
+          height: canvas.height,
+          overflow: 'hidden',
+        }}
+      >
         <img
-          src={skin.menuBackground}
+          src={artForCanvas(skin.adaptiveMenu, canvas)}
           alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           draggable={false}
         />
         {/* The title scrolls away with the cards instead of sitting in a
@@ -135,6 +144,7 @@ function PortraitSettingsScene({
           </RoundControl>
         </div>
       </div>
+      )}
     </DesignCanvas>
   );
 }

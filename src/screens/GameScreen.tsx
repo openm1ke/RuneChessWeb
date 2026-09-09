@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { DesignCanvas } from '../components/shared/DesignCanvas';
+import { DesignCanvas, type CanvasSize } from '../components/shared/DesignCanvas';
+import { artForCanvas } from '../game/cosmeticSkins';
+import { trayPortraitInset } from '../components/tray/trayGeometry';
 import { Board } from '../components/board/Board';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../components/board/boardPerspective';
 import { Tray } from '../components/tray/Tray';
@@ -10,7 +12,11 @@ import { ResetConfirmDialog } from '../components/game/ResetConfirmDialog';
 import { HintOfferDialog } from '../components/game/HintOfferDialog';
 import { SkipOfferDialog } from '../components/game/SkipOfferDialog';
 import { LevelResultOverlay } from '../components/game/LevelResultOverlay';
-import { TutorialCoachmark, type CoachmarkLayout } from '../components/game/TutorialCoachmark';
+import {
+  TutorialCoachmark,
+  portraitCoachmarkLayout,
+  type CoachmarkLayout,
+} from '../components/game/TutorialCoachmark';
 import { useDozorEngine } from '../game/useDozorEngine';
 import { FIRST_SCORED_LEVEL_INDEX, type DozorEngine } from '../game/dozorEngine';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
@@ -474,8 +480,16 @@ export function GameScreen({
 
   return (
     <DesignCanvas background="#05091a">
-      <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
-        <StaticGameBackdrop />
+      {(canvas) => (
+      <div
+        style={{
+          position: 'relative',
+          width: canvas.width,
+          height: canvas.height,
+          overflow: 'hidden',
+        }}
+      >
+        <StaticGameBackdrop canvas={canvas} />
         <TopControls
           onBack={onBack}
           onHint={handleHint}
@@ -485,16 +499,36 @@ export function GameScreen({
           dailyStreak={dailyStreak}
         />
         <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} label={snapshot.levelLabel} />
-        <Board engine={engine} snapshot={snapshot} beamPhase={beamPhase} drag={drag} boardRef={boardRef} />
-        <Tray engine={engine} snapshot={snapshot} drag={drag} trayRef={trayRef} />
+        <Board
+          engine={engine}
+          snapshot={snapshot}
+          beamPhase={beamPhase}
+          drag={drag}
+          boardRef={boardRef}
+          // Centred rather than fixed at 34 units: on a wider canvas that
+          // constant would leave the board against the left edge.
+          boardLeft={(canvas.width - BoardPerspective.width) / 2}
+        />
+        <Tray
+          engine={engine}
+          snapshot={snapshot}
+          drag={drag}
+          trayRef={trayRef}
+          // The panel keeps the width it was drawn at and stays centred: a
+          // tray stretched across a tablet is a strip of empty blue with
+          // four tiles in the middle of it.
+          left={trayPortraitInset(canvas.width)}
+          right={trayPortraitInset(canvas.width)}
+        />
         <BottomUtilityControls
           onReset={() => setShowResetConfirm(true)}
           onSkip={onSkipLevel}
           onResetOnboarding={onResetOnboarding}
           showSkip={isDev}
         />
-        {renderOverlays()}
+        {renderOverlays(portraitCoachmarkLayout(canvas))}
       </div>
+      )}
     </DesignCanvas>
   );
 }
@@ -549,26 +583,27 @@ function LandscapeGameBackdrop({
   );
 }
 
-function StaticGameBackdrop() {
+function StaticGameBackdrop({ canvas }: { canvas: CanvasSize }) {
   const skin = useCosmeticSkin();
+  // The room painted for this shape of canvas: its middle 430 units are the
+  // picture the board's frame is drawn into, so the frame lands on the
+  // playable cells whichever version is showing.
+  const artWidth = canvas.width > 430.5 ? Math.max(canvas.width, 940) : 430;
   return (
     <>
       <div style={{ position: 'absolute', inset: 0, background: skin.backdrop }} />
       <img
-        src={skin.boardAsset}
+        src={artForCanvas(skin.adaptiveBoard, canvas)}
         alt=""
-        style={{ position: 'absolute', left: 0, top: 0, width: 430, height: 764, objectFit: 'fill' }}
-        draggable={false}
-      />
-      <div
         style={{
           position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 764,
-          bottom: 0,
-          background: `linear-gradient(to bottom, ${skin.tableFadeTop}, ${skin.tableFadeBottom})`,
+          left: (canvas.width - artWidth) / 2,
+          top: 0,
+          width: artWidth,
+          height: canvas.height,
+          objectFit: 'fill',
         }}
+        draggable={false}
       />
       <div
         style={{

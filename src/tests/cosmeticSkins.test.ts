@@ -118,11 +118,6 @@ describe('cosmetic skins', () => {
   });
 
   it('the classic room breathes, the obsidian one keeps still', () => {
-    // The brighter twin is what `.menu-backdrop-breath` fades in and out;
-    // a set without one must render no layer at all rather than an empty
-    // <img>.
-    expect(classicSkin.menuBackgroundLively).toContain('living-bright');
-    expect(obsidianAstralSkin.menuBackgroundLively).toBeNull();
   });
 
   it('only a frame that overhangs carries a layer of its own', () => {

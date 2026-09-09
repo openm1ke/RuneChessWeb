@@ -2,7 +2,12 @@ import type { DozorSnapshot } from '../../game/dozorEngine';
 import type { Cell } from '../../game/models';
 import { tutorialLine } from '../../game/tutorialScript';
 import { FIRST_SCORED_LEVEL_INDEX } from '../../data/campaignLevels';
-import { TRAY_PORTRAIT, trayTileCenter } from '../tray/trayGeometry';
+import {
+  TRAY_PORTRAIT,
+  TRAY_PORTRAIT_WIDTH,
+  trayPortraitInset,
+  trayTileCenter,
+} from '../tray/trayGeometry';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../board/boardPerspective';
 
 /** `ready` and `reset` used to be here too. `reset` was never returned at
@@ -21,6 +26,33 @@ export interface CoachmarkLayout {
   canvasWidth: number;
   board: { left: number; top: number; scaleX: number; scaleY: number };
   tray: { left: number; top: number; width: number; height: number };
+}
+
+/** Where the arrow's targets are on a portrait canvas of this size: the
+ * board and the tray are centred on it, so on anything broader than the
+ * composition the constants below would aim the arrow at the empty table
+ * beside them. */
+// eslint-disable-next-line react-refresh/only-export-components -- layout maths, not a component
+export function portraitCoachmarkLayout(canvas: {
+  width: number;
+  height: number;
+}): CoachmarkLayout {
+  return {
+    isLandscape: false,
+    canvasWidth: canvas.width,
+    board: {
+      left: (canvas.width - BoardPerspective.width) / 2,
+      top: BOARD_TOP,
+      scaleX: 1,
+      scaleY: 1,
+    },
+    tray: {
+      left: trayPortraitInset(canvas.width),
+      top: canvas.height - TRAY_PORTRAIT.bottom - TRAY_PORTRAIT.height,
+      width: TRAY_PORTRAIT_WIDTH,
+      height: TRAY_PORTRAIT.height,
+    },
+  };
 }
 
 const DEFAULT_LAYOUT: CoachmarkLayout = {

@@ -9,6 +9,7 @@
  * gets, and a set added later cannot quietly disagree with its own preview.
  */
 import { DesignCanvas } from '../components/shared/DesignCanvas';
+import { artForCanvas } from '../game/cosmeticSkins';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { RoundControl } from '../components/shared/RoundControl';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../components/board/boardPerspective';
@@ -227,11 +228,19 @@ export function AppearanceScreen({
 
   return (
     <DesignCanvas background="#05091a">
-      <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
+      {(canvas) => (
+      <div
+        style={{
+          position: 'relative',
+          width: canvas.width,
+          height: canvas.height,
+          overflow: 'hidden',
+        }}
+      >
         <img
-          src={skin.menuBackground}
+          src={artForCanvas(skin.adaptiveMenu, canvas)}
           alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           draggable={false}
         />
         <div
@@ -274,6 +283,7 @@ export function AppearanceScreen({
           </RoundControl>
         </div>
       </div>
+      )}
     </DesignCanvas>
   );
 }

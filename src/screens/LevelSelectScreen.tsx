@@ -1,4 +1,5 @@
 import { DesignCanvas } from '../components/shared/DesignCanvas';
+import { artForCanvas } from '../game/cosmeticSkins';
 import { LevelSelectList } from '../components/game/LevelSelectList';
 import { RoundControl } from '../components/shared/RoundControl';
 import { useViewportSize } from '../components/game/useViewportSize';
@@ -16,6 +17,7 @@ interface LevelSelectProps {
 }
 export function LevelSelectScreen(props: LevelSelectProps) {
   const viewport = useViewportSize();
+  const skin = useCosmeticSkin();
   const isLandscape = viewport.width > viewport.height;
 
   if (isLandscape) {
@@ -26,12 +28,36 @@ export function LevelSelectScreen(props: LevelSelectProps) {
     props;
   return (
     <DesignCanvas>
-      <div style={{ position: 'relative', width: 430, height: 932, overflow: 'hidden' }}>
-        {/* Plain black, matching the current Flutter screen — it dropped its
-            castle background image (menu-castle-bg-v4.png was removed from
-            the project and never replaced here; the menu/settings/tutorial
-            screens keep their own -clean.png background). */}
+      {(canvas) => {
+        // More tiles side by side, never bigger ones: a level tile is a tap
+        // target at the size it was drawn. The panel takes what width it can
+        // and fits whole tiles into it at their own pitch.
+        const tilePitch = 113;
+        const panelPadding = 32;
+        const columns = Math.min(
+          6,
+          Math.max(3, Math.floor((canvas.width - 92 - panelPadding + 16) / tilePitch)),
+        );
+        const panelWidth = columns * tilePitch - 16 + panelPadding;
+        const panelInset = Math.max(46, (canvas.width - panelWidth) / 2);
+        return (
+      <div
+        style={{
+          position: 'relative',
+          width: canvas.width,
+          height: canvas.height,
+          overflow: 'hidden',
+        }}
+      >
         <div style={{ position: 'absolute', inset: 0, background: '#000' }} />
+        {/* The room the menu is set in, carried behind the list: this screen
+            opens over the menu and used to drop it for flat black. */}
+        <img
+          src={artForCanvas(skin.adaptiveMenu, canvas)}
+          alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          draggable={false}
+        />
         <div
           style={{
             position: 'absolute',
@@ -68,8 +94,8 @@ export function LevelSelectScreen(props: LevelSelectProps) {
           style={{
             position: 'absolute',
             top: 144,
-            left: 46,
-            right: 46,
+            left: panelInset,
+            right: panelInset,
             bottom: 72,
             borderRadius: 14,
             background: 'rgba(11,23,51,0.9)',
@@ -87,11 +113,13 @@ export function LevelSelectScreen(props: LevelSelectProps) {
             levelStars={levelStars}
             progress={progress}
             onLevelChosen={onLevelChosen}
-            columns={3}
+            columns={columns}
             gutter={16}
           />
         </div>
       </div>
+        );
+      }}
     </DesignCanvas>
   );
 }

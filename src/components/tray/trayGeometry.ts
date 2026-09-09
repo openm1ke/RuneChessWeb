@@ -20,6 +20,17 @@ const TRAY_HEADER_HEIGHT = 21;
 /** The portrait tray's box on the 430x932 design canvas. */
 export const TRAY_PORTRAIT = { left: 96, right: 96, bottom: 120, height: 104 };
 
+/** The panel's own width, and where it sits on a canvas this wide: it keeps
+ * the width it was drawn at and is centred, so a broad screen gets a panel
+ * rather than a strip. One source for it, because two things need the same
+ * answer — the tray draws itself here, and the coach mark points at a tile
+ * in it. Mirrors the app's `trayPortraitInset`. */
+export const TRAY_PORTRAIT_WIDTH = 430 - TRAY_PORTRAIT.left - TRAY_PORTRAIT.right;
+
+export function trayPortraitInset(canvasWidth: number): number {
+  return (canvasWidth - TRAY_PORTRAIT_WIDTH) / 2;
+}
+
 /** How tall the row of tiles is inside a panel `height` tall. */
 export function trayRowHeight(height: number): number {
   return height - TRAY_PADDING_TOP - TRAY_HEADER_HEIGHT - TRAY_PADDING_BOTTOM;
