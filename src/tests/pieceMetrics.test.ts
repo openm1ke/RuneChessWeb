@@ -11,6 +11,7 @@ import {
   cellHeightForTile,
   pieceFigureHeight,
   pieceFigureWidth,
+  pieceDrawBox,
 } from '../game/pieceMetrics';
 import { ALL_PIECE_TYPES } from '../game/pieceTypes';
 
@@ -64,5 +65,17 @@ describe('figure geometry', () => {
         5,
       );
     }
+  });
+  it('draws the queen taller than the tile that fits the king', () => {
+    // Not a defect to fix here, but the reason the tray tile clamps its
+    // sprite: `cellHeightForTile` sizes the tile for the king, and the queen
+    // is deliberately 8% taller than him. Left unclamped, her crown came out
+    // through the panel's frame and onto the caption above it — which is
+    // what a `maxHeight` on the tray's `PieceArt` (and the app's `Image`
+    // taking the tile's constraints) is there to prevent.
+    const tileHeight = 57;
+    const unit = cellHeightForTile(tileHeight);
+    expect(pieceDrawBox('queen', unit).height).toBeGreaterThan(tileHeight);
+    expect(pieceFigureHeight('queen', unit)).toBeGreaterThan(tileHeight);
   });
 });

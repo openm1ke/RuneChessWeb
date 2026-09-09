@@ -89,7 +89,14 @@ function TrayItemTile({
           type={type}
           width={art.width}
           height={art.height}
-          style={{ maxWidth: "100%" }}
+          // The tile is the ceiling, not a suggestion. The queen is drawn a
+          // touch taller than the king — that is her presence on the board —
+          // and 8% over a tile that fits the king exactly is a crown poking
+          // through the panel's caption. The app clamps her the same way:
+          // its `Image` takes the tile's constraints and letterboxes the
+          // sprite inside them, so both platforms shrink her rather than
+          // letting her out of the frame.
+          style={{ maxWidth: "100%", maxHeight: "100%" }}
         />
       </div>
     </div>
