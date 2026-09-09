@@ -276,7 +276,7 @@ function pieceScreenRect(piece: Cell, type: PieceType, cellPx: number) {
     // the king a shadow wider than he is and the queen one that ended well
     // inside her pedestal. A third again for the spread, and because the
     // radial gradient fades to nothing well before its own edge.
-    shadowWidth: pieceFigureWidth(type, cellHeight, scale) * 1.5,
+    shadowWidth: pieceFigureWidth(type, cellHeight, scale) * 1.7,
     scale,
   };
 }
@@ -340,6 +340,13 @@ function PieceOnBoard({
             }}
           />
         )}
+        {/* Only while the figure is off the board. A piece standing on its
+            square is already drawn with its own shading; a second, painted
+            shadow under it could only ever peek out from behind the base as
+            a small dark crescent. Lifted, the shadow is the point: it says
+            the figure is above the board. The stops matter as much as the
+            size — a gradient that starts fading at the centre paints twice
+            the circle it appears to. */}
         <div
           style={{
             position: 'absolute',
@@ -349,10 +356,8 @@ function PieceOnBoard({
             width: rect.shadowWidth,
             height: rect.shadowWidth * 0.34,
             borderRadius: '50%',
-            // The stops matter as much as the size: a gradient that starts
-            // fading at the centre paints twice the circle it appears to,
-            // which is why the shadow read as a small smudge under a figure
-            // standing on a much wider base.
+            opacity: isHeld ? 1 : 0,
+            transition: 'opacity 160ms',
             background:
               'radial-gradient(circle, rgba(0,0,0,0.56) 0%, rgba(0,0,0,0.44) 58%, transparent 100%)',
           }}

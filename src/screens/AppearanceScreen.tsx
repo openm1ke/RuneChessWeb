@@ -15,11 +15,7 @@ import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../components/board/boa
 import { CosmeticSkinContext } from '../game/cosmeticSkinContext';
 import { coinAsset, cosmeticSkins, uprightRotationOf, type CosmeticSkin } from '../game/cosmeticSkins';
 import { pieceSkins, type PieceType } from '../game/pieceTypes';
-import {
-  FOOT_DROP_IN_CELLS,
-  pieceDrawBox,
-  pieceFigureWidth,
-} from '../game/pieceMetrics';
+import { FOOT_DROP_IN_CELLS, pieceDrawBox } from '../game/pieceMetrics';
 import { BOARD_N } from '../game/attackRules';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
@@ -787,19 +783,6 @@ function PreviewPiece({
           }}
         />
       )}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: art.footInset - pieceFigureWidth(type, cellHeight, scale) * 1.5 * 0.34 * 0.48,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: pieceFigureWidth(type, cellHeight, scale) * 1.5,
-          height: pieceFigureWidth(type, cellHeight, scale) * 1.5 * 0.34,
-          borderRadius: '50%',
-          background:
-            'radial-gradient(circle, rgba(0,0,0,0.56) 0%, rgba(0,0,0,0.44) 58%, transparent 100%)',
-        }}
-      />
       <img
         src={skin.pieceAssets[type]}
         alt=""
