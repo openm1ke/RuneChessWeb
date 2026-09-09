@@ -2,7 +2,11 @@ import { useMemo, type PointerEvent, type ReactElement, type RefObject } from 'r
 import type { DozorEngine, DozorSnapshot } from '../../game/dozorEngine';
 import { cellKey, type Beam, type Cell, type Piece } from '../../game/models';
 import { pieceSkins, type PieceType } from '../../game/pieceTypes';
-import { FOOT_DROP_IN_CELLS, pieceDrawBox } from '../../game/pieceMetrics';
+import {
+  FOOT_DROP_IN_CELLS,
+  pieceDrawBox,
+  pieceFigureWidth,
+} from '../../game/pieceMetrics';
 import { useCosmeticSkin } from '../../game/cosmeticSkinContext';
 import { coinAsset, uprightRotationOf } from '../../game/cosmeticSkins';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from './boardPerspective';
@@ -267,6 +271,12 @@ function pieceScreenRect(piece: Cell, type: PieceType, cellPx: number) {
     // everything else here.
     footInset: art.footInset,
     cellHeight: cellHeight * scale,
+    // The shadow is cast by the piece's base, so it is the figure's own
+    // width that decides how big it is — a fixed share of the square gave
+    // the king a shadow wider than he is and the queen one that ended well
+    // inside her pedestal. A third again for the spread, and because the
+    // radial gradient fades to nothing well before its own edge.
+    shadowWidth: pieceFigureWidth(type, cellHeight, scale) * 1.34,
     scale,
   };
 }
@@ -333,11 +343,11 @@ function PieceOnBoard({
         <div
           style={{
             position: 'absolute',
-            bottom: rect.footInset - 0.13 * rect.cellHeight,
+            bottom: rect.footInset - rect.shadowWidth * 0.34 * 0.48,
             left: '50%',
             transform: 'translateX(-50%)',
-            width: 0.76 * rect.cellHeight,
-            height: 0.27 * rect.cellHeight,
+            width: rect.shadowWidth,
+            height: rect.shadowWidth * 0.34,
             borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(0,0,0,0.53) 0%, transparent 100%)',
           }}

@@ -36,14 +36,22 @@ const canvas: Record<PieceType, { width: number; height: number }> = {
   pawn: { width: 330, height: 512 },
 };
 
-/** Where the figure actually is inside that canvas, as fractions of it. */
-const content: Record<PieceType, { top: number; bottom: number }> = {
-  rook: { top: 0.013, bottom: 0.995 },
-  bishop: { top: 0.008, bottom: 0.995 },
-  knight: { top: 0.011, bottom: 0.995 },
-  king: { top: 0.005, bottom: 0.996 },
-  queen: { top: 0.040, bottom: 0.961 },
-  pawn: { top: 0.040, bottom: 0.963 },
+/**
+ * Where the figure actually is inside that canvas, as fractions of it. The
+ * canvases carry different amounts of air at the sides — the queen's most of
+ * all, and more since she was redrawn slimmer — so the sprite's own width
+ * says little about how wide the figure standing on the square is.
+ */
+const content: Record<
+  PieceType,
+  { top: number; bottom: number; left: number; right: number }
+> = {
+  rook: { top: 0.013, bottom: 0.995, left: 0.011, right: 0.988 },
+  bishop: { top: 0.008, bottom: 0.995, left: 0.015, right: 0.984 },
+  knight: { top: 0.011, bottom: 0.995, left: 0.012, right: 0.987 },
+  king: { top: 0.005, bottom: 0.996, left: 0.031, right: 0.966 },
+  queen: { top: 0.040, bottom: 0.960, left: 0.130, right: 0.866 },
+  pawn: { top: 0.040, bottom: 0.963, left: 0.056, right: 0.942 },
 };
 
 /**
@@ -56,7 +64,10 @@ const figureRatio: Record<PieceType, number> = {
   bishop: 0.951,
   knight: 0.884,
   king: 1,
-  queen: 0.985,
+  // The queen is deliberately a touch taller than the king: her slimmer
+  // silhouette and crown need that presence to read as the board's most
+  // powerful figure rather than as a shortened bishop.
+  queen: 1.08,
   pawn: 0.786,
 };
 
@@ -105,6 +116,22 @@ export function pieceFigureHeight(
   return (
     (figureRatio[type] * TALLEST_FIGURE_IN_CELLS * cellHeight * depth) / NEAREST_DEPTH
   );
+}
+
+/**
+ * How wide the figure itself is — the number the "never reaches its
+ * neighbour" rule is actually about. The sprite box around it is wider, by
+ * however much air its canvas carries.
+ */
+export function pieceFigureWidth(
+  type: PieceType,
+  cellHeight: number,
+  depth = 1,
+): number {
+  const box = content[type];
+  const width = (box.right - box.left) * canvas[type].width;
+  const height = (box.bottom - box.top) * canvas[type].height;
+  return (pieceFigureHeight(type, cellHeight, depth) * width) / height;
 }
 
 export function pieceDrawBox(

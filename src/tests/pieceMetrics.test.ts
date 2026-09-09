@@ -9,8 +9,8 @@ import {
   NEAREST_DEPTH,
   TALLEST_FIGURE_IN_CELLS,
   cellHeightForTile,
-  pieceDrawBox,
   pieceFigureHeight,
+  pieceFigureWidth,
 } from '../game/pieceMetrics';
 import { ALL_PIECE_TYPES } from '../game/pieceTypes';
 
@@ -22,7 +22,7 @@ describe('figure geometry', () => {
     // wider than one, which is when it starts covering its neighbours.
     const cellWidth = 298 / 6;
     for (const type of ALL_PIECE_TYPES) {
-      expect(pieceDrawBox(type, CELL, NEAREST_DEPTH).width, type).toBeLessThan(
+      expect(pieceFigureWidth(type, CELL, NEAREST_DEPTH), type).toBeLessThan(
         cellWidth,
       );
     }
@@ -40,7 +40,7 @@ describe('figure geometry', () => {
     const smaller = 307 / 7;
     for (const type of ALL_PIECE_TYPES) {
       expect(
-        pieceDrawBox(type, smaller, NEAREST_DEPTH).width,
+        pieceFigureWidth(type, smaller, NEAREST_DEPTH),
         type,
       ).toBeLessThan(298 / 7);
       expect(
