@@ -276,7 +276,7 @@ function pieceScreenRect(piece: Cell, type: PieceType, cellPx: number) {
     // the king a shadow wider than he is and the queen one that ended well
     // inside her pedestal. A third again for the spread, and because the
     // radial gradient fades to nothing well before its own edge.
-    shadowWidth: pieceFigureWidth(type, cellHeight, scale) * 1.34,
+    shadowWidth: pieceFigureWidth(type, cellHeight, scale) * 1.5,
     scale,
   };
 }
@@ -349,7 +349,12 @@ function PieceOnBoard({
             width: rect.shadowWidth,
             height: rect.shadowWidth * 0.34,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(0,0,0,0.53) 0%, transparent 100%)',
+            // The stops matter as much as the size: a gradient that starts
+            // fading at the centre paints twice the circle it appears to,
+            // which is why the shadow read as a small smudge under a figure
+            // standing on a much wider base.
+            background:
+              'radial-gradient(circle, rgba(0,0,0,0.56) 0%, rgba(0,0,0,0.44) 58%, transparent 100%)',
           }}
         />
         <div

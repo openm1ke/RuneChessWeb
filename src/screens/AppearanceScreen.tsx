@@ -790,13 +790,14 @@ function PreviewPiece({
       <div
         style={{
           position: 'absolute',
-          bottom: art.footInset - pieceFigureWidth(type, cellHeight, scale) * 1.34 * 0.34 * 0.48,
+          bottom: art.footInset - pieceFigureWidth(type, cellHeight, scale) * 1.5 * 0.34 * 0.48,
           left: '50%',
           transform: 'translateX(-50%)',
-          width: pieceFigureWidth(type, cellHeight, scale) * 1.34,
-          height: pieceFigureWidth(type, cellHeight, scale) * 1.34 * 0.34,
+          width: pieceFigureWidth(type, cellHeight, scale) * 1.5,
+          height: pieceFigureWidth(type, cellHeight, scale) * 1.5 * 0.34,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,0,0,0.53) 0%, transparent 100%)',
+          background:
+            'radial-gradient(circle, rgba(0,0,0,0.56) 0%, rgba(0,0,0,0.44) 58%, transparent 100%)',
         }}
       />
       <img
