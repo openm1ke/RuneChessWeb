@@ -1,0 +1,11 @@
+# Выгружено из ЛК РСЯ (Настройки → Общие → ads.txt), 10.09.2026.
+# Для рекламы на самом сайте runechess.ru (блоки R-A-19847196-1/-2).
+# Файл генерирует Яндекс; обновлять — повторной выгрузкой, не правкой руками.
+google.com, pub-5533854580432370, RESELLER, f08c47fec0942fa0
+improvedigital.com, 2031, RESELLER
+uis.mobfox.com, 165, RESELLER
+hyperad.tech, 215, RESELLER
+yandex.com, 326320789, DIRECT
+betweendigital.com, 43554, RESELLER
+Contextweb.com, 562899, RESELLER, 89ff185a4c4e857c
+hyperad.tech, 150, RESELLER
