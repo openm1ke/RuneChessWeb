@@ -6,6 +6,10 @@ import { asset } from '../lib/assetUrl';
 import { RulesIcon, SettingsIcon } from '../components/shared/MenuIcons';
 import { playNavigationPress, playNavigationRelease } from '../services/musicService';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
+import { publishedStoreLinks } from '../data/storeLinks';
+
+/** True in the archive built for games.yandex.ru — see vite.config.ts. */
+const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
 import { StarCounter } from '../components/shared/StarCounter';
 
 export function MenuScreen({
@@ -396,6 +400,11 @@ function MenuFooterLinks() {
     ['ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ', 'privacy.html'],
   ] as const;
 
+  // Where to get the app on a phone. Empty until something is actually
+  // published, and absent entirely inside the Yandex Games catalogue, which
+  // does not allow links that lead a player out of the game.
+  const stores = BUILT_FOR_YANDEX_GAMES ? [] : publishedStoreLinks();
+
   return (
     <nav
       aria-label="Информация об игре"
@@ -425,6 +434,27 @@ function MenuFooterLinks() {
           }}
         >
           {label}
+        </a>
+      ))}
+      {stores.map(({ name, url }) => (
+        <a
+          key={name}
+          href={url}
+          target="_blank"
+          rel="noreferrer noopener"
+          onPointerDown={playNavigationPress}
+          onClick={playNavigationRelease}
+          style={{
+            color: 'rgba(255, 226, 164, 0.9)',
+            fontSize: 8.5,
+            fontWeight: 800,
+            letterSpacing: 0.75,
+            lineHeight: 1.2,
+            textDecoration: 'none',
+            textShadow: '0 2px 4px rgba(0,0,0,0.85)',
+          }}
+        >
+          {name.toUpperCase()}
         </a>
       ))}
     </nav>
