@@ -17,6 +17,9 @@ body,
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  /* The other half of "no browser menu over the board" (§1.6): iOS answers
+     a long press with its own callout, which no contextmenu handler sees. */
+  -webkit-touch-callout: none;
 }
 
 button {

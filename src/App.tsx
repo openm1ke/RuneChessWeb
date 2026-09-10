@@ -446,6 +446,39 @@ export default function App() {
   // Deliberately not reported as `level_abandoned`: switching tabs is not
   // leaving the level, and firing here would pair an abandon with the
   // completion of the same attempt.
+  // §4.7 — the game's own sound must stop while an ad plays, and §1.6 — the
+  // browser's context menu must not open over the game area.
+  //
+  // The first is not something either ad SDK does for us: РСЯ renders into
+  // an overlay and Yandex Games into its own iframe, and in both cases our
+  // loop keeps playing under the video. `pauseAll`/`resumeAll` are the pair
+  // the hidden-tab handler below already uses — `resumeAll` restores only
+  // what was actually playing, so a player who muted the music stays muted.
+  useEffect(() => {
+    if (!activeRewardedAdsService) return;
+    return activeRewardedAdsService.addListener((_placement, state) => {
+      if (state === 'showing') {
+        musicService.pauseAll();
+      } else if (
+        state === 'rewarded' ||
+        state === 'closedWithoutReward' ||
+        state === 'error' ||
+        state === 'unavailable'
+      ) {
+        musicService.resumeAll();
+      }
+    });
+  }, [activeRewardedAdsService, musicService]);
+
+  useEffect(() => {
+    // A long press on a piece is how the game is played on a phone, and the
+    // browser answers it with "save image" — over the board. The pages the
+    // menu links to are separate documents and keep their normal menu.
+    const block = (event: MouseEvent) => event.preventDefault();
+    document.addEventListener('contextmenu', block);
+    return () => document.removeEventListener('contextmenu', block);
+  }, []);
+
   useEffect(() => {
     const onVisibilityChange = () => {
       if (document.hidden) {
