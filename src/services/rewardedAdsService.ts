@@ -39,7 +39,7 @@ const ANALYTICS_NAME: Record<AdPlacement, string> = {
   dailyDouble: 'daily_double',
 };
 
-function analyticsName(placement: AdPlacement): string {
+export function analyticsName(placement: AdPlacement): string {
   return ANALYTICS_NAME[placement];
 }
 
@@ -66,6 +66,25 @@ export type RewardedAdState =
   | 'error';
 
 export type RewardedAdListener = (placement: AdPlacement, state: RewardedAdState) => void;
+
+/**
+ * What the game asks of a rewarded-ads backend — and the whole reason there
+ * can be two of them.
+ *
+ * On runechess.ru ads come from РСЯ through `Ya.Context.AdvManager` with our
+ * own block IDs. Inside the Yandex Games iframe that is not merely a worse
+ * choice, it cannot work at all: the block is registered for our domain, and
+ * the platform serves its own inventory through `ysdk.adv` with no block ID
+ * anywhere. Two SDKs, one interface — see [YandexGamesRewardedAdsService].
+ *
+ * Everything above this line (GameScreen, the offer dialogs, the analytics
+ * funnels) talks to this and never to a concrete SDK.
+ */
+export interface RewardedAds {
+  stateOf(placement: AdPlacement): RewardedAdState;
+  addListener(listener: RewardedAdListener): () => void;
+  show(placement: AdPlacement): Promise<void>;
+}
 
 const LOADER_SRC = 'https://yandex.ru/ads/system/context.js';
 
@@ -94,7 +113,7 @@ function platformFor(manager: YandexAdvManager): 'desktop' | 'touch' {
  * shows a rewarded unit in one call — there is no separate preload step —
  * so [show] is the only entry point here.
  */
-export class RewardedAdsService {
+export class RewardedAdsService implements RewardedAds {
   constructor(
     private readonly analytics: AnalyticsService,
     private readonly blockIds: RewardedBlockIds = RSYA_REWARDED_BLOCK_IDS,

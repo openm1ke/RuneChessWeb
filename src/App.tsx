@@ -5,6 +5,8 @@ import { ProgressRepository } from './services/progressRepository';
 import { MusicService, setSoundEffectsEnabled, playAchievementReveal } from './services/musicService';
 import { AnalyticsService, type AchievementUnlockTrigger, type LevelEntrySource } from './services/analyticsService';
 import { RewardedAdsService } from './services/rewardedAdsService';
+import type { RewardedAds } from './services/rewardedAdsService';
+import { YandexGamesRewardedAdsService } from './services/yandexGamesRewardedAdsService';
 import {
   applyPlatformLanguage,
   getYandexGamesSdk,
@@ -76,6 +78,8 @@ const isDev = import.meta.env.DEV;
 /** РСЯ Rewarded is available on the standalone site. Yandex Games remains
  * excluded below: it requires its own platform advertising integration. */
 const ADS_AVAILABLE = true;
+/** True in the archive built for games.yandex.ru — see vite.config.ts. */
+const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
 
 function initialScreen(): Screen {
   return typeof window !== 'undefined' && window.location.hash === '#levels' ? 'levels' : 'menu';
@@ -112,7 +116,6 @@ export default function App() {
   const progressRepository = useMemo(() => new ProgressRepository(), []);
   const musicService = useMemo(() => new MusicService(), []);
   const analyticsService = useMemo(() => new AnalyticsService(), []);
-  const rewardedAdsService = useMemo(() => new RewardedAdsService(analyticsService), [analyticsService]);
   const engine = useMemo(() => new DozorEngine(), []);
   const dailyReminderService = useMemo(() => new DailyReminderService(), []);
 
@@ -164,15 +167,36 @@ export default function App() {
   const [yandexGamesSdk, setYandexGamesSdk] = useState<YandexGamesSdk | null>(null);
   // Separate from the sdk existing at all (see isRealYandexGamesPlatform's
   // doc comment) — this is specifically the "are we actually embedded in
-  // games.yandex.ru right now" check. Gates the RSYA rewarded-ads flow
-  // (`RewardedAdsService`, built for the plain site via `Ya.Context.AdvManager`)
-  // off entirely on the real platform: that RSYA integration cannot show
-  // anything inside the Yandex Games iframe — there is no РСЯ contract for
-  // this surface, only a separate `ysdk.adv` integration would work here,
-  // and that hasn't been built yet. Until it is, hints/bonus star fall back
-  // to the same free toggle tutorial levels already use everywhere — see
-  // GameScreen's handling of a missing `rewardedAdsService` prop.
+  // games.yandex.ru right now" check, and it chooses which rewarded-ads
+  // backend the game gets. The РСЯ one asks for a block registered to
+  // runechess.ru, which the platform's iframe will never be allowed to
+  // show; inside the catalogue the ads come from `ysdk.adv` instead, with
+  // no block ID at all. See `yandexGamesRewardedAdsService.ts`.
   const [isOnYandexGamesPlatform, setIsOnYandexGamesPlatform] = useState(false);
+
+  /** Which backend the game actually talks to. Undefined only while the
+   * SDK is still resolving on the platform: showing РСЯ ads there for a
+   * moment would mean a request the iframe cannot serve, so the offers stay
+   * on their free fallback until the answer arrives — a fraction of a
+   * second, and only inside the catalogue. */
+  const activeRewardedAdsService = useMemo<RewardedAds | undefined>(() => {
+    // The catalogue build never touches РСЯ, not even for the moment before
+    // the SDK answers where it is running: `BUILT_FOR_YANDEX_GAMES` is
+    // decided at build time, `isOnYandexGamesPlatform` only after a round
+    // trip, and constructing the РСЯ service in between would inject its
+    // loader script into a page that must not have one.
+    if (BUILT_FOR_YANDEX_GAMES || isOnYandexGamesPlatform) {
+      return yandexGamesSdk
+        ? new YandexGamesRewardedAdsService(yandexGamesSdk, analyticsService)
+        : undefined;
+    }
+    // Constructed here rather than once at the top, because constructing it
+    // has a side effect: it injects РСЯ's loader script into the document.
+    // Inside the catalogue that script is dead weight at best and a
+    // competing ad system in a moderator's network tab at worst, so on the
+    // platform it must never be built at all.
+    return new RewardedAdsService(analyticsService);
+  }, [isOnYandexGamesPlatform, yandexGamesSdk, analyticsService]);
 
   const [dailyChallengeHistory, setDailyChallengeHistory] = useState<Map<string, DailyChallengeResult>>(new Map());
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false);
@@ -1191,7 +1215,7 @@ export default function App() {
             onSkipOffered={() => analyticsService.adOfferShown('skip_level')}
             onResetOnboarding={resetOnboardingForDebug}
             seenOnboardingLevels={seenOnboardingLevels}
-            rewardedAdsService={ADS_AVAILABLE && !isOnYandexGamesPlatform ? rewardedAdsService : undefined}
+            rewardedAdsService={ADS_AVAILABLE ? activeRewardedAdsService : undefined}
             achievement={levelResultAchievement}
             onAchievementRevealed={playAchievementReveal}
             onOpenDailyCalendar={() => setDailyCalendarMode('view')}

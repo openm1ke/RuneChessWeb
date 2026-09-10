@@ -8,3 +8,4 @@ dist-ssr
 # the built archive itself) — large binaries generated for the console
 # upload, not app source. Never commit these.
 /promo/
+release-artifacts/

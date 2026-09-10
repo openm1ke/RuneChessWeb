@@ -17,6 +17,19 @@ export interface YandexGamesSdk {
     GameplayAPI: { start: () => void; stop: () => void };
   };
   environment: { app: { id: string }; i18n: { lang: string } };
+  /** The platform's own ads. No block ID: Yandex Games creates the units
+   * itself once the game is published, and serves test creatives until
+   * then — which is exactly what a draft build should see. */
+  adv: {
+    showRewardedVideo: (options: {
+      callbacks?: {
+        onOpen?: () => void;
+        onRewarded?: () => void;
+        onClose?: () => void;
+        onError?: (error: unknown) => void;
+      };
+    }) => void;
+  };
   on: (event: 'game_api_pause' | 'game_api_resume', callback: () => void) => void;
   off: (event: 'game_api_pause' | 'game_api_resume', callback: () => void) => void;
 }

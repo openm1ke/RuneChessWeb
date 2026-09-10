@@ -20,7 +20,7 @@ import {
 import { useDozorEngine } from '../game/useDozorEngine';
 import { FIRST_SCORED_LEVEL_INDEX, type DozorEngine } from '../game/dozorEngine';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
-import type { RewardedAdsService, RewardedAdState } from '../services/rewardedAdsService';
+import type { RewardedAds, RewardedAdState } from '../services/rewardedAdsService';
 import type { AchievementDefinition } from '../data/achievements';
 
 const isDev = import.meta.env.DEV;
@@ -62,7 +62,7 @@ export function GameScreen({
   onSkipLevel?: () => void;
   onResetOnboarding?: () => void;
   seenOnboardingLevels: Set<number>;
-  rewardedAdsService?: RewardedAdsService;
+  rewardedAdsService?: RewardedAds;
   /** A newly-unlocked achievement to reveal inline in the level-result
    * overlay — passed through from `App.tsx`'s achievement bookkeeping. */
   achievement?: AchievementDefinition | null;
