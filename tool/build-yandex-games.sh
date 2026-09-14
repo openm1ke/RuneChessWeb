@@ -47,6 +47,14 @@ fi
 
 # Fail loudly rather than shipping a catalogue build that still carries the
 # ad system it cannot use.
+# The faces ship inside the archive (tool/fetch-fonts.sh). A build that
+# still reaches for Google's CDN would lose its whole typography wherever
+# that host is slow or blocked — inside an iframe we do not control.
+if grep -qE 'fonts\.(googleapis|gstatic)\.com' "$STAGE/index.html"; then
+  echo "! index.html всё ещё тянет шрифты с Google" >&2
+  exit 1
+fi
+
 if grep -q "ads/system/context.js" "$STAGE/index.html"; then
   echo "! the РСЯ loader is still in index.html — VITE_YANDEX_GAMES did not take" >&2
   exit 1
