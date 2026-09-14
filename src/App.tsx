@@ -7,6 +7,7 @@ import { AnalyticsService, type AchievementUnlockTrigger, type LevelEntrySource 
 import { RewardedAdsService } from './services/rewardedAdsService';
 import type { RewardedAds } from './services/rewardedAdsService';
 import { YandexGamesRewardedAdsService } from './services/yandexGamesRewardedAdsService';
+import { RulesScreen } from './screens/RulesScreen';
 import {
   applyPlatformLanguage,
   getYandexGamesSdk,
@@ -71,7 +72,8 @@ type Screen =
   | 'tutorialComplete'
   | 'mainCampaignComplete'
   | 'campaignComplete'
-  | 'achievements';
+  | 'achievements'
+  | 'rules';
 
 const isDev = import.meta.env.DEV;
 
@@ -1174,6 +1176,8 @@ export default function App() {
           }}
         />
       );
+    case 'rules':
+      return withConsent(<RulesScreen onBack={goToMenu} />);
     case 'achievements':
       return withConsent(
         <AchievementsScreen
@@ -1295,6 +1299,7 @@ export default function App() {
           onAchievements={() => setScreen('achievements')}
           currentLevel={highestLevel + 1}
           onRulesOpened={(proceed) => analyticsService.rulesOpened(proceed)}
+          onRules={() => setScreen('rules')}
           onDailyChallenge={openDailyChallenge}
           dailyChallengeSolvedToday={dailyChallengeHistory.has(dailyChallengeKey(new Date()))}
           // The purse, and what it was earned from: a purchase moves the

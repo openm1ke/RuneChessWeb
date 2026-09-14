@@ -21,6 +21,7 @@ export function MenuScreen({
   dailyChallengeSolvedToday = false,
   currentLevel,
   onRulesOpened,
+  onRules,
   onAppearance,
   starsAvailable = 0,
   starsEarned = 0,
@@ -36,6 +37,9 @@ export function MenuScreen({
    * rules are a separate static page, so the reporting click is the one that
    * leaves. See `AnalyticsService.rulesOpened`. */
   onRulesOpened?: (proceed: () => void) => void;
+  /** Opens the in-game rules screen. Used only in the catalogue build,
+   * where the page the icon normally links to is not allowed. */
+  onRules: () => void;
   /** Whether today's daily challenge already has a saved result — shows a
    * small checkmark badge on the button instead of a plain empty ring. */
   dailyChallengeSolvedToday?: boolean;
@@ -61,6 +65,7 @@ export function MenuScreen({
         dailyChallengeSolvedToday={dailyChallengeSolvedToday}
         currentLevel={currentLevel}
         onRulesOpened={onRulesOpened}
+        onRules={onRules}
         onAppearance={onAppearance}
         starsAvailable={starsAvailable}
         starsEarned={starsEarned}
@@ -185,14 +190,13 @@ export function MenuScreen({
             earned={starsEarned}
             onAppearance={onAppearance}
           />
-          {!BUILT_FOR_YANDEX_GAMES && (
-            <MenuIconButton
+          <MenuIconButton
             label="Правила"
-            href="how-to-play.html"
+            href={BUILT_FOR_YANDEX_GAMES ? undefined : 'how-to-play.html'}
+            onClick={BUILT_FOR_YANDEX_GAMES ? onRules : undefined}
             glyph={<RulesIcon />}
             onActivate={onRulesOpened}
-            />
-          )}
+          />
           <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
         </div>
         <div
@@ -232,6 +236,7 @@ function LandscapeMenuScene({
   dailyChallengeSolvedToday,
   currentLevel,
   onRulesOpened,
+  onRules,
   onAppearance,
   starsAvailable,
   starsEarned,
@@ -244,6 +249,9 @@ function LandscapeMenuScene({
   dailyChallengeSolvedToday: boolean;
   currentLevel: number;
   onRulesOpened?: (proceed: () => void) => void;
+  /** Opens the in-game rules screen. Used only in the catalogue build,
+   * where the page the icon normally links to is not allowed. */
+  onRules: () => void;
   onAppearance: () => void;
   starsAvailable: number;
   starsEarned: number;
@@ -367,14 +375,13 @@ function LandscapeMenuScene({
           earned={starsEarned}
           onAppearance={onAppearance}
         />
-        {!BUILT_FOR_YANDEX_GAMES && (
-          <MenuIconButton
+        <MenuIconButton
           label="Правила"
-          href="how-to-play.html"
+          href={BUILT_FOR_YANDEX_GAMES ? undefined : 'how-to-play.html'}
+          onClick={BUILT_FOR_YANDEX_GAMES ? onRules : undefined}
           glyph={<RulesIcon />}
           onActivate={onRulesOpened}
-          />
-        )}
+        />
         <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
       </div>
       {/* Under the mark, in its own column: the button stack owns the other
@@ -689,7 +696,12 @@ function MenuIconButton({
       onPointerDown={playNavigationPress}
       onClick={() => {
         playNavigationRelease();
-        onClick?.();
+        const proceed = () => onClick?.();
+        // The rules icon reports the same goal whether it navigates to the
+        // page or opens the in-game screen, so the funnel does not depend
+        // on which build a player is in.
+        if (onActivate) onActivate(proceed);
+        else proceed();
       }}
       aria-label={label}
       style={style}
