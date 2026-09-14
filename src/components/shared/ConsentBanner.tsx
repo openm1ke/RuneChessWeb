@@ -1,3 +1,7 @@
+/** True in the archive built for games.yandex.ru — see vite.config.ts.
+ * §8.4.2 forbids links out of the game, this one included. */
+const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
+
 export function ConsentBanner({
   onAcceptAnalytics,
   onDeclineAnalytics,
@@ -41,12 +45,14 @@ export function ConsentBanner({
         <button type="button" onClick={onDeclineAnalytics} style={secondaryButtonStyle}>
           Только необходимые
         </button>
-        <a
-          href="./privacy.html"
-          style={{ marginLeft: 'auto', color: '#b9ccf5', fontSize: 12 }}
-        >
-          Политика конфиденциальности
-        </a>
+        {!BUILT_FOR_YANDEX_GAMES && (
+          <a
+            href="./privacy.html"
+            style={{ marginLeft: 'auto', color: '#b9ccf5', fontSize: 12 }}
+          >
+            Политика конфиденциальности
+          </a>
+        )}
       </div>
     </section>
   );

@@ -185,12 +185,14 @@ export function MenuScreen({
             earned={starsEarned}
             onAppearance={onAppearance}
           />
-          <MenuIconButton
+          {!BUILT_FOR_YANDEX_GAMES && (
+            <MenuIconButton
             label="Правила"
             href="how-to-play.html"
             glyph={<RulesIcon />}
             onActivate={onRulesOpened}
-          />
+            />
+          )}
           <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
         </div>
         <div
@@ -365,12 +367,14 @@ function LandscapeMenuScene({
           earned={starsEarned}
           onAppearance={onAppearance}
         />
-        <MenuIconButton
+        {!BUILT_FOR_YANDEX_GAMES && (
+          <MenuIconButton
           label="Правила"
           href="how-to-play.html"
           glyph={<RulesIcon />}
           onActivate={onRulesOpened}
-        />
+          />
+        )}
         <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
       </div>
       {/* Under the mark, in its own column: the button stack owns the other
@@ -396,9 +400,13 @@ function LandscapeMenuScene({
 }
 
 function MenuFooterLinks() {
-  const links = [
-    ['ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ', 'privacy.html'],
-  ] as const;
+  // §8.4.2 of the catalogue rules: no links to any resource, the game's own
+  // site included — and the pages these point at carry the domain in their
+  // text. On the site they stay; inside the catalogue the footer is just
+  // the version line.
+  const links: readonly (readonly [string, string])[] = BUILT_FOR_YANDEX_GAMES
+    ? []
+    : [['ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ', 'privacy.html']];
 
   // Where to get the app on a phone. Empty until something is actually
   // published, and absent entirely inside the Yandex Games catalogue, which

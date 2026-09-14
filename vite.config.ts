@@ -15,18 +15,31 @@ import react from '@vitejs/plugin-react';
 declare const process: { env: Record<string, string | undefined> };
 const forYandexGames = process.env.VITE_YANDEX_GAMES === '1';
 
-/** Drops the РСЯ loader from index.html for the catalogue build. Inside the
- * platform's iframe that block can never be served — the ad system there is
- * the platform's own — so the script has nothing to do but appear in a
- * moderator's network tab as a competing ad network. */
-const stripRsyaLoader = {
-  name: 'strip-rsya-loader',
+/** Strips from index.html everything that belongs to runechess.ru and not
+ * to a game running inside somebody else's iframe.
+ *
+ * Two separate reasons, both learned the hard way. The РСЯ loader can never
+ * serve our block from the catalogue — the ad system there is the
+ * platform's own — so it would only show up in a moderator's network tab as
+ * a competing ad network. And the SEO head names our domain five times over
+ * in canonical, og:url, og:image and JSON-LD; §8.4.2 of the platform rules
+ * forbids pointing at any resource of ours, and the first submission was
+ * rejected for exactly that kind of reference. None of it does anything
+ * useful inside an iframe the search engines never index. */
+const stripSiteReferences = {
+  name: 'strip-site-references',
   transformIndexHtml(html: string) {
     if (!forYandexGames) return html;
-    return html.replace(
-      /\s*<script[^>]*yandex\.ru\/ads\/system\/context\.js[^>]*><\/script>/g,
-      '',
-    );
+    return html
+      .replace(/\s*<script[^>]*yandex\.ru\/ads\/system\/context\.js[^>]*><\/script>/g, '')
+      .replace(/\s*<link rel="canonical"[^>]*>/g, '')
+      .replace(/\s*<meta property="og:[^"]*"[^>]*>/g, '')
+      .replace(/\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')
+      // Developer notes in the markup mention the site by name. Harmless to
+      // a reader, but they have no business in a shipped archive, and the
+      // build's own check for outbound references is stricter than a
+      // moderator's eye on purpose.
+      .replace(/\s*<!--[\s\S]*?-->/g, '');
   },
 };
 
@@ -36,7 +49,7 @@ export default defineConfig({
   // to know that path name at build time — every asset URL resolves
   // relative to index.html's own location instead of the domain root.
   base: './',
-  plugins: [react(), stripRsyaLoader],
+  plugins: [react(), stripSiteReferences],
   test: {
     environment: 'jsdom',
     globals: true,
