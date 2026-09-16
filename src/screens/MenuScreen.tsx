@@ -7,6 +7,8 @@ import { RulesIcon, SettingsIcon } from '../components/shared/MenuIcons';
 import { playNavigationPress, playNavigationRelease } from '../services/musicService';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 import { menuStoreLinks } from '../data/storeLinks';
+import { useL10n } from '../l10n/l10nContext';
+import { APP_VERSION } from '../appVersion';
 
 /**
  * How tall a store badge is drawn in the menu footer, in scene units.
@@ -61,6 +63,7 @@ export function MenuScreen({
   starsEarned?: number;
 }) {
   const skin = useCosmeticSkin();
+  const l10n = useL10n();
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
 
@@ -140,7 +143,7 @@ export function MenuScreen({
           }}
         >
           <MenuActionButton
-            label="ЗАДАНИЕ ДНЯ"
+            label={l10n.menuDailyChallenge.toUpperCase()}
             onClick={onDailyChallenge}
             backgroundAsset="assets/images/menu-button-daily.webp"
             fontSize={17}
@@ -158,8 +161,8 @@ export function MenuScreen({
           }}
         >
           <MenuActionButton
-            label="ИГРАТЬ"
-            subtitle={`УРОВЕНЬ ${currentLevel}`}
+            label={l10n.menuPlay.toUpperCase()}
+            subtitle={l10n.menuLevelNumber(currentLevel).toUpperCase()}
             onClick={onPlay}
             prominent
           />
@@ -173,7 +176,7 @@ export function MenuScreen({
             height: 72,
           }}
         >
-          <MenuActionButton label="УРОВНИ" onClick={onLevels} />
+          <MenuActionButton label={l10n.menuLevels.toUpperCase()} onClick={onLevels} />
         </div>
         <div
           style={{
@@ -184,7 +187,7 @@ export function MenuScreen({
             height: 72,
           }}
         >
-          <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={17} letterSpacing={1.8} />
+          <MenuActionButton label={l10n.menuAchievements.toUpperCase()} onClick={onAchievements} fontSize={17} letterSpacing={1.8} />
         </div>
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 36, textAlign: 'center' }}>
           <MenuFooterLinks />
@@ -201,13 +204,13 @@ export function MenuScreen({
             onAppearance={onAppearance}
           />
           <MenuIconButton
-            label="Правила"
+            label={l10n.menuRules}
             href={BUILT_FOR_YANDEX_GAMES ? undefined : 'how-to-play.html'}
             onClick={BUILT_FOR_YANDEX_GAMES ? onRules : undefined}
             glyph={<RulesIcon />}
             onActivate={onRulesOpened}
           />
-          <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
+          <MenuIconButton label={l10n.menuSettings} onClick={onSettings} glyph={<SettingsIcon />} />
         </div>
         <div
           style={{
@@ -222,7 +225,7 @@ export function MenuScreen({
             color: 'rgba(154,163,180,0.55)',
           }}
         >
-          версия 1.0.0
+          {l10n.menuVersion(APP_VERSION)}
         </div>
       </div>
         );
@@ -266,6 +269,7 @@ function LandscapeMenuScene({
   starsAvailable: number;
   starsEarned: number;
 }) {
+  const l10n = useL10n();
   const skin = useCosmeticSkin();
   const { width, height } = useViewportSize();
   // One centred column while the height allows it, two when it does not.
@@ -357,7 +361,7 @@ function LandscapeMenuScene({
       </div>
       <div style={slot(0, 0.92)}>
         <MenuActionButton
-          label="ЗАДАНИЕ ДНЯ"
+          label={l10n.menuDailyChallenge.toUpperCase()}
           onClick={onDailyChallenge}
           backgroundAsset="assets/images/menu-button-daily.webp"
           fontSize={13}
@@ -367,17 +371,17 @@ function LandscapeMenuScene({
       </div>
       <div style={slot(1, 1)}>
         <MenuActionButton
-          label="ИГРАТЬ"
-          subtitle={`УРОВЕНЬ ${currentLevel}`}
+          label={l10n.menuPlay.toUpperCase()}
+          subtitle={l10n.menuLevelNumber(currentLevel).toUpperCase()}
           onClick={onPlay}
           prominent
         />
       </div>
       <div style={slot(2, 0.84)}>
-        <MenuActionButton label="УРОВНИ" onClick={onLevels} />
+        <MenuActionButton label={l10n.menuLevels.toUpperCase()} onClick={onLevels} />
       </div>
       <div style={slot(3, 0.84)}>
-        <MenuActionButton label="ДОСТИЖЕНИЯ" onClick={onAchievements} fontSize={16} letterSpacing={1.4} />
+        <MenuActionButton label={l10n.menuAchievements.toUpperCase()} onClick={onAchievements} fontSize={16} letterSpacing={1.4} />
       </div>
       <div style={{ position: 'absolute', top: 18, right: 24, display: 'flex', gap: 12, alignItems: 'center' }}>
         <StarCounter
@@ -386,13 +390,13 @@ function LandscapeMenuScene({
           onAppearance={onAppearance}
         />
         <MenuIconButton
-          label="Правила"
+          label={l10n.menuRules}
           href={BUILT_FOR_YANDEX_GAMES ? undefined : 'how-to-play.html'}
           onClick={BUILT_FOR_YANDEX_GAMES ? onRules : undefined}
           glyph={<RulesIcon />}
           onActivate={onRulesOpened}
         />
-        <MenuIconButton label="Настройки" onClick={onSettings} glyph={<SettingsIcon />} />
+        <MenuIconButton label={l10n.menuSettings} onClick={onSettings} glyph={<SettingsIcon />} />
       </div>
       {/* Under the mark, in its own column: the button stack owns the other
           one all the way down. */}
@@ -417,13 +421,14 @@ function LandscapeMenuScene({
 }
 
 function MenuFooterLinks() {
+  const l10n = useL10n();
   // §8.4.2 of the catalogue rules: no links to any resource, the game's own
   // site included — and the pages these point at carry the domain in their
   // text. On the site they stay; inside the catalogue the footer is just
   // the version line.
   const links: readonly (readonly [string, string])[] = BUILT_FOR_YANDEX_GAMES
     ? []
-    : [['ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ', 'privacy.html']];
+    : [[l10n.privacyPolicy.toUpperCase(), 'privacy.html']];
 
   // Where to get the app on a phone. Empty until something is actually
   // published, and absent entirely inside the Yandex Games catalogue — see

@@ -5,6 +5,7 @@ import { RoundControl } from '../components/shared/RoundControl';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { formatHourWindow } from '../services/dailyReminderMessages';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
+import { LANGUAGES, useL10n, type Language } from '../l10n/l10nContext';
 
 interface SettingsProps {
   musicEnabled: boolean;
@@ -28,6 +29,8 @@ interface SettingsProps {
    * the row can say what it would be changing. */
   onAppearance: () => void;
   skinName: string;
+  language: Language;
+  onLanguage: (language: Language) => void;
 }
 
 export function SettingsScreen(props: SettingsProps) {
@@ -74,6 +77,8 @@ function PortraitSettingsScene({
   onAnalyticsConsentChanged,
   onAppearance,
   skinName,
+  language,
+  onLanguage,
 }: SettingsProps & { onResetRequested: () => void }) {
   const skin = useCosmeticSkin();
   return (
@@ -130,6 +135,7 @@ function PortraitSettingsScene({
           />
           <div style={{ height: 20 }} />
           <AppearanceCard skinName={skinName} onAppearance={onAppearance} />
+          <LanguageCard language={language} onLanguage={onLanguage} />
           <div style={{ height: 20 }} />
           <PrivacyCard
             analyticsConsent={analyticsConsent}
@@ -170,6 +176,8 @@ function LandscapeSettingsScene({
   onAnalyticsConsentChanged,
   onAppearance,
   skinName,
+  language,
+  onLanguage,
 }: SettingsProps & { onResetRequested: () => void }) {
   const skin = useCosmeticSkin();
   return (
@@ -225,6 +233,7 @@ function LandscapeSettingsScene({
           />
           <div style={{ height: 18 }} />
           <AppearanceCard skinName={skinName} onAppearance={onAppearance} />
+          <LanguageCard language={language} onLanguage={onLanguage} />
           <div style={{ height: 18 }} />
           <PrivacyCard
             analyticsConsent={analyticsConsent}
@@ -386,6 +395,69 @@ function ResetProgressCard({ onResetRequested }: { onResetRequested: () => void 
 /** Sends the player to the appearance picker, and says what they are
  * wearing now. The picker is its own screen — a set is a picture, and the
  * settings column has no room to show one honestly. */
+/** Settings → «Язык»: two flags, and one click changes the language.
+ *
+ * Flags rather than a list of language names, because the name of a
+ * language is written in that language — someone who has landed in the
+ * wrong one is being asked to recognise a word they may not read. Mirrors
+ * `LanguageCard` in the Flutter app.
+ */
+function LanguageCard({
+  language,
+  onLanguage,
+}: {
+  language: Language;
+  onLanguage: (language: Language) => void;
+}) {
+  const l10n = useL10n();
+  const flags: Record<Language, string> = { ru: '🇷🇺', en: '🇬🇧' };
+  // Each language names itself, so both labels are readable to whoever
+  // needs them.
+  const names: Record<Language, string> = { ru: 'Русский', en: 'English' };
+  return (
+    <div style={SETTINGS_CARD_STYLE}>
+      <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>
+        {l10n.settingsLanguage.toUpperCase()}
+      </div>
+      <div style={{ display: 'flex', gap: 12, marginTop: 14 }}>
+        {LANGUAGES.map((code) => {
+          const selected = code === language;
+          return (
+            <button
+              key={code}
+              type="button"
+              aria-pressed={selected}
+              aria-label={names[code]}
+              onClick={() => onLanguage(code)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 6,
+                padding: '12px 0',
+                borderRadius: 14,
+                cursor: 'pointer',
+                background: selected ? 'rgba(42,70,145,0.67)' : 'rgba(27,46,99,0.33)',
+                border: selected
+                  ? '2px solid #ffd779'
+                  : '1.2px solid rgba(207,162,68,0.4)',
+                color: selected ? '#ffe9c4' : 'rgba(198,211,237,0.6)',
+                fontSize: 12.5,
+                fontWeight: 800,
+                transition: 'background 160ms, border-color 160ms',
+              }}
+            >
+              <span style={{ fontSize: 30, lineHeight: 1 }}>{flags[code]}</span>
+              {names[code]}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function AppearanceCard({ skinName, onAppearance }: { skinName: string; onAppearance: () => void }) {
   return (
     <div style={SETTINGS_CARD_STYLE}>

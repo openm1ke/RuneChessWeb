@@ -56,7 +56,7 @@ declare global {
  * field in the console draft. Just `ru` today; add to this set the moment a
  * second language's copy exists, and [applyPlatformLanguage] picks it up
  * with no other changes needed. */
-const SUPPORTED_LANGS = new Set(['ru']);
+const SUPPORTED_LANGS = new Set(['ru', 'en']);
 const DEFAULT_LANG = 'ru';
 
 /** Moderation requirement 2.14: language must be auto-detected through the
@@ -66,9 +66,11 @@ const DEFAULT_LANG = 'ru';
  * and use it whenever it's one we have copy for; otherwise fall back to the
  * declared default (never to whatever the platform reports, since showing
  * an unsupported language would just be blank/wrong UI text). */
-export function applyPlatformLanguage(sdk: YandexGamesSdk): void {
+export function applyPlatformLanguage(sdk: YandexGamesSdk): string {
   const lang = sdk.environment.i18n.lang;
-  document.documentElement.lang = SUPPORTED_LANGS.has(lang) ? lang : DEFAULT_LANG;
+  const applied = SUPPORTED_LANGS.has(lang) ? lang : DEFAULT_LANG;
+  document.documentElement.lang = applied;
+  return applied;
 }
 
 /** Safety net in case `YaGames.init()` ever hangs (e.g. a broken/blocked

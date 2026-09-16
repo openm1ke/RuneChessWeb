@@ -15,6 +15,12 @@ import {
   startYandexGamesPlatform,
   type YandexGamesSdk,
 } from './services/yandexGamesSdk';
+import { L10nContext, isLanguage, stringsFor, type Language } from './l10n/l10nContext';
+import {
+  loadLanguage,
+  resolveLanguage,
+  saveLanguage,
+} from './services/languageRepository';
 import { ConsentBanner } from './components/shared/ConsentBanner';
 import { AchievementCelebrationOverlay } from './components/shared/AchievementReveal';
 import { DailyChallengeCalendarSheet } from './components/game/DailyChallengeCalendarSheet';
@@ -137,6 +143,18 @@ export default function App() {
   // preference, not progress: resetting the campaign does not undress the
   // board.
   const [skin, setSkin] = useState<CosmeticSkin>(() => skinById(null));
+
+  // Resolved once, before the first paint: the player's stored choice, then
+  // the browser, then Russian. The Yandex Games SDK arrives later and can
+  // override the browser's answer — but never the player's.
+  const [language, setLanguage] = useState<Language>(() => resolveLanguage());
+
+  /** Settings → «Язык»: the player picked a flag. */
+  const chooseLanguage = (next: Language) => {
+    setLanguage(next);
+    saveLanguage(next);
+    document.documentElement.lang = next;
+  };
   // The sets the player owns: the free ones, plus whatever has been bought.
   const [unlockedSkins, setUnlockedSkins] = useState<Set<string>>(() => new Set(freeSkinIds));
   // The two halves of the purse that have to be stored — what has been
@@ -236,7 +254,12 @@ export default function App() {
       if (!sdk) return;
       setYandexGamesSdk(sdk);
       setIsOnYandexGamesPlatform(isRealYandexGamesPlatform(sdk));
-      applyPlatformLanguage(sdk);
+      // Moderation requirement 2.14: the catalogue's own language wins
+      // over the browser's, but never over a choice the player has made.
+      const platformLanguage = applyPlatformLanguage(sdk);
+      if (!loadLanguage() && isLanguage(platformLanguage)) {
+        setLanguage(platformLanguage);
+      }
       startYandexGamesPlatform(sdk, {
         onPause: () => musicService.pauseAll(),
         onResume: () => musicService.resumeAll(),
@@ -1093,6 +1116,7 @@ export default function App() {
   // repaints the board, the tray, the figures and the drag sprite at once —
   // none of the components in between have to know a set exists.
   const withConsent = (content: React.ReactNode) => (
+    <L10nContext.Provider value={stringsFor(language)}>
     <CosmeticSkinContext.Provider value={skin}>
       {content}
       {analyticsConsent == null && (
@@ -1109,6 +1133,7 @@ export default function App() {
         />
       )}
     </CosmeticSkinContext.Provider>
+    </L10nContext.Provider>
   );
 
   // The one place "how far am I" is computed. The level list and the
@@ -1193,6 +1218,8 @@ export default function App() {
     case 'settings':
       return withConsent(
         <SettingsScreen
+          language={language}
+          onLanguage={chooseLanguage}
           musicEnabled={musicEnabled}
           musicVolume={musicVolume}
           onMusicEnabledChanged={setMusicEnabledAndSave}
