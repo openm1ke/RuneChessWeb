@@ -37,6 +37,13 @@ rm -rf "$STAGE/config"
 # that still name the domain would be asking for the same answer twice.
 rm -f "$STAGE"/{about.html,how-to-play.html,privacy.html}
 
+# The store badges go with them. Nothing in the catalogue build references
+# them any more — the addresses are compiled out of the bundle, see
+# src/data/storeLinks.ts — but the artwork would still ride along, and a
+# RuStore button sitting inside a Yandex Games archive is exactly the sort
+# of thing moderation reads as a link out of the game.
+rm -rf "$STAGE/assets/badges"
+
 # The platform serves the archive from its own domain; a file name with a
 # space or a Cyrillic letter is a broken asset there, not a warning.
 if find "$STAGE" -regex '.*[а-яА-Я ].*' | grep -q .; then
@@ -62,10 +69,17 @@ fi
 # §8.4.2 again, checked rather than trusted: nothing in the archive may
 # point at a site, a store or a domain of ours.
 if grep -rilE 'runechess\.ru|apps\.apple\.com|rustore\.ru|play\.google\.com' "$STAGE" \
-    --include='*.html' --include='*.js' --include='*.css' | grep -q .; then
+    --include='*.html' --include='*.js' --include='*.css' --include='*.svg' | grep -q .; then
   echo "! в архиве осталась ссылка на внешний ресурс:" >&2
   grep -rilE 'runechess\.ru|apps\.apple\.com|rustore\.ru|play\.google\.com' "$STAGE" \
-    --include='*.html' --include='*.js' --include='*.css' >&2
+    --include='*.html' --include='*.js' --include='*.css' --include='*.svg' >&2
+  exit 1
+fi
+
+# And no store artwork, under any name: a badge is a link out even when the
+# address that went with it has been compiled away.
+if [[ -d "$STAGE/assets/badges" ]]; then
+  echo "! в архиве остались значки магазинов: $STAGE/assets/badges" >&2
   exit 1
 fi
 

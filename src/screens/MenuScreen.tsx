@@ -6,7 +6,17 @@ import { asset } from '../lib/assetUrl';
 import { RulesIcon, SettingsIcon } from '../components/shared/MenuIcons';
 import { playNavigationPress, playNavigationRelease } from '../services/musicService';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
-import { publishedStoreLinks } from '../data/storeLinks';
+import { menuStoreLinks } from '../data/storeLinks';
+
+/**
+ * How tall a store badge is drawn in the menu footer, in scene units.
+ *
+ * Both badges are 40 tall at their natural size and are scaled down from
+ * there; 28 keeps the pair inside the footer without crowding the version
+ * line, and still leaves Apple's lettering legible, which is what its
+ * minimum-size rule is protecting.
+ */
+const BADGE_HEIGHT = 28;
 
 /** True in the archive built for games.yandex.ru — see vite.config.ts. */
 const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
@@ -416,62 +426,93 @@ function MenuFooterLinks() {
     : [['ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ', 'privacy.html']];
 
   // Where to get the app on a phone. Empty until something is actually
-  // published, and absent entirely inside the Yandex Games catalogue, which
-  // does not allow links that lead a player out of the game.
-  const stores = BUILT_FOR_YANDEX_GAMES ? [] : publishedStoreLinks();
+  // published, and absent entirely inside the Yandex Games catalogue — see
+  // `menuStoreLinks`, which is where that rule is decided and tested.
+  const stores = menuStoreLinks(BUILT_FOR_YANDEX_GAMES);
 
   return (
     <nav
       aria-label="Информация об игре"
       style={{
         display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        columnGap: 12,
-        rowGap: 3,
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 7,
         padding: '0 18px',
       }}
     >
-      {links.map(([label, path]) => (
-        <a
-          key={path}
-          href={asset(path)}
-          onPointerDown={playNavigationPress}
-          onClick={playNavigationRelease}
+      {/* The badges sit on their own line above the legal text: store
+          artwork beside plain 8.5px lettering reads as one broken row, and
+          the stores are what a visitor on a phone is looking for.
+
+          Each is drawn at its own aspect ratio from a shared height, so
+          neither is stretched — Apple's rules forbid distorting the badge,
+          and a squashed one looks like a fake in any case. No frame, no
+          tint and no background of ours around them: both plates are
+          already dark and carry their own edge. */}
+      {stores.length > 0 && (
+        <div
           style={{
-            color: 'rgba(221, 229, 247, 0.78)',
-            fontSize: 8.5,
-            fontWeight: 800,
-            letterSpacing: 0.75,
-            lineHeight: 1.2,
-            textDecoration: 'none',
-            textShadow: '0 2px 4px rgba(0,0,0,0.85)',
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 10,
           }}
         >
-          {label}
-        </a>
-      ))}
-      {stores.map(({ name, url }) => (
-        <a
-          key={name}
-          href={url}
-          target="_blank"
-          rel="noreferrer noopener"
-          onPointerDown={playNavigationPress}
-          onClick={playNavigationRelease}
+          {stores.map(({ name, url, badge }) => (
+            <a
+              key={name}
+              href={url}
+              target="_blank"
+              rel="noreferrer noopener"
+              onPointerDown={playNavigationPress}
+              onClick={playNavigationRelease}
+              style={{ display: 'block', lineHeight: 0 }}
+            >
+              <img
+                src={asset(`assets/badges/${badge.file}`)}
+                alt={badge.alt}
+                width={(BADGE_HEIGHT * badge.width) / badge.height}
+                height={BADGE_HEIGHT}
+                style={{ display: 'block' }}
+                draggable={false}
+              />
+            </a>
+          ))}
+        </div>
+      )}
+      {links.length > 0 && (
+        <div
           style={{
-            color: 'rgba(255, 226, 164, 0.9)',
-            fontSize: 8.5,
-            fontWeight: 800,
-            letterSpacing: 0.75,
-            lineHeight: 1.2,
-            textDecoration: 'none',
-            textShadow: '0 2px 4px rgba(0,0,0,0.85)',
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            columnGap: 12,
+            rowGap: 3,
           }}
         >
-          {name.toUpperCase()}
-        </a>
-      ))}
+          {links.map(([label, path]) => (
+            <a
+              key={path}
+              href={asset(path)}
+              onPointerDown={playNavigationPress}
+              onClick={playNavigationRelease}
+              style={{
+                color: 'rgba(221, 229, 247, 0.78)',
+                fontSize: 8.5,
+                fontWeight: 800,
+                letterSpacing: 0.75,
+                lineHeight: 1.2,
+                textDecoration: 'none',
+                textShadow: '0 2px 4px rgba(0,0,0,0.85)',
+              }}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }
