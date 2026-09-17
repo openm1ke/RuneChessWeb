@@ -29,6 +29,7 @@ export const ru = {
   menuSettings: "Настройки",
   menuVersion: (version: string) => `версия ${version}`,
   privacyPolicy: "Политика конфиденциальности",
+  documentTitle: "RuneChess — шахматная головоломка",
   settingsLanguage: "Язык",
   back: "Назад",
   commonCancel: "Отмена",

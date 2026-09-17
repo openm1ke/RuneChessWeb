@@ -24,6 +24,7 @@ export const en: Strings = {
   menuSettings: "Settings",
   menuVersion: (version: string) => `version ${version}`,
   privacyPolicy: "Privacy policy",
+  documentTitle: "RuneChess — a chess puzzle",
   settingsLanguage: "Language",
   back: "Back",
   commonCancel: "Cancel",

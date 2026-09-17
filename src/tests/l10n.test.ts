@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ru } from '../l10n/ru';
 import { en } from '../l10n/en';
 import { LANGUAGES, stringsFor } from '../l10n/l10nContext';
+import { platformLanguage, type YandexGamesSdk } from '../services/yandexGamesSdk';
 
 /** Every source file under `src`, as text.
  *
@@ -76,5 +77,29 @@ describe('the source outside l10n', () => {
         .map(([line, i]) => `${path.replace(/^\.\.?\//, '')}:${i + 1}: ${line.trim()}`);
     });
     expect(offenders).toEqual([]);
+  });
+});
+
+describe('the language the Yandex Games catalogue asks for', () => {
+  const sdkSaying = (lang: string) =>
+    ({ environment: { app: { id: '1' }, i18n: { lang } } }) as YandexGamesSdk;
+
+  it('is used when the game has words for it', () => {
+    expect(platformLanguage(sdkSaying('en'))).toBe('en');
+    expect(platformLanguage(sdkSaying('ru'))).toBe('ru');
+  });
+
+  it('falls back to Russian rather than to a language with no copy', () => {
+    expect(platformLanguage(sdkSaying('tr'))).toBe('ru');
+  });
+
+  /** It used to write straight onto the document, which could relabel a
+   * page the player had already asked to read in the other language: the
+   * words stayed English while `lang` said Russian. Only the app writes it
+   * now, from the player's choice first. */
+  it('does not relabel the document behind the player', () => {
+    document.documentElement.lang = 'en';
+    platformLanguage(sdkSaying('ru'));
+    expect(document.documentElement.lang).toBe('en');
   });
 });

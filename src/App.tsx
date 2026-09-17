@@ -9,7 +9,7 @@ import type { RewardedAds } from './services/rewardedAdsService';
 import { YandexGamesRewardedAdsService } from './services/yandexGamesRewardedAdsService';
 import { RulesScreen } from './screens/RulesScreen';
 import {
-  applyPlatformLanguage,
+  platformLanguage,
   getYandexGamesSdk,
   isRealYandexGamesPlatform,
   startYandexGamesPlatform,
@@ -133,11 +133,19 @@ export default function App() {
   const [language, setLanguage] = useState<Language>(() => resolveLanguage());
   const l10n = stringsFor(language);
 
+  // The page's own label follows the game, by every route the language can
+  // be settled: the stored choice, the browser, and the Yandex Games SDK's
+  // later answer. The wording in `index.html` stays Russian on purpose —
+  // crawlers read the markup and never run this.
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.title = l10n.documentTitle;
+  }, [language, l10n]);
+
   /** Settings → «Язык»: the player picked a flag. */
   const chooseLanguage = (next: Language) => {
     setLanguage(next);
     saveLanguage(next);
-    document.documentElement.lang = next;
   };
   // The sets the player owns: the free ones, plus whatever has been bought.
   const [unlockedSkins, setUnlockedSkins] = useState<Set<string>>(() => new Set(freeSkinIds));
@@ -240,9 +248,9 @@ export default function App() {
       setIsOnYandexGamesPlatform(isRealYandexGamesPlatform(sdk));
       // Moderation requirement 2.14: the catalogue's own language wins
       // over the browser's, but never over a choice the player has made.
-      const platformLanguage = applyPlatformLanguage(sdk);
-      if (!loadLanguage() && isLanguage(platformLanguage)) {
-        setLanguage(platformLanguage);
+      const fromPlatform = platformLanguage(sdk);
+      if (!loadLanguage() && isLanguage(fromPlatform)) {
+        setLanguage(fromPlatform);
       }
       startYandexGamesPlatform(sdk, {
         onPause: () => musicService.pauseAll(),

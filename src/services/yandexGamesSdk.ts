@@ -53,24 +53,29 @@ declare global {
 }
 
 /** Languages the game actually has text for — see the "Игра переведена на"
- * field in the console draft. Just `ru` today; add to this set the moment a
- * second language's copy exists, and [applyPlatformLanguage] picks it up
- * with no other changes needed. */
+ * field in the console draft. Add to this set the moment a third language's
+ * copy exists, and [platformLanguage] picks it up with no other changes
+ * needed. */
 const SUPPORTED_LANGS = new Set(['ru', 'en']);
 const DEFAULT_LANG = 'ru';
 
 /** Moderation requirement 2.14: language must be auto-detected through the
  * SDK, not hardcoded — `index.html`'s static `lang="ru"` alone doesn't
- * satisfy that even though it's the only language we ship, because nothing
- * was actually reading `environment.i18n.lang`. This is the fix: read it,
- * and use it whenever it's one we have copy for; otherwise fall back to the
- * declared default (never to whatever the platform reports, since showing
- * an unsupported language would just be blank/wrong UI text). */
-export function applyPlatformLanguage(sdk: YandexGamesSdk): string {
+ * satisfy that even though it was the only language we shipped, because
+ * nothing was actually reading `environment.i18n.lang`. This reads it, and
+ * answers with it whenever it's one we have copy for; otherwise with the
+ * declared default, never with whatever the platform reported, since an
+ * unsupported language would just be blank or wrong UI text.
+ *
+ * It only answers. Writing the answer onto the document used to happen
+ * here, which meant the catalogue could relabel a page the player had
+ * already asked to read in the other language — the words stayed English
+ * while `lang` said Russian, which is precisely the pair a screen reader
+ * trusts. The app settles the language once, from every source at once,
+ * and writes it there. */
+export function platformLanguage(sdk: YandexGamesSdk): string {
   const lang = sdk.environment.i18n.lang;
-  const applied = SUPPORTED_LANGS.has(lang) ? lang : DEFAULT_LANG;
-  document.documentElement.lang = applied;
-  return applied;
+  return SUPPORTED_LANGS.has(lang) ? lang : DEFAULT_LANG;
 }
 
 /** Safety net in case `YaGames.init()` ever hangs (e.g. a broken/blocked
