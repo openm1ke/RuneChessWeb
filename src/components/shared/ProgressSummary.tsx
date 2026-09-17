@@ -1,4 +1,6 @@
 import { nextRankAfter, rankForStars, starsToNextRank } from '../../game/campaignNames';
+import { rankTitle } from '../../game/campaignNames';
+import { useL10n } from '../../l10n/l10nContext';
 import type { GameProgress } from '../../game/gameProgress';
 
 /**
@@ -17,11 +19,12 @@ export function ProgressSummary({
   progress: GameProgress;
   compact?: boolean;
 }) {
+  const l10n = useL10n();
   if (compact) {
     return (
       <div style={{ fontSize: 12, fontWeight: 800, color: 'rgba(198,211,237,0.75)' }}>
-        {`Пройдено ${progress.completedLevels} из ${progress.totalLevels}`}
-        {` · ${progress.stars} ${starWord(progress.stars)} из ${progress.maxStars}`}
+        {l10n.progressCompleted(progress.completedLevels, progress.totalLevels)}
+        {` · ${progress.stars} ${l10n.progressStars(progress.stars)}${l10n.progressOfMax(progress.maxStars)}`}
       </div>
     );
   }
@@ -37,11 +40,11 @@ export function ProgressSummary({
     >
       <StatRow
         icon="✦"
-        label="Пройдено уровней"
+        label={l10n.progressLevelsSolved}
         value={`${progress.completedLevels}/${progress.totalLevels}`}
       />
       <div style={{ height: 12 }} />
-      <StatRow icon="★" label="Получено звёзд" value={`${progress.stars}/${progress.maxStars}`} />
+      <StatRow icon="★" label={l10n.progressStarsEarned} value={`${progress.stars}/${progress.maxStars}`} />
       <div style={{ height: 14 }} />
       <RankRow stars={progress.stars} />
     </div>
@@ -56,6 +59,7 @@ export function ProgressSummary({
  * into a place on a ladder — see `playerRanks`.
  */
 function RankRow({ stars }: { stars: number }) {
+  const l10n = useL10n();
   const rank = rankForStars(stars);
   const next = nextRankAfter(stars);
   const toNext = starsToNextRank(stars);
@@ -64,8 +68,8 @@ function RankRow({ stars }: { stars: number }) {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ fontSize: 18, color: 'var(--gold-bright)' }}>🎖</span>
-        <span style={{ flex: 1, fontSize: 15, fontWeight: 800, color: '#dce7ff' }}>Звание</span>
-        <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--gold-bright)' }}>{rank.title}</span>
+        <span style={{ flex: 1, fontSize: 15, fontWeight: 800, color: '#dce7ff' }}>{l10n.progressRank}</span>
+        <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--gold-bright)' }}>{rankTitle(l10n, rank.id)}</span>
       </div>
       <div style={{ height: 8 }} />
       <div style={{ height: 6, borderRadius: 4, background: 'rgba(255,255,255,0.2)', overflow: 'hidden' }}>
@@ -80,8 +84,8 @@ function RankRow({ stars }: { stars: number }) {
       <div style={{ height: 6 }} />
       <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(206,225,255,0.6)' }}>
         {next == null
-          ? 'Высшее звание — все руны дозора ваши.'
-          : `До звания «${next.title}» — ${toNext} ${starWord(toNext ?? 0)}`}
+          ? l10n.progressTopRank
+          : l10n.progressToNextRank(toNext ?? 0, rankTitle(l10n, next.id))}
       </div>
     </div>
   );
@@ -99,17 +103,3 @@ function StatRow({ icon, label, value }: { icon: string; label: string; value: s
   );
 }
 
-function starWord(stars: number): string {
-  const mod100 = stars % 100;
-  if (mod100 >= 11 && mod100 <= 14) return 'звёзд';
-  switch (stars % 10) {
-    case 1:
-      return 'звезда';
-    case 2:
-    case 3:
-    case 4:
-      return 'звезды';
-    default:
-      return 'звёзд';
-  }
-}

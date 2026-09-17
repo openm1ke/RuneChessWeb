@@ -25,7 +25,7 @@ import { ConsentBanner } from './components/shared/ConsentBanner';
 import { AchievementCelebrationOverlay } from './components/shared/AchievementReveal';
 import { DailyChallengeCalendarSheet } from './components/game/DailyChallengeCalendarSheet';
 import { Toast } from './components/shared/Toast';
-import { BONUS_CAMPAIGN_NAME, MAIN_CAMPAIGN_NAME } from './game/campaignNames';
+import { bonusCampaignName, mainCampaignName } from './game/campaignNames';
 import {
   hintWaitMs,
   initialHintWallet,
@@ -116,9 +116,6 @@ function dailyDateLabel(date: Date): string {
 /** «ЗВЁЗДНАЯ ОБСЕРВАТОРИЯ» → «Звёздная обсерватория»: the names are stored
  * the way the level list shows them (upper case), and a sentence needs them
  * the other way round. */
-function titleCase(name: string): string {
-  return name ? name[0] + name.slice(1).toLowerCase() : name;
-}
 
 export default function App() {
   const progressRepository = useMemo(() => new ProgressRepository(), []);
@@ -148,6 +145,7 @@ export default function App() {
   // the browser, then Russian. The Yandex Games SDK arrives later and can
   // override the browser's answer — but never the player's.
   const [language, setLanguage] = useState<Language>(() => resolveLanguage());
+  const l10n = stringsFor(language);
 
   /** Settings → «Язык»: the player picked a flag. */
   const chooseLanguage = (next: Language) => {
@@ -1164,8 +1162,8 @@ export default function App() {
     case 'mainCampaignComplete':
       return withConsent(
         <CampaignCompleteScreen
-          title={`${MAIN_CAMPAIGN_NAME}\nПРОЙДЕН`}
-          subtitle={`«${titleCase(BONUS_CAMPAIGN_NAME)}» открыта:\nполе 7×7 и новые задачи.`}
+          title={l10n.campaignMainComplete(mainCampaignName(l10n)).toUpperCase()}
+          subtitle={l10n.campaignBonusUnlocked(bonusCampaignName(l10n))}
           primaryLabel="ПРОДОЛЖИТЬ"
           onPrimary={continueAfterMainCampaign}
           achievement={achievementUnlockedAt.has(mainKing.id) ? mainKing : null}

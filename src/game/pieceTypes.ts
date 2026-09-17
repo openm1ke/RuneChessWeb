@@ -1,3 +1,4 @@
+import type { Strings } from '../l10n/ru';
 import { asset } from '../lib/assetUrl';
 
 /** Chess-piece types used by the puzzle, mirrors `PieceType` in the Flutter app. */
@@ -58,23 +59,27 @@ export const pieceAsset: Record<PieceType, string> = {
  * not know chess had no way to tell a bishop from a pawn; the rules are a
  * separate page, which is a page too far mid-puzzle.
  */
-export const pieceNames: Record<PieceType, string> = {
-  rook: 'Ладья',
-  bishop: 'Слон',
-  knight: 'Конь',
-  king: 'Король',
-  queen: 'Ферзь',
-  pawn: 'Пешка',
-};
+export function pieceName(l10n: Strings, type: PieceType): string {
+  return {
+    rook: l10n.pieceRook,
+    bishop: l10n.pieceBishop,
+    knight: l10n.pieceKnight,
+    king: l10n.pieceKing,
+    queen: l10n.pieceQueen,
+    pawn: l10n.piecePawn,
+  }[type];
+}
 
 /** Where each figure strikes, phrased to follow either its name ("Ладья ·
  * по горизонтали и вертикали") or the verb ("Ладья, бьёт по горизонтали и
  * вертикали"). Kept short because the tray's header line is 218px wide. */
-export const pieceAttackSummary: Record<PieceType, string> = {
-  rook: 'По горизонтали и вертикали',
-  bishop: 'По диагоналям',
-  knight: 'Буквой «Г»',
-  king: 'Вокруг себя на одну клетку',
-  queen: 'По прямым и диагоналям',
-  pawn: 'По диагонали вперёд',
-};
+export function pieceAttackSummary(l10n: Strings, type: PieceType): string {
+  return {
+    rook: l10n.pieceRookAttack,
+    bishop: l10n.pieceBishopAttack,
+    knight: l10n.pieceKnightAttack,
+    king: l10n.pieceKingAttack,
+    queen: l10n.pieceQueenAttack,
+    pawn: l10n.piecePawnAttack,
+  }[type];
+}

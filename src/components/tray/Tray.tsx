@@ -1,8 +1,9 @@
 import { useState, type PointerEvent, type RefObject } from "react";
+import { useL10n } from '../../l10n/l10nContext';
 import type { DozorEngine, DozorSnapshot } from "../../game/dozorEngine";
 import {
   pieceAttackSummary,
-  pieceNames,
+  pieceName,
   pieceSkins,
   type PieceType,
 } from "../../game/pieceTypes";
@@ -37,6 +38,7 @@ function TrayItemTile({
   height: number;
 }) {
   const skin = useCosmeticSkin();
+  const l10n = useL10n();
   // The tile's border and its bottom padding are not the square.
   const art = pieceDrawBox(type, cellHeightForTile(height - 8));
   return (
@@ -45,7 +47,7 @@ function TrayItemTile({
       onPointerDown={onPointerDown}
       role="button"
       aria-pressed={selected}
-      aria-label={`${pieceNames[type]}, бьёт ${pieceAttackSummary[type].toLowerCase()}`}
+      aria-label={`${pieceName(l10n, type)}, ${pieceAttackSummary(l10n, type).toLowerCase()}`}
       style={{
         flex: "none",
         width: vertical ? "100%" : extent,
@@ -129,6 +131,7 @@ export function Tray({
    * panel's own width. */
   panelExtent?: number;
 }) {
+  const l10n = useL10n();
   const [dragging, setDragging] = useState<PieceType | null>(null);
 
   // Tiles keep one size for the whole level.
@@ -190,10 +193,10 @@ export function Tray({
         }}
       >
         {inHand
-          ? `${pieceNames[inHand].toUpperCase()} · ${pieceAttackSummary[inHand].toUpperCase()}`
+          ? `${pieceName(l10n, inHand).toUpperCase()} · ${pieceAttackSummary(l10n, inHand).toUpperCase()}`
           : showHint
-            ? "ПЕРЕТАЩИТЕ НА ДОСКУ"
-            : "ФИГУРЫ"}
+            ? l10n.trayDragToBoard.toUpperCase()
+            : l10n.trayPieces.toUpperCase()}
       </div>
       <div style={{ height: 7 }} />
       <div
@@ -222,9 +225,7 @@ export function Tray({
                 fontFamily: "var(--font-body)",
               }}
             >
-              Все фигуры на доске.
-              <br />
-              Перетащите фигуру сюда, чтобы переставить.
+              {l10n.trayAllPlaced}
             </div>
           )
         ) : (

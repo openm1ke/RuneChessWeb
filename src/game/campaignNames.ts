@@ -1,3 +1,5 @@
+import type { Strings } from '../l10n/ru';
+
 /**
  * What the three parts of the game are called, and the ranks a player climbs
  * through — the mirror of the mobile app's `lib/data/campaign_names.dart`.
@@ -9,12 +11,12 @@
  * moonlit window, and the two music tracks are called `dozor-moonlit-garden`
  * and `dozor-velvet-observatory`.
  */
-export const TUTORIAL_NAME = 'ПЕРВЫЕ РУНЫ';
-export const MAIN_CAMPAIGN_NAME = 'ЛУННЫЙ САД';
-export const BONUS_CAMPAIGN_NAME = 'ЗВЁЗДНАЯ ОБСЕРВАТОРИЯ';
+export const tutorialName = (l10n: Strings) => l10n.campaignTutorialName;
+export const mainCampaignName = (l10n: Strings) => l10n.campaignMainName;
+export const bonusCampaignName = (l10n: Strings) => l10n.campaignBonusName;
 
 export interface PlayerRank {
-  title: string;
+  id: RankId;
   starsRequired: number;
 }
 
@@ -28,12 +30,12 @@ export interface PlayerRank {
  * yield, so the last one is a genuine achievement.
  */
 export const playerRanks: PlayerRank[] = [
-  { title: 'Ученик', starsRequired: 0 },
-  { title: 'Подмастерье', starsRequired: 25 },
-  { title: 'Смотритель', starsRequired: 75 },
-  { title: 'Хранитель рун', starsRequired: 150 },
-  { title: 'Звездочёт', starsRequired: 250 },
-  { title: 'Магистр дозора', starsRequired: 400 },
+  { id: 'apprentice', starsRequired: 0 },
+  { id: 'journeyman', starsRequired: 25 },
+  { id: 'warden', starsRequired: 75 },
+  { id: 'runeKeeper', starsRequired: 150 },
+  { id: 'stargazer', starsRequired: 250 },
+  { id: 'watchMaster', starsRequired: 400 },
 ];
 
 export function rankForStars(stars: number): PlayerRank {
@@ -49,4 +51,26 @@ export function nextRankAfter(stars: number): PlayerRank | null {
 export function starsToNextRank(stars: number): number | null {
   const next = nextRankAfter(stars);
   return next == null ? null : next.starsRequired - stars;
+}
+
+/** Which rank this is. The words live in the language files, so a rank is
+ * identity plus a threshold and nothing else — it survives being read in
+ * either language. Mirrors `RankId` in the Flutter app. */
+export type RankId =
+  | 'apprentice'
+  | 'journeyman'
+  | 'warden'
+  | 'runeKeeper'
+  | 'stargazer'
+  | 'watchMaster';
+
+export function rankTitle(l10n: Strings, id: RankId): string {
+  return {
+    apprentice: l10n.rankApprentice,
+    journeyman: l10n.rankJourneyman,
+    warden: l10n.rankWarden,
+    runeKeeper: l10n.rankRuneKeeper,
+    stargazer: l10n.rankStargazer,
+    watchMaster: l10n.rankWatchMaster,
+  }[id];
 }

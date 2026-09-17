@@ -3,7 +3,7 @@ import { useL10n } from '../l10n/l10nContext';
 import type { Strings } from '../l10n/ru';
 import { RoundControl } from '../components/shared/RoundControl';
 import { PieceArt } from '../components/board/PieceArt';
-import { pieceAttackSummary, pieceNames, type PieceType } from '../game/pieceTypes';
+import { pieceAttackSummary, pieceName, type PieceType } from '../game/pieceTypes';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
@@ -178,8 +178,8 @@ function RulesBody({ columns }: { columns: 1 | 2 }) {
                 <PieceArt type={type} width={38} height={50} />
               </div>
               <div>
-                <div style={rowTitleStyle}>{pieceNames[type]}</div>
-                <div style={rowTextStyle}>{pieceAttackSummary[type]}</div>
+                <div style={rowTitleStyle}>{pieceName(l10n, type)}</div>
+                <div style={rowTextStyle}>{pieceAttackSummary(l10n, type)}</div>
               </div>
             </div>
           ))}

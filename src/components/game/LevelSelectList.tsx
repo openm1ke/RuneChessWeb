@@ -6,7 +6,8 @@ import {
   MAIN_CAMPAIGN_LEVEL_COUNT,
   campaignLevels,
 } from '../../data/campaignLevels';
-import { BONUS_CAMPAIGN_NAME, MAIN_CAMPAIGN_NAME, TUTORIAL_NAME } from '../../game/campaignNames';
+import { bonusCampaignName, mainCampaignName, tutorialName } from '../../game/campaignNames';
+import { useL10n } from '../../l10n/l10nContext';
 import type { GameProgress } from '../../game/gameProgress';
 
 /**
@@ -52,6 +53,7 @@ export function LevelSelectList({
    * from the inside. */
   gutter: number;
 }) {
+  const l10n = useL10n();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const currentTileRef = useRef<HTMLButtonElement>(null);
   const openedAtCurrentLevel = useRef(false);
@@ -140,7 +142,7 @@ export function LevelSelectList({
         // sits directly against the bar.
         style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: gutter }}
       >
-        <SectionTitle label={`${TUTORIAL_NAME} · 5 УРОВНЕЙ`} />
+        <SectionTitle label={l10n.levelsSection(tutorialName(l10n), 5).toUpperCase()} />
         {/* A centred wrap rather than a grid: five tiles across three columns
             leaves a hole on the right, and centring the short last row reads
             as a deliberate end to the section instead. */}
@@ -164,8 +166,8 @@ export function LevelSelectList({
         <SectionTitle
           label={
             tutorialComplete
-              ? `${MAIN_CAMPAIGN_NAME} · ${completedIn(mainStart, mainCount)} ИЗ ${mainCount}`
-              : `${MAIN_CAMPAIGN_NAME} · ПРОЙДИТЕ ОБУЧЕНИЕ`
+              ? l10n.levelsSectionProgress(mainCampaignName(l10n), completedIn(mainStart, mainCount), mainCount).toUpperCase()
+              : l10n.levelsSectionLocked(mainCampaignName(l10n)).toUpperCase()
           }
           locked={!tutorialComplete}
         />
@@ -178,7 +180,7 @@ export function LevelSelectList({
         <SectionTitle
           // No "ПОЛЕ 7×7" any more: with a real name in front of it the line
           // no longer fits, and the board size shows itself when a level opens.
-          label={`${BONUS_CAMPAIGN_NAME} · ${completedIn(bonusStart, bonusCount)} ИЗ ${bonusCount}`}
+          label={l10n.levelsSectionProgress(bonusCampaignName(l10n), completedIn(bonusStart, bonusCount), bonusCount).toUpperCase()}
         />
         <LevelGrid columns={columns}>
           {Array.from({ length: bonusVisible }, (_, i) => tile(bonusStart + i, true))}
@@ -222,6 +224,7 @@ function LevelGrid({ columns, children }: { columns: number; children: React.Rea
 /** Stands in for every locked level past the horizon — see this module's
  * doc comment for why they are not all drawn. */
 function MoreLevelsStrip({ remaining }: { remaining: number }) {
+  const l10n = useL10n();
   return (
     <div
       style={{
@@ -239,25 +242,11 @@ function MoreLevelsStrip({ remaining }: { remaining: number }) {
         color: 'rgba(174,187,214,0.56)',
       }}
     >
-      {`Ещё ${remaining} ${levelWord(remaining)} впереди`}
+      {l10n.levelsMoreAhead(remaining)}
     </div>
   );
 }
 
-function levelWord(count: number): string {
-  const mod100 = count % 100;
-  if (mod100 >= 11 && mod100 <= 14) return 'уровней';
-  switch (count % 10) {
-    case 1:
-      return 'уровень';
-    case 2:
-    case 3:
-    case 4:
-      return 'уровня';
-    default:
-      return 'уровней';
-  }
-}
 
 function LevelTile({
   ref,
@@ -287,6 +276,7 @@ function LevelTile({
   aspectRatio: number;
   onClick: () => void;
 }) {
+  const l10n = useL10n();
   const border = isCurrent ? 'var(--gold)' : unlocked ? '#d8a537' : 'rgba(92,102,125,0.38)';
   // The corner badge says what can be done here, not what already happened:
   // a finished scored level is described by its stars, so stacking a tick on
@@ -298,7 +288,7 @@ function LevelTile({
       type="button"
       disabled={!unlocked}
       onClick={onClick}
-      aria-label={unlocked ? `Уровень ${level}` : `Уровень ${level} заблокирован`}
+      aria-label={unlocked ? l10n.levelNumber(level) : l10n.levelLocked(level)}
       style={{
         width: '100%',
         aspectRatio: String(aspectRatio),
