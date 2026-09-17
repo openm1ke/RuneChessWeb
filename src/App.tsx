@@ -1,4 +1,3 @@
-import type { Strings } from './l10n/ru';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DozorEngine, FIRST_SCORED_LEVEL_INDEX } from './game/dozorEngine';
 import { campaignLevels, MAIN_CAMPAIGN_LEVEL_COUNT } from './data/campaignLevels';
@@ -98,21 +97,6 @@ function setLevelSelectAddress(isOpen: boolean): void {
   if (typeof window === 'undefined') return;
   const address = `${window.location.pathname}${window.location.search}${isOpen ? '#levels' : ''}`;
   window.history.replaceState(null, '', address);
-}
-
-/** Abbreviated, and matching the mobile app's `_dailyMonthAbbreviations`
- * exactly. The full genitive form ("5 сентября") made the header pill wide
- * enough to run under the back and hint buttons flanking it. */
-const dailyDateMonths = (l10n: Strings) => [
-  l10n.monthShort1, l10n.monthShort2, l10n.monthShort3, l10n.monthShort4,
-  l10n.monthShort5, l10n.monthShort6, l10n.monthShort7, l10n.monthShort8,
-  l10n.monthShort9, l10n.monthShort10, l10n.monthShort11, l10n.monthShort12,
-];
-
-/** Short "4 СЕН" label for the daily challenge's in-game header — see
- * `DozorSnapshot.levelLabel`. */
-function dailyDateLabel(l10n: Strings, date: Date): string {
-  return `${date.getDate()} ${dailyDateMonths(l10n)[date.getMonth()]}`;
 }
 
 /** «ЗВЁЗДНАЯ ОБСЕРВАТОРИЯ» → «Звёздная обсерватория»: the names are stored
@@ -790,7 +774,7 @@ export default function App() {
     const key = dailyChallengeKey(date);
     analyticsService.dailyChallengeOpened(key);
     analyticsService.dailyChallengeStarted(key);
-    engine.loadDailyChallenge(generated.level, generated.solution, dailyDateLabel(l10n, date));
+    engine.loadDailyChallenge(generated.level, generated.solution, date);
     setScreen('game');
     void musicService.startGame();
   };

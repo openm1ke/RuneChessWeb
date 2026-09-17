@@ -51,6 +51,7 @@ export const en: Strings = {
   settingsAdPersonalizationSystemHint: "The system handles this: it asks once, and the answer can be changed in the device's settings. The videos play either way — declining only removes the matching.",
   settingsReminderTitle: "Remind me about the daily challenge",
   settingsReminderHint: "A local notification, if today's challenge is still unsolved. It arrives somewhere inside the chosen window, no more than once a day.",
+  settingsReminderHintWeb: "A browser notification, if today's challenge is still unsolved. It arrives somewhere inside the window you pick, while the tab is open.",
   settingsReminderWindow: "Reminder window",
   infoBackToMenu: "Back to menu",
   infoHowToPlay: "How to play",

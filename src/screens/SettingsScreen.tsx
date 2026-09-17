@@ -417,7 +417,7 @@ function LanguageCard({
   const flags: Record<Language, string> = { ru: '🇷🇺', en: '🇬🇧' };
   // Each language names itself, so both labels are readable to whoever
   // needs them.
-  const names: Record<Language, string> = { ru: 'Русский', en: 'English' };
+  const names: Record<Language, string> = { ru: 'Русский', en: 'English' }; // i18n-exempt: each language names itself
   return (
     <div style={SETTINGS_CARD_STYLE}>
       <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>
@@ -556,7 +556,7 @@ function DailyReminderCard({
   const l10n = useL10n();
   return (
     <div style={SETTINGS_CARD_STYLE}>
-      <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>ЗАДАНИЕ ДНЯ</div>
+      <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>{l10n.menuDailyChallenge.toUpperCase()}</div>
       <div style={{ height: 16 }} />
       <div
         style={{
@@ -571,17 +571,17 @@ function DailyReminderCard({
       >
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 0.4, color: 'var(--gold-bright)' }}>
-            Напоминать о задании дня
+            {l10n.settingsReminderTitle}
           </div>
           <div style={{ marginTop: 5, fontSize: 12.5, lineHeight: 1.4, fontWeight: 700, color: '#c6d3ed' }}>
-            Уведомление в браузере, если сегодняшнее задание ещё не решено. Придёт где-то внутри выбранного окна, пока вкладка открыта.
+            {l10n.settingsReminderHintWeb}
           </div>
         </div>
         <RuneToggle value={enabled} onChange={onEnabledChanged} label={l10n.settingsReminderTitle} />
       </div>
       {enabled && (
         <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 13, fontWeight: 800, color: '#d6e4ff' }}>Окно напоминания</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: '#d6e4ff' }}>{l10n.settingsReminderWindow}</span>
           <select
             value={hour}
             onChange={(e) => onHourChanged(Number(e.target.value))}
@@ -617,6 +617,7 @@ function DailyReminderCard({
 const REMINDER_HOURS = Array.from({ length: 15 }, (_, i) => 8 + i);
 
 function ResetProgressConfirmation({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
+  const l10n = useL10n();
   return (
     <div
       role="dialog"
@@ -626,14 +627,14 @@ function ResetProgressConfirmation({ onCancel, onConfirm }: { onCancel: () => vo
     >
       <div style={{ width: 'min(390px, 100%)', padding: '26px 24px 22px', border: '2px solid #d0a344', borderRadius: 22, background: 'linear-gradient(145deg, #203c7b, #0b1637)', boxShadow: '0 20px 60px rgba(0,0,0,0.72)', textAlign: 'center' }}>
         <h2 id="reset-progress-title" style={{ margin: 0, color: 'var(--gold-bright)', fontFamily: 'var(--font-display)', fontSize: 20, letterSpacing: 1.1 }}>
-          СБРОСИТЬ ПРОГРЕСС?
+          {l10n.settingsResetConfirmTitle.toUpperCase()}
         </h2>
         <p style={{ margin: '14px 0 22px', color: '#d9e4f8', fontSize: 15, fontWeight: 700, lineHeight: 1.45 }}>
-          Пройденные уровни и звёзды будут удалены. Это действие нельзя отменить.
+          {l10n.settingsResetConfirmBody}
         </p>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button type="button" onClick={onCancel} style={confirmationButtonStyle(false)}>ОТМЕНА</button>
-          <button type="button" onClick={onConfirm} style={confirmationButtonStyle(true)}>СБРОСИТЬ</button>
+          <button type="button" onClick={onCancel} style={confirmationButtonStyle(false)}>{l10n.commonCancel.toUpperCase()}</button>
+          <button type="button" onClick={onConfirm} style={confirmationButtonStyle(true)}>{l10n.commonReset.toUpperCase()}</button>
         </div>
       </div>
     </div>

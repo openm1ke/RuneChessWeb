@@ -440,7 +440,7 @@ export function GameScreen({
           onCalendar={engine.isDailyChallenge ? onOpenDailyCalendar : undefined}
           dailyStreak={dailyStreak}
         />
-        <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} label={snapshot.levelLabel} />
+        <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} dailyDate={snapshot.dailyDate} />
         <Board
           engine={engine}
           snapshot={snapshot}
@@ -500,7 +500,7 @@ export function GameScreen({
           onCalendar={engine.isDailyChallenge ? onOpenDailyCalendar : undefined}
           dailyStreak={dailyStreak}
         />
-        <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} label={snapshot.levelLabel} />
+        <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} dailyDate={snapshot.dailyDate} />
         <Board
           engine={engine}
           snapshot={snapshot}

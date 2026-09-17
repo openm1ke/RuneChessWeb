@@ -68,7 +68,7 @@ export function SkipOfferDialog({
             fontFamily: 'var(--font-body)',
           }}
         >
-          Посмотреть рекламу и пропустить
+          {l10n.sceneSkipForAd}
         </button>
         <div style={{ height: 4 }} />
         <button
@@ -85,7 +85,7 @@ export function SkipOfferDialog({
             fontFamily: 'var(--font-body)',
           }}
         >
-          Ещё попробую
+          {l10n.sceneKeepTrying}
         </button>
       </div>
     </div>

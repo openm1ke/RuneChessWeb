@@ -21,7 +21,12 @@ export interface DozorSnapshot {
   solved: boolean;
   levelNumber: number;
   levelCount: number;
-  levelLabel: string;
+  /** The day this puzzle belongs to, or null in the campaign.
+   *
+   * A date rather than a finished heading: the header is drawn in
+   * whichever language is selected, and the player may change that
+   * without leaving the board. */
+  dailyDate: Date | null;
   active: boolean;
   solutionCell: Cell | null;
   hintItem: TrayItem | null;
@@ -129,7 +134,7 @@ export class DozorEngine {
    * player was last on so returning to the campaign resumes exactly there. */
   private dailyLevel: LevelDefinition | null = null;
   private dailySolution: Cell[] | null = null;
-  private dailyDateLabel: string | null = null;
+  private dailyDate: Date | null = null;
   get isDailyChallenge(): boolean {
     return this.dailyLevel != null;
   }
@@ -175,14 +180,14 @@ export class DozorEngine {
 
   /** Starts a daily-challenge puzzle on a clean board — always empty, even
    * for a day already solved before: reopening it is a deliberate replay
-   * (typically to improve the score), not a resume. `dateLabel` is kept
-   * only to label the header (see `DozorSnapshot.levelLabel`) — the level
-   * and solution themselves must already be generated for it by the caller
+   * (typically to improve the score), not a resume. `date` is kept only to
+   * label the header (see `DozorSnapshot.dailyDate`) — the level and
+   * solution themselves must already be generated for it by the caller
    * (`dailyChallengeLevel`). */
-  loadDailyChallenge(level: LevelDefinition, solution: Cell[], dateLabel: string): void {
+  loadDailyChallenge(level: LevelDefinition, solution: Cell[], date: Date): void {
     this.dailyLevel = level;
     this.dailySolution = solution;
-    this.dailyDateLabel = dateLabel;
+    this.dailyDate = date;
     this.loadLevel();
     this.notify();
   }
@@ -192,7 +197,7 @@ export class DozorEngine {
   exitDailyChallenge(): void {
     this.dailyLevel = null;
     this.dailySolution = null;
-    this.dailyDateLabel = null;
+    this.dailyDate = null;
     this.loadLevel();
     this.notify();
   }
@@ -244,7 +249,7 @@ export class DozorEngine {
     if (this.levelIndex >= campaignLevels.length - 1) return;
     this.dailyLevel = null;
     this.dailySolution = null;
-    this.dailyDateLabel = null;
+    this.dailyDate = null;
     this.levelIndex++;
     this.loadLevel();
     this.notify();
@@ -257,7 +262,7 @@ export class DozorEngine {
   goToLevel(index: number): void {
     this.dailyLevel = null;
     this.dailySolution = null;
-    this.dailyDateLabel = null;
+    this.dailyDate = null;
     this.levelIndex = Math.min(Math.max(index, 0), campaignLevels.length - 1);
     this.loadLevel();
     this.notify();
@@ -728,7 +733,7 @@ export class DozorEngine {
       solved: this.tray.length === 0 && doneCount === this.beacons.length && allPiecesUseful,
       levelNumber: this.levelIndex + 1,
       levelCount: campaignLevels.length,
-      levelLabel: this.isDailyChallenge ? `ЗАДАНИЕ ДНЯ · ${this.dailyDateLabel}` : `УРОВЕНЬ ${this.levelIndex + 1}`,
+      dailyDate: this.isDailyChallenge ? this.dailyDate : null,
       active,
       solutionCell,
       hintItem,

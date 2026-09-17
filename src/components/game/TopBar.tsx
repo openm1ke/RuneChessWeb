@@ -1,4 +1,5 @@
 import { useL10n } from '../../l10n/l10nContext';
+import { dailyDateLabel } from '../../l10n/dailyDate';
 import { RoundControl } from '../shared/RoundControl';
 
 /** A rounded lightbulb outline — a hand-drawn stand-in for the mobile app's
@@ -156,14 +157,14 @@ export function TopStatus({
   done,
   total,
   level,
-  label,
+  dailyDate,
 }: {
   done: number;
   total: number;
   level: number;
-  /** Overrides the default "УРОВЕНЬ {level}" text — used for the daily
-   * challenge, which has no meaningful level number of its own. */
-  label?: string;
+  /** Set on a daily challenge, which has no meaningful level number of
+   * its own and is named by its day instead. */
+  dailyDate?: Date | null;
 }) {
   const l10n = useL10n();
   return (
@@ -181,7 +182,9 @@ export function TopStatus({
         }}
       >
         <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.1, color: 'rgba(206,225,255,0.84)' }}>
-          {label ?? l10n.headerLevel(level).toUpperCase()}
+          {dailyDate
+            ? l10n.headerDailyChallenge(dailyDateLabel(l10n, dailyDate)).toUpperCase()
+            : l10n.headerLevel(level).toUpperCase()}
         </span>
         <span style={{ width: 1, height: 14, background: 'rgba(224,168,63,0.4)' }} />
         <span style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--gold)' }}>
