@@ -1,59 +1,45 @@
+import type { Strings } from '../l10n/ru';
 /** Mostly-neutral nudges — no mention of the streak at all. The bulk of the
  * pool, so a player who never builds a streak still gets a varied,
  * non-repetitive reminder every time. */
-const NEUTRAL_REMINDERS = [
-  'Задание дня уже готово — загляните ✨',
-  'Ежедневное задание ждёт вас',
-  'Новая головоломка дня уже здесь',
-  'Сегодняшний паззл ещё не решён',
-  'Рунная головоломка дня открыта',
-  'Сегодня на доске новая задача',
-  'Пять минут — и головоломка дня решена',
-  'Соберите руны дня, пока не поздно',
-  'Ваш ход — задание дня на месте',
-  'Заскучали? Загляните в RuneChess',
-  'Новый день — новая партия',
-  'Доска ждёт своего мастера',
-  'Ещё одна головоломка ждёт решения',
-  'RuneChess: свежая загадка дня',
-];
+/** Mostly-neutral nudges — no mention of the streak at all. The bulk of
+ * the pool, so a player who never builds a streak still gets a varied,
+ * non-repetitive reminder. */
+function neutralReminders(l10n: Strings): string[] {
+  return [
+    l10n.reminderNeutral1, l10n.reminderNeutral2, l10n.reminderNeutral3,
+    l10n.reminderNeutral4, l10n.reminderNeutral5, l10n.reminderNeutral6,
+    l10n.reminderNeutral7, l10n.reminderNeutral8, l10n.reminderNeutral9,
+    l10n.reminderNeutral10, l10n.reminderNeutral11, l10n.reminderNeutral12,
+    l10n.reminderNeutral13, l10n.reminderNeutral14,
+  ];
+}
 
 /** Shown only once a real streak exists — celebratory, no urgency. Used
  * while a daily freeze is still available, so a missed day wouldn't break
  * anything yet. */
-function streakReminders(streak: number): string[] {
+function streakReminders(l10n: Strings, streak: number): string[] {
+  const days = l10n.reminderDays(streak);
   return [
-    `Вы на стрике ${streak} ${dayWord(streak)} — не прерывайте!`,
-    `${streak} ${dayWord(streak)} подряд — впечатляюще. Продолжайте в том же духе!`,
-    `Стрик ${streak} ${dayWord(streak)} держится крепко — так держать!`,
-    'Ещё один день — и стрик станет ещё длиннее',
-    `${streak} ${dayWord(streak)} подряд! Загляните, чтобы не сбавлять темп`,
+    l10n.reminderStreak1(days), l10n.reminderStreak2(days),
+    l10n.reminderStreak3(days), l10n.reminderStreak4,
+    l10n.reminderStreak5(days),
   ];
 }
 
 /** Shown only once the freeze is already spent — a real miss today would
  * break the streak, so the wording is deliberately more urgent. */
-function streakRiskReminders(streak: number): string[] {
+function streakRiskReminders(l10n: Strings, streak: number): string[] {
+  const days = l10n.reminderDays(streak);
   return [
-    `Стрик из ${streak} ${dayWord(streak)} может прерваться сегодня!`,
-    'Не потеряйте стрик — дейли-фриз уже использован',
-    `Сегодня решающий день для стрика в ${streak} ${dayWord(streak)}`,
-    `Фриз потрачен — стрик ${streak} ${dayWord(streak)} под угрозой`,
-    `Ещё чуть-чуть, и ${streak} ${dayWord(streak)} обнулятся — успейте сыграть`,
+    l10n.reminderRisk1(days), l10n.reminderRisk2,
+    l10n.reminderRisk3(days), l10n.reminderRisk4(days),
+    l10n.reminderRisk5(days),
   ];
 }
 
-function dayWord(count: number): string {
-  const mod100 = count % 100;
-  const mod10 = count % 10;
-  if (mod100 >= 11 && mod100 <= 14) return 'дней';
-  if (mod10 === 1) return 'день';
-  if (mod10 >= 2 && mod10 <= 4) return 'дня';
-  return 'дней';
-}
-
 /** Picks one reminder message body, weighted so a plain nudge (see
- * `NEUTRAL_REMINDERS`) is by far the most common, avoiding a repeat of
+ * `neutralReminders(l10n)`) is by far the most common, avoiding a repeat of
  * `previous` (the last message actually shown) when the pool allows it.
  *
  * Unlike the mobile app — which schedules a whole batch of OS notifications
@@ -63,24 +49,28 @@ function dayWord(count: number): string {
  * time the app is opened and a reminder turns out to be due (see
  * `DailyReminderService`). */
 export function pickReminderMessage({
+  l10n,
   currentStreak,
   freezeAvailable,
   previous,
   random = Math.random,
 }: {
+  /** The strings to write the reminder in. Passed rather than read from a
+   * context: this runs from the reminder service, outside React. */
+  l10n: Strings;
   currentStreak: number;
   freezeAvailable: boolean;
   previous?: string | null;
   random?: () => number;
 }): string {
   const pool = [
-    ...NEUTRAL_REMINDERS,
-    ...NEUTRAL_REMINDERS,
-    ...NEUTRAL_REMINDERS,
+    ...neutralReminders(l10n),
+    ...neutralReminders(l10n),
+    ...neutralReminders(l10n),
     ...(currentStreak > 0
       ? freezeAvailable
-        ? streakReminders(currentStreak)
-        : [...streakRiskReminders(currentStreak), ...streakRiskReminders(currentStreak)]
+        ? streakReminders(l10n, currentStreak)
+        : [...streakRiskReminders(l10n, currentStreak), ...streakRiskReminders(l10n, currentStreak)]
       : []),
   ];
 

@@ -28,7 +28,7 @@ export function HintOfferDialog({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Подсказки закончились"
+      aria-label={l10n.sceneHintsGoneTitle}
       onClick={onClose}
       style={{
         position: 'absolute',
@@ -55,12 +55,12 @@ export function HintOfferDialog({
       >
         <div style={{ fontSize: 30, lineHeight: 1 }}>💡</div>
         <div style={{ height: 8 }} />
-        <div style={{ fontSize: 16, fontWeight: 900, color: '#ffe2a4' }}>Подсказки закончились</div>
+        <div style={{ fontSize: 16, fontWeight: 900, color: '#ffe2a4' }}>{l10n.sceneHintsGoneTitle}</div>
         <div style={{ height: 6 }} />
         <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(206,225,255,0.78)' }}>
           {waitMs == null
-            ? 'Подсказка скоро восстановится.'
-            : `Следующая через ${formatHintWait(l10n, waitMs)}.`}
+            ? l10n.sceneHintsRefillSoon
+            : l10n.sceneHintsNextIn(formatHintWait(l10n, waitMs))}
         </div>
         <div style={{ height: 14 }} />
         {adReady ? (
@@ -84,19 +84,19 @@ export function HintOfferDialog({
             }}
           >
             {adLoading
-              ? 'Открываем рекламу…'
+              ? l10n.hintOpeningAd
               : adFailed
-                ? 'Попробовать рекламу снова'
-                : 'Посмотреть рекламу и получить подсказку'}
+                ? l10n.hintRetryAd
+                : l10n.hintWatchForHint}
           </button>
         ) : (
           <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(206,225,255,0.55)' }}>
-            Ролик сейчас недоступен — попробуйте позже.
+            {l10n.sceneAdUnavailable}
           </div>
         )}
         {adFailed && (
           <div style={{ marginTop: 9, fontSize: 12, fontWeight: 700, color: '#ffd487' }}>
-            Реклама сейчас не ответила. Попробуйте ещё раз немного позже.
+            {l10n.hintAdNoAnswer}
           </div>
         )}
         <div style={{ height: 4 }} />
@@ -114,7 +114,7 @@ export function HintOfferDialog({
             fontFamily: 'var(--font-body)',
           }}
         >
-          {adReady ? 'Обойдусь' : 'Понятно'}
+          {adReady ? l10n.sceneNoThanks : l10n.sceneUnderstood}
         </button>
       </div>
     </div>

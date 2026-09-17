@@ -387,6 +387,11 @@ export const ru = {
   rulesLevelsLead: (tutorial: string, main: string, bonus: string) => `165 задач: пять обучающих в «${tutorial}», затем «${main}» и «${bonus}», где поле больше, а решения многоходовые. Звёзды не тратятся впустую — они поднимают звание и открывают оформления.`,
   rulesStarsTitle: "Звёзды",
   rulesLevelsTitle: "Уровни",
+  resultBonusStarHint: "Реклама до конца — одна звезда",
+  hintOpeningAd: "Открываем рекламу…",
+  hintRetryAd: "Попробовать рекламу снова",
+  hintWatchForHint: "Посмотреть рекламу и получить подсказку",
+  hintAdNoAnswer: "Реклама сейчас не ответила. Попробуйте ещё раз немного позже.",
 };
 
 /**

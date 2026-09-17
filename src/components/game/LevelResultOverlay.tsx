@@ -7,11 +7,6 @@ import { StarAsset } from '../shared/StarRow';
 import { AchievementReveal } from '../shared/AchievementReveal';
 import { playChime, playResultComplete, playResultContinue } from '../../services/musicService';
 
-const CAPTIONS: Record<number, string> = {
-  3: 'Отличное решение!',
-  2: 'Хорошо! Ещё немного — и все три звезды ваши.',
-  1: 'Сыграйте ещё раз для лучшего результата.',
-};
 
 /** Shown the instant every beacon first reaches its exact target. */
 export function LevelResultOverlay({
@@ -161,7 +156,7 @@ export function LevelResultOverlay({
               color: 'var(--gold-bright)',
             }}
           >
-            УРОВЕНЬ ПРОЙДЕН
+            {l10n.resultLevelComplete.toUpperCase()}
           </div>
           {achievement && (
             <div style={{ opacity: phase(titleWindow[0], titleWindow[1]), marginTop: 12 }}>
@@ -174,7 +169,7 @@ export function LevelResultOverlay({
                   marginBottom: 8,
                 }}
               >
-                ДОСТИЖЕНИЕ ОТКРЫТО
+                {l10n.resultAchievementUnlocked.toUpperCase()}
               </div>
               <AchievementReveal achievement={achievement} size={80} animate onRevealed={onAchievementRevealed} />
               <div
@@ -213,7 +208,15 @@ export function LevelResultOverlay({
                     color: 'var(--text-soft)',
                   }}
                 >
-                  {CAPTIONS[result.stars]}
+                  {
+                    (
+                      {
+                        3: l10n.resultExcellent,
+                        2: l10n.resultGood,
+                        1: l10n.resultTryAgain,
+                      } as Record<number, string>
+                    )[result.stars]
+                  }
                 </div>
               )}
               {bonusStarNotice && (
@@ -255,8 +258,8 @@ export function LevelResultOverlay({
                 onClick={onBonusStarRequested}
                 aria-label={
                   doublesDailyStars
-                    ? 'Удвоить звёзды за просмотр рекламы'
-                    : 'Получить звезду за просмотр рекламы'
+                    ? l10n.resultDoubleStarsForAd
+                    : l10n.resultStarForAd
                 }
                 style={{
                   display: 'flex',
@@ -303,8 +306,8 @@ export function LevelResultOverlay({
                     }}
                   >
                     {doublesDailyStars
-                      ? `Удвоить звёзды: +${result.stars ?? 0}`
-                      : 'Получить звезду'}
+                      ? l10n.resultDoubleStars(result.stars ?? 0)
+                      : l10n.resultEarnStar}
                   </span>
                   <span
                     style={{
@@ -315,7 +318,7 @@ export function LevelResultOverlay({
                       color: 'var(--text-soft)',
                     }}
                   >
-                    {bonusStarEnabled ? 'Реклама до конца — одна звезда' : 'Готовим ролик…'}
+                    {bonusStarEnabled ? l10n.resultBonusStarHint : l10n.resultAdLoading}
                   </span>
                 </span>
                 <span
@@ -342,7 +345,7 @@ export function LevelResultOverlay({
                 boxShadow: '0 6px 18px rgba(0,0,0,0.5)',
               }}
             >
-              ПРОДОЛЖИТЬ
+              {l10n.commonContinue.toUpperCase()}
             </button>
             {result.stars != null && result.stars < 3 && (
               <button

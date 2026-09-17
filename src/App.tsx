@@ -530,6 +530,8 @@ export default function App() {
   const achievementProgressRef = useRef(achievementProgress);
   const levelEntrySourceRef = useRef<LevelEntrySource>('menu_play');
   const dailyChallengeHistoryRef = useRef(dailyChallengeHistory);
+  const languageRef = useRef(language);
+  languageRef.current = language;
   const dailyReminderEnabledRef = useRef(dailyReminderEnabled);
   const dailyReminderHourRef = useRef(dailyReminderHour);
   useEffect(() => {
@@ -639,6 +641,9 @@ export default function App() {
     const stats = computeDailyChallengeStats({ history, today });
     const shown = progressRepository.loadDailyReminderShownState();
     return {
+      // The words, not just the numbers: the service fires on a timer,
+      // outside React, so it cannot reach the context itself.
+      l10n: stringsFor(languageRef.current),
       enabled: dailyReminderEnabledRef.current,
       hour: dailyReminderHourRef.current,
       currentStreak: stats.currentStreak,

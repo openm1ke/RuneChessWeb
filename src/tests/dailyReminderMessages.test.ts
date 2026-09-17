@@ -1,3 +1,4 @@
+import { ru } from '../l10n/ru';
 import { describe, expect, it } from 'vitest';
 import { formatHourWindow, pickReminderMessage } from '../services/dailyReminderMessages';
 
@@ -13,7 +14,7 @@ describe('pickReminderMessage', () => {
   it('never mentions the streak when there is none', () => {
     const random = seededRandom(1);
     for (let i = 0; i < 50; i++) {
-      const message = pickReminderMessage({ currentStreak: 0, freezeAvailable: true, random });
+      const message = pickReminderMessage({ l10n: ru, currentStreak: 0, freezeAvailable: true, random });
       expect(message).not.toMatch(/стрик/i);
     }
   });
@@ -22,7 +23,7 @@ describe('pickReminderMessage', () => {
     const random = seededRandom(7);
     let previous: string | null = null;
     for (let i = 0; i < 50; i++) {
-      const message = pickReminderMessage({ currentStreak: 0, freezeAvailable: true, previous, random });
+      const message = pickReminderMessage({ l10n: ru, currentStreak: 0, freezeAvailable: true, previous, random });
       expect(message).not.toBe(previous);
       previous = message;
     }
@@ -32,7 +33,7 @@ describe('pickReminderMessage', () => {
     const random = seededRandom(3);
     const seen = new Set<string>();
     for (let i = 0; i < 200; i++) {
-      seen.add(pickReminderMessage({ currentStreak: 5, freezeAvailable: false, random }));
+      seen.add(pickReminderMessage({ l10n: ru, currentStreak: 5, freezeAvailable: false, random }));
     }
     expect([...seen].some((m) => /прерваться|потеряйте/i.test(m))).toBe(true);
   });
@@ -42,7 +43,7 @@ describe('pickReminderMessage', () => {
     let neutralCount = 0;
     const total = 200;
     for (let i = 0; i < total; i++) {
-      const message = pickReminderMessage({ currentStreak: 10, freezeAvailable: true, random });
+      const message = pickReminderMessage({ l10n: ru, currentStreak: 10, freezeAvailable: true, random });
       // Every streak/risk message mentions the streak itself, the freeze,
       // consecutive-day wording, or the streak resetting — a plain neutral
       // nudge never does, even though "день/дня" alone isn't a reliable
@@ -57,9 +58,9 @@ describe('pickReminderMessage', () => {
     const random = seededRandom(23);
     const seen = new Set<string>();
     for (let i = 0; i < 300; i++) {
-      seen.add(pickReminderMessage({ currentStreak: 9, freezeAvailable: false, random }));
-      seen.add(pickReminderMessage({ currentStreak: 9, freezeAvailable: true, random }));
-      seen.add(pickReminderMessage({ currentStreak: 0, freezeAvailable: true, random }));
+      seen.add(pickReminderMessage({ l10n: ru, currentStreak: 9, freezeAvailable: false, random }));
+      seen.add(pickReminderMessage({ l10n: ru, currentStreak: 9, freezeAvailable: true, random }));
+      seen.add(pickReminderMessage({ l10n: ru, currentStreak: 0, freezeAvailable: true, random }));
     }
     expect(seen.size).toBeGreaterThanOrEqual(20);
   });

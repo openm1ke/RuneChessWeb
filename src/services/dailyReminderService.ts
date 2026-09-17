@@ -1,3 +1,4 @@
+import type { Strings } from '../l10n/ru';
 import { dailyChallengeKey } from '../game/dailyChallengeLevels';
 import { pickReminderMessage } from './dailyReminderMessages';
 
@@ -90,6 +91,7 @@ export class DailyReminderService {
     if (state.lastShownDate === todayKey) return;
 
     const body = pickReminderMessage({
+      l10n: state.l10n,
       currentStreak: state.currentStreak,
       freezeAvailable: state.freezeAvailable,
       previous: state.lastMessage,
@@ -106,6 +108,9 @@ export class DailyReminderService {
 }
 
 export interface ReminderCheckState {
+  /** The strings the reminder is written in. Carried on the state rather
+   * than read from React: this service runs on a timer, outside the tree. */
+  l10n: Strings;
   enabled: boolean;
   hour: number;
   currentStreak: number;

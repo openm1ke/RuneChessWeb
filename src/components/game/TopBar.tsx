@@ -1,3 +1,4 @@
+import { useL10n } from '../../l10n/l10nContext';
 import { RoundControl } from '../shared/RoundControl';
 
 /** A rounded lightbulb outline — a hand-drawn stand-in for the mobile app's
@@ -62,9 +63,10 @@ export function TopControls({
    * badge — a "0" advertises the thing the player has not got. */
   dailyStreak?: number;
 }) {
+  const l10n = useL10n();
   return (
     <div style={{ position: 'absolute', top: 22, left: 20, right: 20, display: 'flex', justifyContent: 'space-between' }}>
-      <RoundControl onClick={onBack} label="Назад">
+      <RoundControl onClick={onBack} label={l10n.back}>
         ‹
       </RoundControl>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
@@ -72,7 +74,7 @@ export function TopControls({
           <RoundControl
             onClick={onHint}
             disabled={!hintEnabled}
-            label={hintsLeft == null ? 'Подсказка' : `Подсказка, осталось ${hintsLeft}`}
+            label={hintsLeft == null ? l10n.sceneHint : l10n.sceneHintLeft(hintsLeft)}
           >
             <LightbulbIcon />
           </RoundControl>
@@ -82,7 +84,7 @@ export function TopControls({
           <div style={{ position: 'relative' }}>
             <RoundControl
               onClick={onCalendar}
-              label={dailyStreak > 0 ? `Календарь заданий дня, серия ${dailyStreak}` : 'Календарь заданий дня'}
+              label={dailyStreak > 0 ? l10n.sceneCalendarStreak(dailyStreak) : l10n.sceneCalendar}
             >
               <CalendarIcon />
             </RoundControl>
@@ -163,6 +165,7 @@ export function TopStatus({
    * challenge, which has no meaningful level number of its own. */
   label?: string;
 }) {
+  const l10n = useL10n();
   return (
     <div style={{ position: 'absolute', top: 25, left: 76, right: 76, height: 40, display: 'flex', justifyContent: 'center' }}>
       <div
@@ -178,14 +181,14 @@ export function TopStatus({
         }}
       >
         <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.1, color: 'rgba(206,225,255,0.84)' }}>
-          {label ?? `УРОВЕНЬ ${level}`}
+          {label ?? l10n.headerLevel(level).toUpperCase()}
         </span>
         <span style={{ width: 1, height: 14, background: 'rgba(224,168,63,0.4)' }} />
         <span style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--gold)' }}>
           {done} / {total}
         </span>
         <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: 0.8, color: 'rgba(206,225,255,0.78)' }}>
-          МОНЕТЫ
+          {l10n.sceneCoins.toUpperCase()}
         </span>
       </div>
     </div>
@@ -203,14 +206,15 @@ export function BottomUtilityControls({
   onResetOnboarding?: () => void;
   showSkip: boolean;
 }) {
+  const l10n = useL10n();
   return (
     <div style={{ position: 'absolute', left: 28, bottom: 122, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
       {showSkip && onSkip && (
-        <RoundControl onClick={onSkip} onLongPress={onResetOnboarding} size={34} label="Пропустить уровень (разработка)">
+        <RoundControl onClick={onSkip} onLongPress={onResetOnboarding} size={34} label={l10n.sceneSkipDev}>
           ⏭
         </RoundControl>
       )}
-      <RoundControl onClick={onReset} size={38} label="Начать уровень заново">
+      <RoundControl onClick={onReset} size={38} label={l10n.sceneRestartLevel}>
         ↻
       </RoundControl>
     </div>
