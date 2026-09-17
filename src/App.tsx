@@ -38,7 +38,7 @@ import { LevelSelectScreen } from './screens/LevelSelectScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { AppearanceScreen } from './screens/AppearanceScreen';
 import { CosmeticSkinContext } from './game/cosmeticSkinContext';
-import { freeSkinIds, skinById, type CosmeticSkin } from './game/cosmeticSkins';
+import { freeSkinIds, skinById, type CosmeticSkin, skinName } from './game/cosmeticSkins';
 import { canAfford, spendStars, starsAvailable, starsEarned } from './game/starWallet';
 import { GameScreen } from './screens/GameScreen';
 import { CampaignCompleteScreen } from './screens/CampaignCompleteScreen';
@@ -1237,7 +1237,7 @@ export default function App() {
             setAppearanceFromMenu(false);
             setScreen('appearance');
           }}
-          skinName={skin.name}
+          skinName={skinName(l10n, skin.id)}
         />
       );
     case 'appearance':

@@ -1,3 +1,4 @@
+import { achievementTitle } from '../data/achievements';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { useL10n } from '../l10n/l10nContext';
 import { useViewportSize } from '../components/game/useViewportSize';
@@ -108,7 +109,7 @@ export function CampaignCompleteScreen(props: CampaignCompleteProps) {
           {props.achievement && (
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: 1.3, color: '#ffd678', marginBottom: 6 }}>
-                ДОСТИЖЕНИЕ ОТКРЫТО
+                {l10n.resultAchievementUnlocked.toUpperCase()}
               </div>
               <AchievementReveal
                 achievement={props.achievement}
@@ -117,7 +118,7 @@ export function CampaignCompleteScreen(props: CampaignCompleteProps) {
                 onRevealed={props.onAchievementRevealed}
               />
               <div style={{ marginTop: 6, fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--gold-bright)' }}>
-                {props.achievement.title}
+                {achievementTitle(l10n, props.achievement.id)}
               </div>
             </div>
           )}
@@ -232,11 +233,11 @@ function LandscapeCampaignCompleteScene({
         {achievement && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: 1.3, color: '#ffd678', marginBottom: 6 }}>
-              ДОСТИЖЕНИЕ ОТКРЫТО
+              {l10n.resultAchievementUnlocked.toUpperCase()}
             </div>
             <AchievementReveal achievement={achievement} size={72} animate={animateAchievement} onRevealed={onAchievementRevealed} />
             <div style={{ marginTop: 6, fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--gold-bright)' }}>
-              {achievement.title}
+              {achievementTitle(l10n, achievement.id)}
             </div>
           </div>
         )}

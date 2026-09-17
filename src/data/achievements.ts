@@ -1,3 +1,4 @@
+import type { Strings } from '../l10n/ru';
 import { campaignLevels, MAIN_CAMPAIGN_LEVEL_COUNT } from './campaignLevels';
 import { FIRST_SCORED_LEVEL_INDEX } from '../game/dozorEngine';
 import { asset } from '../lib/assetUrl';
@@ -9,8 +10,6 @@ import { asset } from '../lib/assetUrl';
  * Flutter repo, the source of truth for every id/condition below). */
 export interface AchievementDefinition {
   id: string;
-  title: string;
-  description: string;
   assetPath: string;
 }
 
@@ -37,78 +36,56 @@ const iconPath = (name: string) => asset(`assets/images/achievements/${name}.web
 
 export const trainingPawn: AchievementDefinition = {
   id: 'training_pawn',
-  title: 'Первый ход',
-  description: 'Пройдите обучение.',
   assetPath: iconPath('training-pawn'),
 };
 
 export const fiftyRook: AchievementDefinition = {
   id: 'fifty_rook',
-  title: 'Верный расчёт',
-  description: 'Получите 3 звезды на 50 уровнях.',
   assetPath: iconPath('fifty-rook'),
 };
 
 export const hundredBishop: AchievementDefinition = {
   id: 'hundred_bishop',
-  title: 'Мастер диагоналей',
-  description: 'Получите 3 звезды на 100 уровнях.',
   assetPath: iconPath('hundred-bishop'),
 };
 
 export const mainKing: AchievementDefinition = {
   id: 'main_campaign_king',
-  title: 'Хранитель короны',
-  description: 'Пройдите основную кампанию на 3 звезды.',
   assetPath: iconPath('main-king'),
 };
 
 export const extraQueen: AchievementDefinition = {
   id: 'extra_campaign_queen',
-  title: 'Владыка рун',
-  description: 'Пройдите 100 уровней подряд на 3 звезды без подсказок.',
   assetPath: iconPath('extra-queen'),
 };
 
 export const coinZero: AchievementDefinition = {
   id: 'coin_zero_first_hint',
-  title: 'Первая подсказка',
-  description: 'Возьмите подсказку на уровне основной или дополнительной кампании.',
   assetPath: iconPath('coin-0'),
 };
 
 export const coinOne: AchievementDefinition = {
   id: 'coin_one_fifty_hint_levels',
-  title: 'Рунный проводник',
-  description: 'Возьмите подсказки на 50 разных уровнях.',
   assetPath: iconPath('coin-1'),
 };
 
 export const coinTwo: AchievementDefinition = {
   id: 'coin_two_fifty_without_hints',
-  title: 'Самостоятельный путь',
-  description: 'Пройдите 50 разных уровней без подсказок.',
   assetPath: iconPath('coin-2'),
 };
 
 export const coinThree: AchievementDefinition = {
   id: 'coin_three_fifty_clean_streak',
-  title: 'Непрерывный расчёт',
-  description: 'Пройдите 50 уровней подряд без подсказок и сбросов.',
   assetPath: iconPath('coin-3'),
 };
 
 export const coinFour: AchievementDefinition = {
   id: 'coin_four_hundred_perfect_streak',
-  title: 'Безупречная серия',
-  description: 'Пройдите 100 уровней подряд без подсказок и сбросов.',
   assetPath: iconPath('coin-4'),
 };
 
 export const coinFive: AchievementDefinition = {
   id: 'coin_five_all_campaigns_perfect',
-  title: 'Легенда RuneChess',
-  description: 'Пройдите все уровни основной и дополнительной кампаний на 3 звезды.',
   assetPath: iconPath('coin-5'),
 };
 
@@ -283,4 +260,41 @@ export function progressFor(
   args: Parameters<typeof progressCountFor>[1],
 ): number {
   return progressFraction(progressCountFor(id, args));
+}
+
+/** What a trophy is called, and what it asks for.
+ *
+ * Looked up by id rather than stored on the definition: a definition
+ * carrying its own words can only ever be read in one language. Mirrors
+ * `achievementTitle` in the Flutter app. */
+export function achievementTitle(l10n: Strings, id: string): string {
+  return ({
+    'training_pawn': l10n.achTrainingPawnTitle,
+    'fifty_rook': l10n.achFiftyRookTitle,
+    'hundred_bishop': l10n.achHundredBishopTitle,
+    'main_campaign_king': l10n.achMainCampaignKingTitle,
+    'extra_campaign_queen': l10n.achExtraCampaignQueenTitle,
+    'coin_zero_first_hint': l10n.achCoinZeroFirstHintTitle,
+    'coin_one_fifty_hint_levels': l10n.achCoinOneFiftyHintLevelsTitle,
+    'coin_two_fifty_without_hints': l10n.achCoinTwoFiftyWithoutHintsTitle,
+    'coin_three_fifty_clean_streak': l10n.achCoinThreeFiftyCleanStreakTitle,
+    'coin_four_hundred_perfect_streak': l10n.achCoinFourHundredPerfectStreakTitle,
+    'coin_five_all_campaigns_perfect': l10n.achCoinFiveAllCampaignsPerfectTitle,
+  } as Record<string, string>)[id] ?? id;
+}
+
+export function achievementDescription(l10n: Strings, id: string): string {
+  return ({
+    'training_pawn': l10n.achTrainingPawnBody,
+    'fifty_rook': l10n.achFiftyRookBody,
+    'hundred_bishop': l10n.achHundredBishopBody,
+    'main_campaign_king': l10n.achMainCampaignKingBody,
+    'extra_campaign_queen': l10n.achExtraCampaignQueenBody,
+    'coin_zero_first_hint': l10n.achCoinZeroFirstHintBody,
+    'coin_one_fifty_hint_levels': l10n.achCoinOneFiftyHintLevelsBody,
+    'coin_two_fifty_without_hints': l10n.achCoinTwoFiftyWithoutHintsBody,
+    'coin_three_fifty_clean_streak': l10n.achCoinThreeFiftyCleanStreakBody,
+    'coin_four_hundred_perfect_streak': l10n.achCoinFourHundredPerfectStreakBody,
+    'coin_five_all_campaigns_perfect': l10n.achCoinFiveAllCampaignsPerfectBody,
+  } as Record<string, string>)[id] ?? '';
 }

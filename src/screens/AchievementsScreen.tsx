@@ -11,8 +11,7 @@ import {
   progressLabel,
   unlockedIds,
   type AchievementDefinition,
-  type AchievementProgressCount,
-} from '../data/achievements';
+  type AchievementProgressCount, achievementDescription, achievementTitle } from '../data/achievements';
 import { ProgressSummary } from '../components/shared/ProgressSummary';
 import type { GameProgress } from '../game/gameProgress';
 import type { AchievementProgressState } from '../game/achievementProgress';
@@ -282,6 +281,7 @@ function AchievementTile({
   progress: AchievementProgressCount | null;
   onClick: () => void;
 }) {
+  const l10n = useL10n();
   return (
     <button
       type="button"
@@ -312,7 +312,7 @@ function AchievementTile({
           color: unlocked ? 'var(--gold-bright)' : 'rgba(180,190,212,0.66)',
         }}
       >
-        {achievement.title}
+        {achievementTitle(l10n, achievement.id)}
       </div>
       {progress && <AchievementProgressBar progress={progress} />}
     </button>
@@ -417,7 +417,7 @@ function AchievementDetailDialog({
             letterSpacing: 1,
           }}
         >
-          {achievement.title}
+          {achievementTitle(l10n, achievement.id)}
         </h2>
         <div
           style={{
@@ -432,7 +432,7 @@ function AchievementDetailDialog({
           {unlocked && unlockedAt ? ` · ${formatDate(unlockedAt)}` : ''}
         </div>
         <p style={{ margin: '0 0 16px', color: '#d9e4f8', fontSize: 14, fontWeight: 700, lineHeight: 1.45 }}>
-          {achievement.description}
+          {achievementDescription(l10n, achievement.id)}
         </p>
         {progress && <AchievementProgressBar progress={progress} />}
         {/* A corner close affordance instead of a full-width "ЗАКРЫТЬ"

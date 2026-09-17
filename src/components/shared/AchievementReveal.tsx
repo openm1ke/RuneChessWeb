@@ -1,4 +1,6 @@
+import { achievementTitle } from '../../data/achievements';
 import { useEffect, useState } from 'react';
+import { useL10n } from '../../l10n/l10nContext';
 import type { AchievementDefinition } from '../../data/achievements';
 
 const REVEAL_DELAY_MS = 520;
@@ -99,6 +101,7 @@ export function AchievementCelebrationOverlay({
   onDismiss: () => void;
   onRevealed?: () => void;
 }) {
+  const l10n = useL10n();
   return (
     <div
       onClick={onDismiss}
@@ -136,7 +139,7 @@ export function AchievementCelebrationOverlay({
           padding: '0 24px',
         }}
       >
-        {achievement.title}
+        {achievementTitle(l10n, achievement.id)}
       </div>
     </div>
   );

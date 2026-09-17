@@ -1,3 +1,4 @@
+import { achievementTitle } from '../data/achievements';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { useL10n } from '../l10n/l10nContext';
 import { artForCanvas } from '../game/cosmeticSkins';
@@ -145,7 +146,7 @@ function AchievementRevealBlock({
       </div>
       <AchievementReveal achievement={achievement} size={size} animate={animate} onRevealed={onRevealed} />
       <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, color: 'var(--gold-bright)' }}>
-        {achievement.title}
+        {achievementTitle(l10n, achievement.id)}
       </div>
     </div>
   );

@@ -1,4 +1,6 @@
+import { achievementTitle } from '../../data/achievements';
 import { useEffect, useRef, useState } from 'react';
+import { useL10n } from '../../l10n/l10nContext';
 import type { LevelAttemptResult } from '../../game/starRating';
 import type { AchievementDefinition } from '../../data/achievements';
 import { StarAsset } from '../shared/StarRow';
@@ -48,6 +50,7 @@ export function LevelResultOverlay({
   achievement?: AchievementDefinition | null;
   onAchievementRevealed?: () => void;
 }) {
+  const l10n = useL10n();
   const scored = result.stars != null;
   const [t, setT] = useState(0);
   const [exiting, setExiting] = useState(false);
@@ -182,7 +185,7 @@ export function LevelResultOverlay({
                   color: 'var(--gold-bright)',
                 }}
               >
-                {achievement.title}
+                {achievementTitle(l10n, achievement.id)}
               </div>
             </div>
           )}

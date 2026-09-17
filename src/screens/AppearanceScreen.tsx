@@ -10,7 +10,7 @@
  */
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { useL10n } from '../l10n/l10nContext';
-import { artForCanvas } from '../game/cosmeticSkins';
+import { artForCanvas, skinName, skinTagline } from '../game/cosmeticSkins';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { RoundControl } from '../components/shared/RoundControl';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../components/board/boardPerspective';
@@ -52,7 +52,7 @@ export function AppearanceScreen({
     const left = starsAvailable - entry.price;
     if (
       window.confirm(
-        l10n.appearanceUnlockBody(entry.name, entry.price, left),
+        l10n.appearanceUnlockBody(skinName(l10n, entry.id), entry.price, left),
       )
     ) {
       onSkinUnlocked(entry);
@@ -384,7 +384,7 @@ function SkinCard({
           color: '#f4d8a1',
         }}
       >
-        {skin.name.toUpperCase()}
+        {skinName(l10n, skin.id).toUpperCase()}
       </div>
       <div
         style={{
@@ -400,7 +400,7 @@ function SkinCard({
           overflow: 'hidden',
         }}
       >
-        {skin.tagline}
+        {skinTagline(l10n, skin.id)}
       </div>
     </>
   );
@@ -410,8 +410,8 @@ function SkinCard({
       aria-pressed={selected}
       aria-label={
         unlocked
-          ? `${skin.name}${selected ? l10n.appearanceSelectedSuffix : ''}`
-          : l10n.appearanceLockedLabel(skin.name, skin.price)
+          ? `${skinName(l10n, skin.id)}${selected ? l10n.appearanceSelectedSuffix : ''}`
+          : l10n.appearanceLockedLabel(skinName(l10n, skin.id), skin.price)
       }
       onClick={unlocked ? (selected ? undefined : onChosen) : affordable ? onUnlock : undefined}
       style={{

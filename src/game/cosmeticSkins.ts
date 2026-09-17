@@ -1,3 +1,4 @@
+import type { Strings } from '../l10n/ru';
 /**
  * A look the player can put on the game: the table, the figures, the coins
  * and the colours painted between them. Port of the Flutter app's
@@ -54,8 +55,6 @@ export interface CosmeticSkin {
   /** Stored in the player's preferences; never shown. */
   id: string;
   /** Shown on the appearance screen. */
-  name: string;
-  tagline: string;
   /** The table, drawn to fill the design canvas's top 430×764. */
   boardAsset: string;
   /**
@@ -117,8 +116,6 @@ const OBSIDIAN = 'assets/images/cosmetics/obsidian_astral';
 export const classicSkin: CosmeticSkin = {
   id: 'classic',
   price: 0,
-  name: 'Классика',
-  tagline: 'Дубовый стол и золочёная рама — то, с чего всё началось.',
   boardAsset: asset('assets/images/isometric-table.webp'),
   adaptiveBoard: {
     tall: asset('assets/images/adaptive/board-tall.webp'),
@@ -160,8 +157,6 @@ export const classicSkin: CosmeticSkin = {
 export const obsidianAstralSkin: CosmeticSkin = {
   id: 'obsidian_astral',
   price: 300,
-  name: 'Обсидиановый астрал',
-  tagline: 'Чёрное стекло, золото и звёздная пыль внутри фигур.',
   boardAsset: asset(`${OBSIDIAN}/board.webp`),
   adaptiveBoard: {
     tall: asset(`${OBSIDIAN}/adaptive/board-tall.webp`),
@@ -203,8 +198,6 @@ export const obsidianAstralSkin: CosmeticSkin = {
 export const woodenWorkshopSkin: CosmeticSkin = {
   id: 'wooden_set',
   price: 0,
-  name: 'Деревянная мастерская',
-  tagline: 'Морёный дуб, зелёное сукно и фигуры, крашенные вручную.',
   boardAsset: asset('assets/images/cosmetics/wooden_set/board.webp'),
   adaptiveBoard: {
     tall: asset('assets/images/cosmetics/wooden_set/adaptive/board-tall.webp'),
@@ -243,8 +236,6 @@ export const woodenWorkshopSkin: CosmeticSkin = {
 export const pearlTideSkin: CosmeticSkin = {
   id: 'pearl_tide',
   price: 60,
-  name: 'Жемчужная',
-  tagline: 'Перламутр, морская синь и фигуры, гладкие как раковина.',
   boardAsset: asset('assets/images/cosmetics/pearl_tide/board.webp'),
   adaptiveBoard: {
     tall: asset('assets/images/cosmetics/pearl_tide/adaptive/board-tall.webp'),
@@ -283,8 +274,6 @@ export const pearlTideSkin: CosmeticSkin = {
 export const moonlitSilverSkin: CosmeticSkin = {
   id: 'moonlit_silver',
   price: 140,
-  name: 'Лунное серебро',
-  tagline: 'Кованое серебро, ночная синева и холодный лунный блеск.',
   boardAsset: asset('assets/images/cosmetics/moonlit_silver/board.webp'),
   adaptiveBoard: {
     tall: asset('assets/images/cosmetics/moonlit_silver/adaptive/board-tall.webp'),
@@ -323,8 +312,6 @@ export const moonlitSilverSkin: CosmeticSkin = {
 export const lavaForgeSkin: CosmeticSkin = {
   id: 'lava_forge',
   price: 220,
-  name: 'Лавовая кузница',
-  tagline: 'Остывший базальт с трещинами, за которыми ещё горит.',
   boardAsset: asset('assets/images/cosmetics/lava_forge/board.webp'),
   adaptiveBoard: {
     tall: asset('assets/images/cosmetics/lava_forge/adaptive/board-tall.webp'),
@@ -363,8 +350,6 @@ export const lavaForgeSkin: CosmeticSkin = {
 export const amberWorkshopSkin: CosmeticSkin = {
   id: 'amber_workshop',
   price: 100,
-  name: 'Янтарная мастерская',
-  tagline: 'Тёплый янтарь, латунь и стружка на верстаке.',
   boardAsset: asset('assets/images/cosmetics/amber_workshop/board.webp'),
   adaptiveBoard: {
     tall: asset('assets/images/cosmetics/amber_workshop/adaptive/board-tall.webp'),
@@ -403,8 +388,6 @@ export const amberWorkshopSkin: CosmeticSkin = {
 export const gzhelPorcelainSkin: CosmeticSkin = {
   id: 'gzhel_porcelain',
   price: 180,
-  name: 'Гжельский фарфор',
-  tagline: 'Белый фарфор с кобальтовой росписью, как сервиз из серванта.',
   boardAsset: asset('assets/images/cosmetics/gzhel_porcelain/board.webp'),
   adaptiveBoard: {
     tall: asset('assets/images/cosmetics/gzhel_porcelain/adaptive/board-tall.webp'),
@@ -473,4 +456,36 @@ export function coinAsset(skin: CosmeticSkin, target: number): string {
 
 export function uprightRotationOf(skin: CosmeticSkin, type: PieceType): number {
   return skin.uprightRotationDeg[type] ?? 0;
+}
+
+/** What a set is called, and the line under its name.
+ *
+ * By id rather than stored on the set, for the same reason as the
+ * trophies. The ids here are the web app's own — `obsidian_astral` where
+ * the mobile app says `obsidian` — so the mapping is written out rather
+ * than assumed. */
+export function skinName(l10n: Strings, id: string): string {
+  return ({
+    'classic': l10n.skinClassicName,
+    'obsidian_astral': l10n.skinObsidianName,
+    'wooden_set': l10n.skinWorkshopName,
+    'pearl_tide': l10n.skinPearlName,
+    'moonlit_silver': l10n.skinMoonsilverName,
+    'lava_forge': l10n.skinLavaforgeName,
+    'amber_workshop': l10n.skinAmberName,
+    'gzhel_porcelain': l10n.skinGzhelName,
+  } as Record<string, string>)[id] ?? id;
+}
+
+export function skinTagline(l10n: Strings, id: string): string {
+  return ({
+    'classic': l10n.skinClassicTagline,
+    'obsidian_astral': l10n.skinObsidianTagline,
+    'wooden_set': l10n.skinWorkshopTagline,
+    'pearl_tide': l10n.skinPearlTagline,
+    'moonlit_silver': l10n.skinMoonsilverTagline,
+    'lava_forge': l10n.skinLavaforgeTagline,
+    'amber_workshop': l10n.skinAmberTagline,
+    'gzhel_porcelain': l10n.skinGzhelTagline,
+  } as Record<string, string>)[id] ?? '';
 }
