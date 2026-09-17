@@ -1,4 +1,5 @@
-import type { PieceType } from './pieceTypes';
+import type { Strings } from '../l10n/ru';
+import { pieceName, type PieceType } from './pieceTypes';
 
 /**
  * Every line the first five levels say, as data — the mirror of the mobile
@@ -24,44 +25,61 @@ import type { PieceType } from './pieceTypes';
  *   accusative and pasted into three different grammatical positions, so the
  *   game shipped "Начните с ладью" and "ладью уже ждёт вас в панели".
  */
-export const tutorialScript: Record<string, string> = {
-  'l1.place': 'Перетащите пешку на светящуюся клетку.',
-  'l1.ray': 'Луч дошёл до монеты: пешка бьёт по диагонали вперёд.',
-  'l2.place.first': '{piece} — на светящуюся клетку. Или тапом: фигура, клетка.',
-  'l2.place.second': 'Теперь {piece} — на вторую светящуюся клетку.',
-  'l2.ray': 'Ладья бьёт по прямым, слон — по диагоналям.',
-  'l3.place.first': 'Цифра на монете — сколько лучей ей нужно.',
-  'l3.place.second': 'Теперь {piece} — на вторую светящуюся клетку.',
-  'l3.ray': 'Проверьте: лучей ровно столько, сколько на монете.',
-  'l4.hint': 'Не знаете куда? Нажмите лампочку — покажем клетку.',
-  'l4.place.king': 'Король — на светящуюся клетку: он бьёт вокруг себя.',
-  'l4.place.first': '{piece} — на светящуюся клетку.',
-  'l4.place.next': 'Дальше {piece} — на светящуюся клетку.',
-  'l4.ray': 'Лучей у монеты должно быть ровно столько, сколько на ней.',
-  'l5.trial.first': 'Попробуем так: {piece} — на светящуюся клетку.',
-  'l5.trial.second': 'Теперь {piece} — на светящуюся клетку.',
-  'l5.overflow': 'Лучей больше, чем нужно. Нажмите сброс — попробуем иначе.',
-  'l5.place.first': '{piece} — на светящуюся клетку.',
-  'l5.place.second': 'Теперь {piece} — на вторую светящуюся клетку.',
-  'l5.ray': 'Две фигуры вместе должны зажечь все три монеты.',
-};
+/** The ids, stable and shared with the Flutter app. The wording lives in
+ * the language files; `docs/TUTORIAL_SCRIPT.md` remains the shared
+ * catalogue and `tutorialScript.test.ts` still fails when the two
+ * disagree. */
+export const tutorialLineIds: readonly string[] = [
+  'l1.place',
+  'l1.ray',
+  'l2.place.first',
+  'l2.place.second',
+  'l2.ray',
+  'l3.place.first',
+  'l3.place.second',
+  'l3.ray',
+  'l4.hint',
+  'l4.place.king',
+  'l4.place.first',
+  'l4.place.next',
+  'l4.ray',
+  'l5.trial.first',
+  'l5.trial.second',
+  'l5.overflow',
+  'l5.place.first',
+  'l5.place.second',
+  'l5.ray',
+];
 
-/** Figure names in the nominative, the only case the script needs. */
-export const tutorialPieceName: Record<PieceType, string> = {
-  rook: 'Ладья',
-  bishop: 'Слон',
-  knight: 'Конь',
-  king: 'Король',
-  queen: 'Ферзь',
-  pawn: 'Пешка',
-};
-
-/**
- * The line for `id`, with `{piece}` filled in. A missing figure falls back to
- * "Фигура", which reads correctly in every sentence above — that is the point
- * of keeping them nominative.
- */
-export function tutorialLine(id: string, piece?: PieceType | null): string {
-  const text = tutorialScript[id] ?? '';
-  return text.replace('{piece}', piece ? tutorialPieceName[piece] : 'Фигура');
+/** The line for [id], with the figure's name filled in.
+ *
+ * A missing figure falls back to `tutorialAnyPiece`, which reads correctly
+ * in every sentence — that is the point of keeping the names nominative. */
+export function tutorialLine(
+  l10n: Strings,
+  id: string,
+  piece?: PieceType | null,
+): string {
+  const name = piece ? pieceName(l10n, piece) : l10n.tutorialAnyPiece;
+  return ({
+    'l1.place': l10n.tutL1Place,
+    'l1.ray': l10n.tutL1Ray,
+    'l2.place.first': l10n.tutL2PlaceFirst(name),
+    'l2.place.second': l10n.tutL2PlaceSecond(name),
+    'l2.ray': l10n.tutL2Ray,
+    'l3.place.first': l10n.tutL3PlaceFirst,
+    'l3.place.second': l10n.tutL3PlaceSecond(name),
+    'l3.ray': l10n.tutL3Ray,
+    'l4.hint': l10n.tutL4Hint,
+    'l4.place.king': l10n.tutL4PlaceKing,
+    'l4.place.first': l10n.tutL4PlaceFirst(name),
+    'l4.place.next': l10n.tutL4PlaceNext(name),
+    'l4.ray': l10n.tutL4Ray,
+    'l5.trial.first': l10n.tutL5TrialFirst(name),
+    'l5.trial.second': l10n.tutL5TrialSecond(name),
+    'l5.overflow': l10n.tutL5Overflow,
+    'l5.place.first': l10n.tutL5PlaceFirst(name),
+    'l5.place.second': l10n.tutL5PlaceSecond(name),
+    'l5.ray': l10n.tutL5Ray,
+  } as Record<string, string>)[id] ?? '';
 }

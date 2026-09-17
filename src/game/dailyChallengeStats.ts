@@ -1,3 +1,4 @@
+import type { Strings } from '../l10n/ru';
 import { dailyChallengeKey, type DailyChallengeResult } from './dailyChallengeLevels';
 
 /** Derived streak/freeze state for the daily challenge, computed purely from
@@ -85,21 +86,16 @@ export function daysUntilFreezeRefill(currentStreak: number): number {
 
 /** "6 ч 20 мин", "40 мин", "меньше минуты" — read once, at a glance, so it
  * never shows seconds. */
-export function formatDurationShort(ms: number): string {
+export function formatDurationShort(l10n: Strings, ms: number): string {
   const totalMinutes = Math.floor(ms / 60000);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  if (hours > 0) return minutes > 0 ? `${hours} ч ${minutes} мин` : `${hours} ч`;
-  if (minutes > 0) return `${minutes} мин`;
-  return 'меньше минуты';
+  if (hours > 0) {
+    return minutes > 0
+      ? l10n.durationHoursMinutes(hours, minutes)
+      : l10n.durationHours(hours);
+  }
+  if (minutes > 0) return l10n.durationMinutes(minutes);
+  return l10n.durationLessThanMinute;
 }
 
-/** "5 дней" / "1 день" / "2 дня". */
-export function dayWord(count: number): string {
-  const mod100 = count % 100;
-  const mod10 = count % 10;
-  if (mod100 >= 11 && mod100 <= 14) return 'дней';
-  if (mod10 === 1) return 'день';
-  if (mod10 >= 2 && mod10 <= 4) return 'дня';
-  return 'дней';
-}

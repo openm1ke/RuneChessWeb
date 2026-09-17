@@ -1,3 +1,4 @@
+import type { Strings } from '../l10n/ru';
 /**
  * The player's stock of free hints, and when the next one arrives — the
  * mirror of the mobile app's `lib/logic/hint_wallet.dart`.
@@ -94,11 +95,15 @@ export function grantHints(
 
 /** "2 ч 40 мин", "35 мин", "меньше минуты" — read at a glance, never in
  * seconds. */
-export function formatHintWait(ms: number): string {
+export function formatHintWait(l10n: Strings, ms: number): string {
   const totalMinutes = Math.floor(ms / 60000);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  if (hours > 0) return minutes > 0 ? `${hours} ч ${minutes} мин` : `${hours} ч`;
-  if (minutes > 0) return `${minutes} мин`;
-  return 'меньше минуты';
+  if (hours > 0) {
+    return minutes > 0
+      ? l10n.durationHoursMinutes(hours, minutes)
+      : l10n.durationHours(hours);
+  }
+  if (minutes > 0) return l10n.durationMinutes(minutes);
+  return l10n.durationLessThanMinute;
 }

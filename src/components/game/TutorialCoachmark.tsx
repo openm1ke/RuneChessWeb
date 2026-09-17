@@ -1,3 +1,4 @@
+import { useL10n } from '../../l10n/l10nContext';
 import type { DozorSnapshot } from '../../game/dozorEngine';
 import type { Cell } from '../../game/models';
 import { tutorialLine } from '../../game/tutorialScript';
@@ -91,6 +92,7 @@ export function TutorialCoachmark({
   snapshot: DozorSnapshot;
   layout?: CoachmarkLayout;
 }) {
+  const l10n = useL10n();
   const levelFivePhase = snapshot.lessonPhase;
 
   const computeFocus = (): Focus => {
@@ -145,7 +147,7 @@ export function TutorialCoachmark({
     }
   };
 
-  const text = tutorialLine(lineId(), item?.type);
+  const text = tutorialLine(l10n, lineId(), item?.type);
 
   const accent = '#70e9f3';
   const { canvasWidth, board, tray } = layout;

@@ -1,19 +1,32 @@
+import { useL10n } from '../../l10n/l10nContext';
+import type { Strings } from '../../l10n/ru';
 import { useMemo, useState } from 'react';
 import { dailyChallengeKey, type DailyChallengeResult } from '../../game/dailyChallengeLevels';
 import {
   computeDailyChallengeStats,
-  dayWord,
   daysUntilFreezeRefill,
   formatDurationShort,
   timeUntilNextDailyChallenge,
 } from '../../game/dailyChallengeStats';
 import { asset } from '../../lib/assetUrl';
 
-const MONTH_NAMES = [
-  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
+const monthNames = (l10n: Strings) => [
+  l10n.month1, l10n.month2, l10n.month3, l10n.month4, l10n.month5, l10n.month6,
+  l10n.month7, l10n.month8, l10n.month9, l10n.month10, l10n.month11, l10n.month12,
 ];
-const WEEKDAY_LETTERS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+/** The month as it appears inside a date — «14 сентября». Russian needs
+ * the genitive there, and using the heading form reads as a mistake to
+ * anyone who speaks the language. */
+const monthNamesOf = (l10n: Strings) => [
+  l10n.month1Of, l10n.month2Of, l10n.month3Of, l10n.month4Of, l10n.month5Of,
+  l10n.month6Of, l10n.month7Of, l10n.month8Of, l10n.month9Of, l10n.month10Of,
+  l10n.month11Of, l10n.month12Of,
+];
+const weekdayLetters = (l10n: Strings) => [
+  l10n.weekday1, l10n.weekday2, l10n.weekday3, l10n.weekday4,
+  l10n.weekday5, l10n.weekday6, l10n.weekday7,
+];
 
 const SOLVED_FILL = '#3a6b3f';
 const FROZEN_FILL = '#1e4a66';
@@ -45,6 +58,7 @@ export function DailyChallengeCalendarSheet({
   history: Map<string, DailyChallengeResult>;
   onClose: () => void;
 }) {
+  const l10n = useL10n();
   const today = useMemo(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -87,7 +101,7 @@ export function DailyChallengeCalendarSheet({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Закрыть"
+          aria-label={l10n.commonClose}
           style={{
             position: 'sticky',
             top: 0,
@@ -111,23 +125,23 @@ export function DailyChallengeCalendarSheet({
         <FreezeStatus available={stats.freezeAvailable} streak={stats.currentStreak} />
         <div style={{ height: 10 }} />
         <div style={{ fontSize: 11.5, fontWeight: 700, color: MUTED }}>
-          Новое задание через {formatDurationShort(leftToday)}
+          {l10n.calendarNextChallengeIn(formatDurationShort(l10n, leftToday))}
         </div>
         <div style={{ height: 14 }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button type="button" onClick={() => shiftMonth(-1)} aria-label="Предыдущий месяц" style={monthArrowStyle}>
+          <button type="button" onClick={() => shiftMonth(-1)} aria-label={l10n.calendarPrevMonth} style={monthArrowStyle}>
             ‹
           </button>
           <span style={{ fontSize: 14, fontWeight: 800, color: '#ffe2a4' }}>
-            {MONTH_NAMES[visibleMonth.getMonth()]} {visibleMonth.getFullYear()}
+            {monthNames(l10n)[visibleMonth.getMonth()]} {visibleMonth.getFullYear()}
           </span>
-          <button type="button" onClick={() => shiftMonth(1)} aria-label="Следующий месяц" style={monthArrowStyle}>
+          <button type="button" onClick={() => shiftMonth(1)} aria-label={l10n.calendarNextMonth} style={monthArrowStyle}>
             ›
           </button>
         </div>
         <div style={{ height: 8 }} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
-          {WEEKDAY_LETTERS.map((letter) => (
+          {weekdayLetters(l10n).map((letter) => (
             <div key={letter} style={{ fontSize: 10, fontWeight: 700, color: 'rgba(206,225,255,0.5)', textAlign: 'center' }}>
               {letter}
             </div>
@@ -144,17 +158,18 @@ export function DailyChallengeCalendarSheet({
 
 /** The number the mode is about, at the size that says so. */
 function StreakHeadline({ streak }: { streak: number }) {
+  const l10n = useL10n();
   if (streak === 0) {
     // A giant "0" is a scoreboard of failure. With nothing to count yet, the
     // honest headline is the invitation.
     return (
       <div style={{ padding: '0 36px' }}>
         <div id="daily-calendar-title" style={{ fontSize: 19, fontWeight: 900, color: GOLD }}>
-          Серия ещё не начата
+          {l10n.calendarStreakNotStarted}
         </div>
         <div style={{ height: 4 }} />
         <div style={{ fontSize: 12, fontWeight: 600, color: MUTED }}>
-          Решите сегодняшнее задание, чтобы начать
+          {l10n.calendarStreakStartHint}
         </div>
       </div>
     );
@@ -165,7 +180,7 @@ function StreakHeadline({ streak }: { streak: number }) {
         {streak}
       </div>
       <div style={{ fontSize: 13, fontWeight: 800, color: 'rgba(255,226,164,0.8)', letterSpacing: 0.6 }}>
-        {dayWord(streak)} подряд
+        {l10n.calendarStreakDays(streak)}
       </div>
     </div>
   );
@@ -173,6 +188,7 @@ function StreakHeadline({ streak }: { streak: number }) {
 
 /** The freeze, as a status line rather than the headline it used to be. */
 function FreezeStatus({ available, streak }: { available: boolean; streak: number }) {
+  const l10n = useL10n();
   const refillIn = daysUntilFreezeRefill(streak);
   return (
     <div
@@ -197,7 +213,7 @@ function FreezeStatus({ available, streak }: { available: boolean; streak: numbe
       />
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 900, color: available ? ICE : 'rgba(206,225,255,0.55)' }}>
-          {available ? 'Фриз в запасе' : 'Фриз использован'}
+          {available ? l10n.calendarFreezeAvailable : l10n.calendarFreezeUsed}
         </div>
         <div style={{ height: 2 }} />
         <div style={{ fontSize: 11, fontWeight: 600, color: MUTED }}>
@@ -205,8 +221,8 @@ function FreezeStatus({ available, streak }: { available: boolean; streak: numbe
               дней подряд, чтобы получить фриз") was shown to players who
               already had one. */}
           {available
-            ? 'Один пропущенный день не обнулит серию'
-            : `Вернётся ещё через ${refillIn} ${dayWord(refillIn)} подряд`}
+            ? l10n.calendarFreezeHint
+            : l10n.calendarFreezeRefill(refillIn)}
         </div>
       </div>
     </div>
@@ -217,15 +233,16 @@ function FreezeStatus({ available, streak }: { available: boolean; streak: numbe
  * meant "missed" — and the month before install is all greys, which reads as
  * an accusation. */
 function Legend() {
+  const l10n = useL10n();
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 12px' }}>
-      <LegendItem fill={SOLVED_FILL} label="пройден">
+      <LegendItem fill={SOLVED_FILL} label={l10n.calendarLegendSolved}>
         <span style={{ fontSize: 9, color: GOLD }}>★</span>
       </LegendItem>
-      <LegendItem fill={FROZEN_FILL} label="прощён фризом">
+      <LegendItem fill={FROZEN_FILL} label={l10n.calendarLegendFrozen}>
         <span style={{ fontSize: 9, color: ICE }}>❄</span>
       </LegendItem>
-      <LegendItem fill={MISSED_FILL} label="пропущен" />
+      <LegendItem fill={MISSED_FILL} label={l10n.calendarLegendMissed} />
     </div>
   );
 }
@@ -303,6 +320,7 @@ function DayCell({
   history: Map<string, DailyChallengeResult>;
   frozenDates: Set<string>;
 }) {
+  const l10n = useL10n();
   const key = dailyChallengeKey(date);
   const result = history.get(key);
   const frozen = frozenDates.has(key);
@@ -312,11 +330,11 @@ function DayCell({
   let background = MISSED_FILL;
   let textColor = 'rgba(206,225,255,0.5)';
   let mark: React.ReactNode = null;
-  let label = 'пропущен';
+  let label = l10n.calendarLegendMissed;
   if (result != null) {
     background = SOLVED_FILL;
     textColor = '#e9ffea';
-    label = `пройден, звёзд: ${result.stars}`;
+    label = `${l10n.calendarLegendSolved}, ${l10n.progressStars(result.stars)}: ${result.stars}`;
     mark = (
       <div style={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
         {/* 10, not the 8 this used to be: three tiny stars merged into one
@@ -331,17 +349,17 @@ function DayCell({
   } else if (frozen) {
     background = FROZEN_FILL;
     textColor = '#dff4ff';
-    label = 'пропущен, прощён фризом';
+    label = `${l10n.calendarLegendMissed}, ${l10n.calendarLegendFrozen}`;
     mark = <span style={{ fontSize: 11, color: ICE, lineHeight: 1 }}>❄</span>;
   } else if (isFuture) {
     background = 'transparent';
     textColor = 'rgba(206,225,255,0.3)';
-    label = 'ещё не наступил';
+    label = l10n.calendarDayFuture('').replace(/^ — /, '');
   }
 
   return (
     <div
-      aria-label={`${date.getDate()} ${MONTH_NAMES[date.getMonth()].toLowerCase()} — ${label}`}
+      aria-label={`${l10n.calendarDayDate(date.getDate(), monthNamesOf(l10n)[date.getMonth()])} — ${label}`}
       style={{
         aspectRatio: '1',
         borderRadius: 8,

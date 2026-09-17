@@ -1,3 +1,4 @@
+import { ru } from '../l10n/ru';
 // Free hints exist so that a player without a loadable ad is never stuck —
 // see `hintWallet.ts`. The arithmetic below is what makes "next hint in
 // 2 ч 40 мин" a promise rather than a guess. Mirrors the mobile app's
@@ -59,9 +60,9 @@ describe('hint wallet', () => {
   });
 
   it('writes the wait for a glance', () => {
-    expect(formatHintWait(hours(2) + 40 * 60000)).toBe('2 ч 40 мин');
-    expect(formatHintWait(hours(3))).toBe('3 ч');
-    expect(formatHintWait(35 * 60000)).toBe('35 мин');
-    expect(formatHintWait(20000)).toBe('меньше минуты');
+    expect(formatHintWait(ru, hours(2) + 40 * 60000)).toBe('2 ч 40 мин');
+    expect(formatHintWait(ru, hours(3))).toBe('3 ч');
+    expect(formatHintWait(ru, 35 * 60000)).toBe('35 мин');
+    expect(formatHintWait(ru, 20000)).toBe('меньше минуты');
   });
 });

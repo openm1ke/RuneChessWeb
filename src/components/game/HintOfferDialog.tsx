@@ -1,3 +1,4 @@
+import { useL10n } from '../../l10n/l10nContext';
 import { formatHintWait } from '../../game/hintWallet';
 
 /**
@@ -22,6 +23,7 @@ export function HintOfferDialog({
   onWatch: () => void;
   onClose: () => void;
 }) {
+  const l10n = useL10n();
   return (
     <div
       role="dialog"
@@ -58,7 +60,7 @@ export function HintOfferDialog({
         <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(206,225,255,0.78)' }}>
           {waitMs == null
             ? 'Подсказка скоро восстановится.'
-            : `Следующая через ${formatHintWait(waitMs)}.`}
+            : `Следующая через ${formatHintWait(l10n, waitMs)}.`}
         </div>
         <div style={{ height: 14 }} />
         {adReady ? (

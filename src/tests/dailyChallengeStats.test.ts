@@ -1,3 +1,4 @@
+import { ru } from '../l10n/ru';
 import { describe, expect, it } from 'vitest';
 import {
   computeDailyChallengeStats,
@@ -112,9 +113,9 @@ describe('days until the freeze refills', () => {
 
 describe('the countdown reads at a glance', () => {
   it('never shows seconds', () => {
-    expect(formatDurationShort(6 * 3600_000 + 20 * 60_000 + 42_000)).toBe('6 ч 20 мин');
-    expect(formatDurationShort(3 * 3600_000)).toBe('3 ч');
-    expect(formatDurationShort(40 * 60_000)).toBe('40 мин');
-    expect(formatDurationShort(30_000)).toBe('меньше минуты');
+    expect(formatDurationShort(ru, 6 * 3600_000 + 20 * 60_000 + 42_000)).toBe('6 ч 20 мин');
+    expect(formatDurationShort(ru, 3 * 3600_000)).toBe('3 ч');
+    expect(formatDurationShort(ru, 40 * 60_000)).toBe('40 мин');
+    expect(formatDurationShort(ru, 30_000)).toBe('меньше минуты');
   });
 });
