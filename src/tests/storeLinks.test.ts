@@ -1,3 +1,5 @@
+import { ru } from '../l10n/ru';
+import { en } from '../l10n/en';
 // The site advertises only the stores the app is really in. A badge that
 // leads nowhere is worse than no badge: it reads as a broken promise on the
 // first page a visitor sees.
@@ -9,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import type { StoreBadge } from '../data/storeLinks';
 import { STORE_LINKS, menuStoreLinks, publishedStoreLinks } from '../data/storeLinks';
 
-const badge: StoreBadge = { file: 'x.svg', width: 111, height: 40, alt: 'x' };
+const badge: StoreBadge = { file: 'x.svg', width: 111, height: 40, altKey: 'storeBadgeRuStore' as const };
 
 describe('storeLinks', () => {
   it('leaves out a store the app is not published in', () => {
@@ -52,7 +54,8 @@ describe('storeLinks', () => {
       expect(badge.file).toMatch(/\.svg$/);
       expect(badge.width).toBeGreaterThan(0);
       expect(badge.height).toBeGreaterThan(0);
-      expect(badge.alt).not.toHaveLength(0);
+      expect(ru[badge.altKey]).not.toHaveLength(0);
+      expect(en[badge.altKey]).not.toHaveLength(0);
     }
   });
 

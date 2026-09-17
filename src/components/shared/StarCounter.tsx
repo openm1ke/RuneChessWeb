@@ -1,3 +1,4 @@
+import { useL10n } from '../../l10n/l10nContext';
 /**
  * What the player's stars are worth, on the screen they start from.
  *
@@ -23,12 +24,13 @@ export function StarCounter({
   earned: number;
   onAppearance: () => void;
 }) {
+  const l10n = useL10n();
   const [open, setOpen] = useState(false);
   return (
     <>
       <button
         type="button"
-        aria-label={`Звёзд свободно: ${available}. Узнать, зачем они`}
+        aria-label={l10n.starCounterSemantics(available)}
         onPointerDown={() => playNavigationPress()}
         onPointerUp={() => playNavigationRelease()}
         onClick={() => setOpen(true)}
@@ -80,11 +82,12 @@ function StarsExplainer({
   onClose: () => void;
   onAppearance: () => void;
 }) {
+  const l10n = useL10n();
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Звёзды"
+      aria-label={l10n.starsLabel}
       onClick={onClose}
       style={{
         position: 'fixed',
@@ -120,15 +123,13 @@ function StarsExplainer({
             color: 'var(--gold-bright)',
           }}
         >
-          Звёзды
+          {l10n.starsLabel}
         </div>
         <ExplainerLine glyph="🏆">
-          Уровень даёт до трёх звёзд, задание дня — одну-три. Чем их больше, тем выше
-          звание в достижениях.
+          {l10n.starsWhatFor1}
         </ExplainerLine>
         <ExplainerLine glyph="🎨">
-          На них открываются оформления: доска, фигуры и монеты. Покупка не отнимает
-          звание и не меняет сложность.
+          {l10n.starsWhatFor2}
         </ExplainerLine>
         <div
           style={{
@@ -142,7 +143,7 @@ function StarsExplainer({
             color: '#c6d3ed',
           }}
         >
-          Свободно {available}★ · всего заработано {earned}★
+          {l10n.starsBalance(available, earned)}
         </div>
         <button
           type="button"
@@ -161,7 +162,7 @@ function StarsExplainer({
             cursor: 'pointer',
           }}
         >
-          ПОСМОТРЕТЬ ОФОРМЛЕНИЯ
+          {l10n.starsSeeLooks.toUpperCase()}
         </button>
         <button
           type="button"
@@ -177,7 +178,7 @@ function StarsExplainer({
             cursor: 'pointer',
           }}
         >
-          ПОНЯТНО
+          {l10n.commonGotIt.toUpperCase()}
         </button>
       </div>
     </div>

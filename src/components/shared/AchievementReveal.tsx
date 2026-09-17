@@ -127,7 +127,7 @@ export function AchievementCelebrationOverlay({
           textTransform: 'uppercase',
         }}
       >
-        Достижение открыто
+        {l10n.resultAchievementUnlocked}
       </div>
       <AchievementReveal achievement={achievement} size={140} animate onRevealed={onRevealed} />
       <div

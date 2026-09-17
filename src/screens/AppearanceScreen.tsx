@@ -123,7 +123,7 @@ export function AppearanceScreen({
               color: 'var(--gold-bright)',
             }}
           >
-            ВНЕШНИЙ ВИД
+            {l10n.settingsAppearance.toUpperCase()}
           </div>
           <p
             style={{
@@ -134,7 +134,7 @@ export function AppearanceScreen({
               color: '#b9c6e6',
             }}
           >
-            Оформление доски, фигур и монет. На сложность и прогресс не влияет.
+            {l10n.appearanceLead}
           </p>
           <StarBalance stars={starsAvailable} />
           <div
@@ -206,7 +206,7 @@ export function AppearanceScreen({
                 color: 'var(--gold-bright)',
               }}
             >
-              ВНЕШНИЙ ВИД
+              {l10n.settingsAppearance.toUpperCase()}
             </div>
             <StarBalance stars={starsAvailable} inline />
           </div>
@@ -258,7 +258,7 @@ export function AppearanceScreen({
               color: 'var(--gold-bright)',
             }}
           >
-            ВНЕШНИЙ ВИД
+            {l10n.settingsAppearance.toUpperCase()}
           </div>
           <p
             style={{
@@ -270,7 +270,7 @@ export function AppearanceScreen({
               color: '#b9c6e6',
             }}
           >
-            Оформление доски, фигур и монет. На сложность и прогресс не влияет.
+            {l10n.appearanceLead}
           </p>
           <StarBalance stars={starsAvailable} />
           {cosmeticSkins.map((entry) => (
@@ -491,6 +491,7 @@ function ChooseButton({
    * natural one, which used to push it out through the card's edge. */
   fill?: boolean;
 }) {
+  const l10n = useL10n();
   if (selected) {
     return (
       <div
@@ -509,7 +510,7 @@ function ChooseButton({
           whiteSpace: 'nowrap',
         }}
       >
-        ✓ ВЫБРАНО
+        ✓ {l10n.appearanceSelected.toUpperCase()}
       </div>
     );
   }
@@ -533,7 +534,7 @@ function ChooseButton({
         whiteSpace: 'nowrap',
       }}
     >
-      ВЫБРАТЬ
+      {l10n.appearanceSelect.toUpperCase()}
     </button>
   );
 }
@@ -613,7 +614,7 @@ function StarBalance({ stars, inline = false }: { stars: number; inline?: boolea
       >
         {stars}
       </span>
-      <span style={{ fontSize: 12, fontWeight: 700, color: '#b9c6e6' }}>звёзд свободно</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: '#b9c6e6' }}>{l10n.appearanceStarsFree(stars)}</span>
     </div>
   );
 }

@@ -414,7 +414,7 @@ function LandscapeMenuScene({
           color: 'rgba(154,163,180,0.55)',
         }}
       >
-        версия 1.0.0
+        {l10n.menuVersion(APP_VERSION)}
       </div>
     </div>
   );
@@ -477,7 +477,7 @@ function MenuFooterLinks() {
             >
               <img
                 src={asset(`assets/badges/${badge.file}`)}
-                alt={badge.alt}
+                alt={l10n[badge.altKey]}
                 width={(BADGE_HEIGHT * badge.width) / badge.height}
                 height={BADGE_HEIGHT}
                 style={{ display: 'block' }}

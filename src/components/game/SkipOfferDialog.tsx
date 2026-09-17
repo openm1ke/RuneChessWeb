@@ -1,3 +1,4 @@
+import { useL10n } from '../../l10n/l10nContext';
 /**
  * After three resets of the same level: a way out that is not "close the
  * game".
@@ -14,11 +15,12 @@ export function SkipOfferDialog({
   onSkip: () => void;
   onClose: () => void;
 }) {
+  const l10n = useL10n();
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Уровень не поддаётся?"
+      aria-label={l10n.sceneStuckTitle}
       onClick={onClose}
       style={{
         position: 'absolute',
@@ -43,11 +45,10 @@ export function SkipOfferDialog({
           textAlign: 'center',
         }}
       >
-        <div style={{ fontSize: 16, fontWeight: 900, color: '#ffe2a4' }}>Уровень не поддаётся?</div>
+        <div style={{ fontSize: 16, fontWeight: 900, color: '#ffe2a4' }}>{l10n.sceneStuckTitle}</div>
         <div style={{ height: 6 }} />
         <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(206,225,255,0.78)' }}>
-          Можно пропустить его за ролик и вернуться позже. Звёзды за пропущенный уровень не
-          начисляются.
+          {l10n.sceneStuckBody}
         </div>
         <div style={{ height: 14 }} />
         <button

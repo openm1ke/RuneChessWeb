@@ -44,8 +44,10 @@ export interface StoreBadge {
   readonly file: string;
   readonly width: number;
   readonly height: number;
-  /** What the badge says, for anyone who cannot see it. */
-  readonly alt: string;
+  /** Which string says what the badge says, for anyone who cannot see it.
+   * A key rather than the words, because the footer is drawn in whichever
+   * language the visitor is reading. */
+  readonly altKey: 'storeBadgeRuStore' | 'storeBadgeAppStore';
 }
 
 export interface StoreLink {
@@ -71,7 +73,7 @@ export const STORE_LINKS: readonly StoreLink[] = BUILT_FOR_YANDEX_GAMES
           file: 'rustore-ru.svg',
           width: 111,
           height: 40,
-          alt: 'Скачайте из RuStore',
+          altKey: 'storeBadgeRuStore' as const,
         },
       },
       // Live since 16.09.2026 — Apple ID 6810595002. The link carries no
@@ -85,7 +87,7 @@ export const STORE_LINKS: readonly StoreLink[] = BUILT_FOR_YANDEX_GAMES
           file: 'app-store-ru.svg',
           width: 119.66407,
           height: 40,
-          alt: 'Загрузите в App Store',
+          altKey: 'storeBadgeAppStore' as const,
         },
       },
       // Not started: no developer account yet.

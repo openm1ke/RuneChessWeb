@@ -1,4 +1,6 @@
+import { useL10n } from '../../l10n/l10nContext';
 export function ResetConfirmDialog({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
+  const l10n = useL10n();
   return (
     <div
       style={{
@@ -24,9 +26,9 @@ export function ResetConfirmDialog({ onConfirm, onCancel }: { onConfirm: () => v
           textAlign: 'center',
         }}
       >
-        <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--gold-bright)' }}>Начать уровень заново?</div>
+        <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--gold-bright)' }}>{l10n.sceneRestartTitle}</div>
         <div style={{ marginTop: 8, fontSize: 13, fontWeight: 600, color: 'rgba(206,225,255,0.78)' }}>
-          Все поставленные фигуры вернутся в панель.
+          {l10n.sceneRestartBody}
         </div>
         <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-evenly' }}>
           <button
@@ -34,14 +36,14 @@ export function ResetConfirmDialog({ onConfirm, onCancel }: { onConfirm: () => v
             onClick={onCancel}
             style={{ background: 'none', border: 'none', color: 'rgba(255,231,178,0.62)', fontWeight: 800, cursor: 'pointer', padding: 8 }}
           >
-            Отмена
+            {l10n.commonCancel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
             style={{ background: 'none', border: 'none', color: 'var(--gold)', fontWeight: 900, cursor: 'pointer', padding: 8 }}
           >
-            Сбросить
+            {l10n.commonReset}
           </button>
         </div>
       </div>

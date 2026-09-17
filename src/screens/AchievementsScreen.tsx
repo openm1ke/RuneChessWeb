@@ -31,6 +31,7 @@ interface AchievementsProps {
 }
 
 export function AchievementsScreen(props: AchievementsProps) {
+  const l10n = useL10n();
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
   const [selected, setSelected] = useState<AchievementDefinition | null>(null);
@@ -73,7 +74,7 @@ export function AchievementsScreen(props: AchievementsProps) {
           marginBottom: 8,
         }}
       >
-        {unlocked.size} ИЗ {allAchievements.length} ПОЛУЧЕНО
+        {l10n.achievementsEarnedOf(unlocked.size, allAchievements.length).toUpperCase()}
       </div>
       <div style={{ marginBottom: 14 }}>
         <ProgressSummary progress={props.progress} />
@@ -153,7 +154,7 @@ function PortraitAchievementsScene({
             textShadow: '0 3px 5px rgba(0,0,0,0.8)',
           }}
         >
-          ДОСТИЖЕНИЯ
+          {l10n.achievementsTitle.toUpperCase()}
         </div>
         <div
           className="dozor-scroll-panel"
@@ -220,7 +221,7 @@ function LandscapeAchievementsScene({
           textShadow: '0 3px 5px rgba(0,0,0,0.8)',
         }}
       >
-        ДОСТИЖЕНИЯ
+        {l10n.achievementsTitle.toUpperCase()}
       </div>
       <div
         className="dozor-scroll-panel"
@@ -320,10 +321,11 @@ function AchievementTile({
 }
 
 export function AchievementProgressBar({ progress }: { progress: AchievementProgressCount }) {
+  const l10n = useL10n();
   const percent = Math.round(progressFraction(progress) * 100);
   // "8 из 50" says what is left; "16%" made the player do the arithmetic
   // backwards, and at 2% the bar itself is a dot.
-  const label = progressLabel(progress);
+  const label = progressLabel(l10n, progress);
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}>
       <div

@@ -1,3 +1,4 @@
+import { useL10n } from '../l10n/l10nContext';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { artForCanvas } from '../game/cosmeticSkins';
 import { LevelSelectList } from '../components/game/LevelSelectList';
@@ -16,6 +17,7 @@ interface LevelSelectProps {
   onLevelChosen: (index: number) => void;
 }
 export function LevelSelectScreen(props: LevelSelectProps) {
+  const l10n = useL10n();
   const viewport = useViewportSize();
   const skin = useCosmeticSkin();
   const isLandscape = viewport.width > viewport.height;
@@ -69,7 +71,7 @@ export function LevelSelectScreen(props: LevelSelectProps) {
           }}
         />
         <div style={{ position: 'absolute', top: 22, left: 20 }}>
-          <RoundControl onClick={onBack} label="Назад в меню">
+          <RoundControl onClick={onBack} label={l10n.infoBackToMenu}>
             ‹
           </RoundControl>
         </div>
@@ -88,7 +90,7 @@ export function LevelSelectScreen(props: LevelSelectProps) {
             textShadow: '0 3px 5px rgba(0,0,0,0.8)',
           }}
         >
-          УРОВНИ
+          {l10n.levelsTitle.toUpperCase()}
         </div>
         <div
           style={{
@@ -138,6 +140,7 @@ function LandscapeLevelSelectScene({
   onLevelChosen,
   viewportWidth,
 }: LevelSelectProps & { viewportWidth: number }) {
+  const l10n = useL10n();
   const skin = useCosmeticSkin();
   // Each tile remains comfortably tappable while the number of columns grows
   // on tablets and desktop-sized browser windows.
@@ -153,7 +156,7 @@ function LandscapeLevelSelectScene({
       />
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.71)' }} />
       <div style={{ position: 'absolute', top: 22, left: 20 }}>
-        <RoundControl onClick={onBack} label="Назад в меню">
+        <RoundControl onClick={onBack} label={l10n.infoBackToMenu}>
           ‹
         </RoundControl>
       </div>
@@ -172,7 +175,7 @@ function LandscapeLevelSelectScene({
           textShadow: '0 3px 5px rgba(0,0,0,0.8)',
         }}
       >
-        УРОВНИ
+        {l10n.levelsTitle.toUpperCase()}
       </div>
       <div
         style={{

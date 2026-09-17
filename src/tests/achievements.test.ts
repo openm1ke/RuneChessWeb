@@ -1,3 +1,4 @@
+import { ru } from '../l10n/ru';
 import { describe, expect, it } from 'vitest';
 import {
   achievementCategory,
@@ -160,16 +161,16 @@ describe('progressCountFor', () => {
 
   it('reads as the counter the condition is written in, not a percent', () => {
     const counted = progressCountFor(coinOne.id, { ...baseArgs, hintedLevelsCount: 8 });
-    expect(progressLabel(counted)).toBe('8 из 50');
+    expect(progressLabel(ru, counted)).toBe('8 из 50');
   });
 
   it('a yes/no condition has no counter to show', () => {
-    expect(progressLabel(progressCountFor(trainingPawn.id, baseArgs))).toBeNull();
+    expect(progressLabel(ru, progressCountFor(trainingPawn.id, baseArgs))).toBeNull();
   });
 
   it('the bar and its label come from one answer, so they agree', () => {
     const args = { ...baseArgs, hintedLevelsCount: 8 };
     expect(progressFor(coinOne.id, args)).toBeCloseTo(8 / 50);
-    expect(progressLabel(progressCountFor(coinOne.id, args))).toBe('8 из 50');
+    expect(progressLabel(ru, progressCountFor(coinOne.id, args))).toBe('8 из 50');
   });
 });

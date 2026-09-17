@@ -189,8 +189,11 @@ export function progressFraction({ done, target }: AchievementProgressCount): nu
 
 /** Null for a yes/no condition, where "0 из 1" would say less than the bar
  * already does. */
-export function progressLabel({ done, target }: AchievementProgressCount): string | null {
-  return target <= 1 ? null : `${done} из ${target}`;
+export function progressLabel(
+  l10n: Strings,
+  { done, target }: AchievementProgressCount,
+): string | null {
+  return target <= 1 ? null : l10n.progressCounter(done, target);
 }
 
 /** Fraction (0..1) of the way towards `id`'s condition, for the progress

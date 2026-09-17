@@ -1,3 +1,4 @@
+import { useL10n } from '../../l10n/l10nContext';
 /** True in the archive built for games.yandex.ru — see vite.config.ts.
  * §8.4.2 forbids links out of the game, this one included. */
 const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
@@ -9,6 +10,7 @@ export function ConsentBanner({
   onAcceptAnalytics: () => void;
   onDeclineAnalytics: () => void;
 }) {
+  const l10n = useL10n();
   return (
     <section
       role="dialog"
@@ -32,25 +34,24 @@ export function ConsentBanner({
       }}
     >
       <div id="consent-title" style={{ fontFamily: 'var(--font-display)', color: '#ffdc82', fontSize: 16, letterSpacing: 0.8 }}>
-        СОХРАНЕНИЕ И АНАЛИТИКА
+        {l10n.consentTitleWeb.toUpperCase()}
       </div>
       <p style={{ margin: '9px 0 14px', fontSize: 14, lineHeight: 1.42 }}>
-        Игра использует локальное хранилище, чтобы сохранять ваш прогресс и настройки — без него она не сможет запоминать результаты.
-        С вашего согласия подключается Яндекс Метрика, чтобы понять, какие уровни стоит улучшить. Играть можно и без аналитики.
+        {l10n.consentBodyWeb}
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
         <button type="button" onClick={onAcceptAnalytics} style={primaryButtonStyle}>
-          Принять аналитику
+          {l10n.consentAcceptAnalytics}
         </button>
         <button type="button" onClick={onDeclineAnalytics} style={secondaryButtonStyle}>
-          Только необходимые
+          {l10n.consentEssentialOnly}
         </button>
         {!BUILT_FOR_YANDEX_GAMES && (
           <a
             href="./privacy.html"
             style={{ marginLeft: 'auto', color: '#b9ccf5', fontSize: 12 }}
           >
-            Политика конфиденциальности
+            {l10n.privacyPolicy}
           </a>
         )}
       </div>

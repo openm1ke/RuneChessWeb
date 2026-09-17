@@ -1,3 +1,4 @@
+import { APP_VERSION } from '../appVersion';
 import { achievementTitle } from '../data/achievements';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { useL10n } from '../l10n/l10nContext';
@@ -147,7 +148,7 @@ export function CampaignCompleteScreen(props: CampaignCompleteProps) {
             color: 'rgba(154,163,180,0.55)',
           }}
         >
-          версия 1.0.0
+          {l10n.menuVersion(APP_VERSION)}
         </div>
       </div>
       )}

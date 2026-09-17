@@ -117,7 +117,7 @@ function PortraitSettingsScene({
               marginBottom: 26,
             }}
           >
-            НАСТРОЙКИ
+            {l10n.settingsTitle.toUpperCase()}
           </div>
           <MusicSettingsCard
             musicEnabled={musicEnabled}
@@ -216,7 +216,7 @@ function LandscapeSettingsScene({
               marginBottom: 22,
             }}
           >
-            НАСТРОЙКИ
+            {l10n.settingsTitle.toUpperCase()}
           </div>
           <MusicSettingsCard
             musicEnabled={musicEnabled}
@@ -308,14 +308,14 @@ function MusicSettingsCard({
           ♪
         </div>
         <div style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: 1.1, color: 'var(--gold-bright)' }}>
-          Музыка
+          {l10n.settingsMusic}
         </div>
         <RuneToggle value={musicEnabled} onChange={onMusicEnabledChanged} label={l10n.settingsMusicEnable} />
       </div>
       <div style={{ height: 26 }} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 14, fontWeight: 800, color: musicEnabled ? '#d8e0f7' : 'rgba(127,140,172,0.4)' }}>
-          Громкость
+          {l10n.settingsVolume}
         </span>
         <span style={{ fontFamily: 'var(--font-display)', fontSize: 14, color: musicEnabled ? 'var(--gold)' : 'rgba(127,140,172,0.4)' }}>
           {Math.round(musicVolume * 100)}%
@@ -355,7 +355,7 @@ function MusicSettingsCard({
           🔔
         </div>
         <div style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: 1.1, color: 'var(--gold-bright)' }}>
-          Звуковые эффекты
+          {l10n.settingsSoundEffects}
         </div>
         <RuneToggle value={soundEffectsEnabled} onChange={onSoundEffectsEnabledChanged} label={l10n.settingsSoundEffectsEnable} />
       </div>
@@ -378,18 +378,19 @@ const SETTINGS_CARD_STYLE = {
  * controls players actually adjust often.
  */
 function ResetProgressCard({ onResetRequested }: { onResetRequested: () => void }) {
+  const l10n = useL10n();
   return (
     <div style={SETTINGS_CARD_STYLE}>
-      <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>СБРОС ПРОГРЕССА</div>
+      <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>{l10n.settingsResetProgress.toUpperCase()}</div>
       <p style={{ margin: '8px 0 15px', color: '#c6d3ed', fontSize: 13, fontWeight: 700, lineHeight: 1.42 }}>
-        Удалить пройденные уровни и звёзды.
+        {l10n.settingsResetProgressDescription}
       </p>
       <button
         type="button"
         onClick={onResetRequested}
         style={{ width: '100%', minHeight: 44, border: '1.5px solid rgba(240,142,104,0.86)', borderRadius: 12, color: '#ffe2d7', background: 'linear-gradient(#77323b, #451d2b)', fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 1, cursor: 'pointer' }}
       >
-        СБРОСИТЬ ДОСТИЖЕНИЯ
+        {l10n.settingsResetAchievements.toUpperCase()}
       </button>
     </div>
   );
@@ -462,20 +463,21 @@ function LanguageCard({
 }
 
 function AppearanceCard({ skinName, onAppearance }: { skinName: string; onAppearance: () => void }) {
+  const l10n = useL10n();
   return (
     <div style={SETTINGS_CARD_STYLE}>
       <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>
-        ВНЕШНИЙ ВИД
+        {l10n.settingsAppearance.toUpperCase()}
       </div>
       <p style={{ margin: '8px 0 15px', color: '#c6d3ed', fontSize: 13, fontWeight: 700, lineHeight: 1.42 }}>
-        Оформление доски, фигур и монет. Сейчас: {skinName}.
+        {l10n.settingsAppearanceDescription(skinName)}
       </p>
       <button
         type="button"
         onClick={onAppearance}
         style={{ width: '100%', minHeight: 44, border: '1.5px solid rgba(207,162,68,0.86)', borderRadius: 12, color: '#ffe9c4', background: 'rgba(27,46,99,0.67)', fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 1, cursor: 'pointer' }}
       >
-        ВЫБРАТЬ ОФОРМЛЕНИЕ
+        {l10n.settingsAppearanceChoose.toUpperCase()}
       </button>
     </div>
   );
@@ -500,7 +502,7 @@ function PrivacyCard({
   return (
     <div style={SETTINGS_CARD_STYLE}>
       <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>
-        КОНФИДЕНЦИАЛЬНОСТЬ
+        {l10n.settingsPrivacy.toUpperCase()}
       </div>
       <div style={{ height: 16 }} />
       <div
@@ -519,7 +521,7 @@ function PrivacyCard({
             past for ever after used to push the rest of the page down. The
             mark waits by the switch, the same place on every row. */}
         <div style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 0.4, color: 'var(--gold-bright)' }}>
-          Аналитика
+          {l10n.settingsAnalytics}
         </div>
         <HintBadge
           title={l10n.settingsAnalytics}

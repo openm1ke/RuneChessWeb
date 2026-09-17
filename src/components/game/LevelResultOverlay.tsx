@@ -365,7 +365,7 @@ export function LevelResultOverlay({
                   cursor: 'pointer',
                 }}
               >
-                Пройти ещё раз
+                {l10n.resultRetry}
               </button>
             )}
           </div>

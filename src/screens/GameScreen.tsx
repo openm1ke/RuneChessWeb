@@ -1,3 +1,4 @@
+import { useL10n } from '../l10n/l10nContext';
 import { useEffect, useRef, useState } from 'react';
 import { DesignCanvas, type CanvasSize } from '../components/shared/DesignCanvas';
 import { artForCanvas } from '../game/cosmeticSkins';
@@ -91,6 +92,7 @@ export function GameScreen({
    * has already been doubled. */
   onDailyStarsDoubled?: (stars: number) => void;
 }) {
+  const l10n = useL10n();
   const { snapshot } = useDozorEngine(engine);
   const boardRef = useRef<HTMLDivElement>(null!);
   const trayRef = useRef<HTMLDivElement>(null!);
@@ -223,7 +225,7 @@ export function GameScreen({
         const after = engine.levelResult?.stars;
         if (before != null && after != null && after > before) {
           onBonusStarFallbackGranted?.(state);
-          setBonusStarNotice('Реклама сейчас недоступна — дарим звезду.');
+          setBonusStarNotice(l10n.adUnavailableFreeStar);
         }
       }
     });
@@ -242,12 +244,12 @@ export function GameScreen({
       const stars = engine.levelResult?.stars ?? 0;
       if (state === 'rewarded' && stars > 0) {
         setDailyDoubleGranted(true);
-        setBonusStarNotice(`Звёзды удвоены: +${stars}★ в копилку.`);
+        setBonusStarNotice(l10n.adStarsDoubled(stars));
         onDailyStarsDoubled?.(stars);
         return;
       }
       if (state === 'error' || state === 'unavailable') {
-        setBonusStarNotice('Реклама сейчас недоступна — попробуйте позже.');
+        setBonusStarNotice(l10n.adUnavailable);
       }
     });
   };

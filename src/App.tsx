@@ -1,3 +1,4 @@
+import type { Strings } from './l10n/ru';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DozorEngine, FIRST_SCORED_LEVEL_INDEX } from './game/dozorEngine';
 import { campaignLevels, MAIN_CAMPAIGN_LEVEL_COUNT } from './data/campaignLevels';
@@ -102,15 +103,16 @@ function setLevelSelectAddress(isOpen: boolean): void {
 /** Abbreviated, and matching the mobile app's `_dailyMonthAbbreviations`
  * exactly. The full genitive form ("5 сентября") made the header pill wide
  * enough to run under the back and hint buttons flanking it. */
-const DAILY_DATE_MONTHS = [
-  'ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН',
-  'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК',
+const dailyDateMonths = (l10n: Strings) => [
+  l10n.monthShort1, l10n.monthShort2, l10n.monthShort3, l10n.monthShort4,
+  l10n.monthShort5, l10n.monthShort6, l10n.monthShort7, l10n.monthShort8,
+  l10n.monthShort9, l10n.monthShort10, l10n.monthShort11, l10n.monthShort12,
 ];
 
 /** Short "4 СЕН" label for the daily challenge's in-game header — see
  * `DozorSnapshot.levelLabel`. */
-function dailyDateLabel(date: Date): string {
-  return `${date.getDate()} ${DAILY_DATE_MONTHS[date.getMonth()]}`;
+function dailyDateLabel(l10n: Strings, date: Date): string {
+  return `${date.getDate()} ${dailyDateMonths(l10n)[date.getMonth()]}`;
 }
 
 /** «ЗВЁЗДНАЯ ОБСЕРВАТОРИЯ» → «Звёздная обсерватория»: the names are stored
@@ -773,7 +775,7 @@ export default function App() {
     const latest = [...stats.frozenDates].sort().at(-1)!;
     if (progressRepository.loadAnnouncedFreezeDate() === latest) return;
     progressRepository.saveAnnouncedFreezeDate(latest);
-    setFreezeNotice('Пропуск дня прощён — использован дейли-фриз ❄️');
+    setFreezeNotice(l10n.dailyFreezeUsed);
   };
 
   const openDailyChallenge = () => {
@@ -788,7 +790,7 @@ export default function App() {
     const key = dailyChallengeKey(date);
     analyticsService.dailyChallengeOpened(key);
     analyticsService.dailyChallengeStarted(key);
-    engine.loadDailyChallenge(generated.level, generated.solution, dailyDateLabel(date));
+    engine.loadDailyChallenge(generated.level, generated.solution, dailyDateLabel(l10n, date));
     setScreen('game');
     void musicService.startGame();
   };
@@ -1169,7 +1171,7 @@ export default function App() {
         <CampaignCompleteScreen
           title={l10n.campaignMainComplete(mainCampaignName(l10n)).toUpperCase()}
           subtitle={l10n.campaignBonusUnlocked(bonusCampaignName(l10n))}
-          primaryLabel="ПРОДОЛЖИТЬ"
+          primaryLabel={l10n.commonContinue.toUpperCase()}
           onPrimary={continueAfterMainCampaign}
           achievement={achievementUnlockedAt.has(mainKing.id) ? mainKing : null}
           animateAchievement={mainCampaignJustEarned}
