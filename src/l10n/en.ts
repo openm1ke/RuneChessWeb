@@ -41,7 +41,7 @@ export const en: Strings = {
   settingsAppearanceChoose: "Choose a look",
   settingsResetProgress: "Reset progress",
   settingsResetProgressDescription: "Delete solved levels and stars.",
-  settingsResetAchievements: "Reset achievements",
+  settingsResetProgressAction: "Reset progress",
   settingsResetConfirmTitle: "Reset progress?",
   settingsResetConfirmBody: "Solved levels and stars will be deleted. This cannot be undone.",
   settingsPrivacy: "Privacy",

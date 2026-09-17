@@ -46,7 +46,7 @@ export const ru = {
   settingsAppearanceChoose: "Выбрать оформление",
   settingsResetProgress: "Сброс прогресса",
   settingsResetProgressDescription: "Удалить пройденные уровни и звёзды.",
-  settingsResetAchievements: "Сбросить достижения",
+  settingsResetProgressAction: "Сбросить прогресс",
   settingsResetConfirmTitle: "Сбросить прогресс?",
   settingsResetConfirmBody: "Пройденные уровни и звёзды будут удалены. Это действие нельзя отменить.",
   settingsPrivacy: "Конфиденциальность",

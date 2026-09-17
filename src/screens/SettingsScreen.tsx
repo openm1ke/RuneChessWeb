@@ -390,7 +390,7 @@ function ResetProgressCard({ onResetRequested }: { onResetRequested: () => void 
         onClick={onResetRequested}
         style={{ width: '100%', minHeight: 44, border: '1.5px solid rgba(240,142,104,0.86)', borderRadius: 12, color: '#ffe2d7', background: 'linear-gradient(#77323b, #451d2b)', fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: 1, cursor: 'pointer' }}
       >
-        {l10n.settingsResetAchievements.toUpperCase()}
+        {l10n.settingsResetProgressAction.toUpperCase()}
       </button>
     </div>
   );
