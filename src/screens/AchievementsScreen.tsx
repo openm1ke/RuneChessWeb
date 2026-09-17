@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { useL10n } from '../l10n/l10nContext';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { RoundControl } from '../components/shared/RoundControl';
 import { AchievementReveal } from '../components/shared/AchievementReveal';
@@ -110,6 +111,7 @@ function PortraitAchievementsScene({
   stats: ReactNode;
   grid: ReactNode;
 }) {
+  const l10n = useL10n();
   return (
     <DesignCanvas>
       {(canvas) => (
@@ -133,7 +135,7 @@ function PortraitAchievementsScene({
           }}
         />
         <div style={{ position: 'absolute', top: 22, left: 20 }}>
-          <RoundControl onClick={onBack} label="Назад в меню">
+          <RoundControl onClick={onBack} label={l10n.infoBackToMenu}>
             ‹
           </RoundControl>
         </div>
@@ -188,6 +190,7 @@ function LandscapeAchievementsScene({
   stats: ReactNode;
   grid: ReactNode;
 }) {
+  const l10n = useL10n();
   const skin = useCosmeticSkin();
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -199,7 +202,7 @@ function LandscapeAchievementsScene({
       />
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.71)' }} />
       <div style={{ position: 'absolute', top: 22, left: 20 }}>
-        <RoundControl onClick={onBack} label="Назад в меню">
+        <RoundControl onClick={onBack} label={l10n.infoBackToMenu}>
           ‹
         </RoundControl>
       </div>
@@ -374,6 +377,7 @@ function AchievementDetailDialog({
   progress: AchievementProgressCount | null;
   onClose: () => void;
 }) {
+  const l10n = useL10n();
   return (
     <div
       role="dialog"
@@ -424,7 +428,7 @@ function AchievementDetailDialog({
             marginBottom: 12,
           }}
         >
-          {unlocked ? 'ПОЛУЧЕНО' : 'НЕ ПОЛУЧЕНО'}
+          {(unlocked ? l10n.achievementEarned : l10n.achievementNotEarned).toUpperCase()}
           {unlocked && unlockedAt ? ` · ${formatDate(unlockedAt)}` : ''}
         </div>
         <p style={{ margin: '0 0 16px', color: '#d9e4f8', fontSize: 14, fontWeight: 700, lineHeight: 1.45 }}>
@@ -438,7 +442,7 @@ function AchievementDetailDialog({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Закрыть"
+          aria-label={l10n.commonClose}
           style={{
             position: 'absolute',
             top: 6,

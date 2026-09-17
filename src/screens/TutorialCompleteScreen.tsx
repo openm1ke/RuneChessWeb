@@ -1,4 +1,5 @@
 import { DesignCanvas } from '../components/shared/DesignCanvas';
+import { useL10n } from '../l10n/l10nContext';
 import { artForCanvas } from '../game/cosmeticSkins';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { MenuActionButton } from './MenuScreen';
@@ -17,6 +18,7 @@ interface TutorialCompleteProps {
 }
 
 export function TutorialCompleteScreen(props: TutorialCompleteProps) {
+  const l10n = useL10n();
   const skin = useCosmeticSkin();
   const { onContinue, onLevels } = props;
   const viewport = useViewportSize();
@@ -51,22 +53,18 @@ export function TutorialCompleteScreen(props: TutorialCompleteProps) {
           )}
           <div style={{ height: 16 }} />
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 27, lineHeight: 1.25, letterSpacing: 1.7, color: 'var(--gold-bright)' }}>
-            ВЫ ПРОШЛИ
-            <br />
-            ОБУЧЕНИЕ
+            {l10n.tutorialCompleteTitle.toUpperCase()}
           </div>
           <div style={{ height: 14 }} />
           <div style={{ fontSize: 15, lineHeight: 1.35, fontWeight: 700, color: 'var(--text-soft)' }}>
-            «Лунный сад» открыт.
-            <br />
-            Впереди более сложные задачи.
+            {l10n.tutorialCompleteBody(l10n.campaignMainName)}
           </div>
         </div>
         <div style={{ position: 'absolute', left: 76, right: 76, top: 560, height: 68 }}>
-          <MenuActionButton label="ПРОДОЛЖИТЬ" onClick={onContinue} prominent />
+          <MenuActionButton label={l10n.commonContinue.toUpperCase()} onClick={onContinue} prominent />
         </div>
         <div style={{ position: 'absolute', left: 88, right: 88, top: 642, height: 60 }}>
-          <MenuActionButton label="К УРОВНЯМ" onClick={onLevels} />
+          <MenuActionButton label={l10n.toLevels.toUpperCase()} onClick={onLevels} />
         </div>
       </div>
       )}
@@ -79,6 +77,7 @@ export function TutorialCompleteScreen(props: TutorialCompleteProps) {
  * side-by-side, avoiding a shrunken portrait page after rotation.
  */
 function LandscapeTutorialCompleteScene({ onContinue, onLevels, achievement, animateAchievement, onAchievementRevealed }: TutorialCompleteProps) {
+  const l10n = useL10n();
   const skin = useCosmeticSkin();
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -106,21 +105,19 @@ function LandscapeTutorialCompleteScene({ onContinue, onLevels, achievement, ani
           )}
           <div style={{ height: 14 }} />
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 31, letterSpacing: 1.7, color: 'var(--gold-bright)' }}>
-            ВЫ ПРОШЛИ ОБУЧЕНИЕ
+            {l10n.tutorialCompleteTitle.replace('\n', ' ').toUpperCase()}
           </div>
           <div style={{ height: 14 }} />
           <div style={{ fontSize: 17, lineHeight: 1.35, fontWeight: 700, color: 'var(--text-soft)' }}>
-            «Лунный сад» открыт.
-            <br />
-            Впереди более сложные задачи.
+            {l10n.tutorialCompleteBody(l10n.campaignMainName)}
           </div>
           <div style={{ height: 34 }} />
           <div style={{ height: 68, display: 'flex', gap: 20 }}>
             <div style={{ flex: 1 }}>
-              <MenuActionButton label="ПРОДОЛЖИТЬ" onClick={onContinue} prominent fontSize={20} letterSpacing={1.6} />
+              <MenuActionButton label={l10n.commonContinue.toUpperCase()} onClick={onContinue} prominent fontSize={20} letterSpacing={1.6} />
             </div>
             <div style={{ flex: 1 }}>
-              <MenuActionButton label="К УРОВНЯМ" onClick={onLevels} fontSize={17} letterSpacing={1.6} />
+              <MenuActionButton label={l10n.toLevels.toUpperCase()} onClick={onLevels} fontSize={17} letterSpacing={1.6} />
             </div>
           </div>
         </div>
@@ -140,10 +137,11 @@ function AchievementRevealBlock({
   onRevealed?: () => void;
   size: number;
 }) {
+  const l10n = useL10n();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
       <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: 1.3, color: '#ffd678' }}>
-        ДОСТИЖЕНИЕ ОТКРЫТО
+        {l10n.resultAchievementUnlocked.toUpperCase()}
       </div>
       <AchievementReveal achievement={achievement} size={size} animate={animate} onRevealed={onRevealed} />
       <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, color: 'var(--gold-bright)' }}>

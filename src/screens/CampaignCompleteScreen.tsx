@@ -1,4 +1,5 @@
 import { DesignCanvas } from '../components/shared/DesignCanvas';
+import { useL10n } from '../l10n/l10nContext';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { MenuActionButton } from './MenuScreen';
 import { AchievementReveal } from '../components/shared/AchievementReveal';
@@ -60,6 +61,7 @@ function TitleText({ title, fontSize }: { title: string; fontSize: number }) {
 }
 
 export function CampaignCompleteScreen(props: CampaignCompleteProps) {
+  const l10n = useL10n();
   const { onLevels, onMenu } = props;
   const viewport = useViewportSize();
   const isLandscape = viewport.width > viewport.height;
@@ -119,17 +121,17 @@ export function CampaignCompleteScreen(props: CampaignCompleteProps) {
               </div>
             </div>
           )}
-          <TitleText title={props.title ?? 'КАМПАНИЯ ПРОЙДЕНА'} fontSize={27} />
+          <TitleText title={props.title ?? l10n.campaignCompleteTitle.toUpperCase()} fontSize={27} />
           <div style={{ height: 16 }} />
           <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-soft)' }}>
-            {props.subtitle ?? `Вы открыли все ${campaignLevels.length} уровней`}
+            {props.subtitle ?? l10n.campaignAllLevelsOpen(campaignLevels.length)}
           </div>
         </div>
         <div style={{ position: 'absolute', top: 560, left: 78, right: 78, height: 68 }}>
-          <MenuActionButton label={props.primaryLabel ?? 'К УРОВНЯМ'} onClick={props.onPrimary ?? onLevels} />
+          <MenuActionButton label={props.primaryLabel ?? l10n.toLevels.toUpperCase()} onClick={props.onPrimary ?? onLevels} />
         </div>
         <div style={{ position: 'absolute', top: 640, left: 78, right: 78, height: 68 }}>
-          <MenuActionButton label={props.secondaryLabel ?? 'В МЕНЮ'} onClick={props.onSecondary ?? onMenu} />
+          <MenuActionButton label={props.secondaryLabel ?? l10n.toMenu.toUpperCase()} onClick={props.onSecondary ?? onMenu} />
         </div>
         <div
           style={{
@@ -171,6 +173,7 @@ function LandscapeCampaignCompleteScene({
   onAchievementRevealed,
   viewport,
 }: CampaignCompleteProps & { viewport: { width: number; height: number } }) {
+  const l10n = useL10n();
   const skin = useCosmeticSkin();
   const { width, height } = viewport;
   const panelWidth = Math.min(720, Math.max(440, width * 0.48));
@@ -237,10 +240,10 @@ function LandscapeCampaignCompleteScene({
             </div>
           </div>
         )}
-        <TitleText title={title ?? 'КАМПАНИЯ ПРОЙДЕНА'} fontSize={31} />
+        <TitleText title={title ?? l10n.campaignCompleteTitle.toUpperCase()} fontSize={31} />
         <div style={{ height: 14 }} />
         <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-soft)' }}>
-          {subtitle ?? `Вы открыли все ${campaignLevels.length} уровней`}
+          {subtitle ?? l10n.campaignAllLevelsOpen(campaignLevels.length)}
         </div>
       </div>
       <div
@@ -255,10 +258,10 @@ function LandscapeCampaignCompleteScene({
         }}
       >
         <div style={{ flex: 1 }}>
-          <MenuActionButton label={primaryLabel ?? 'К УРОВНЯМ'} onClick={onPrimary ?? onLevels} />
+          <MenuActionButton label={primaryLabel ?? l10n.toLevels.toUpperCase()} onClick={onPrimary ?? onLevels} />
         </div>
         <div style={{ flex: 1 }}>
-          <MenuActionButton label={secondaryLabel ?? 'В МЕНЮ'} onClick={onSecondary ?? onMenu} />
+          <MenuActionButton label={secondaryLabel ?? l10n.toMenu.toUpperCase()} onClick={onSecondary ?? onMenu} />
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@
  * gets, and a set added later cannot quietly disagree with its own preview.
  */
 import { DesignCanvas } from '../components/shared/DesignCanvas';
+import { useL10n } from '../l10n/l10nContext';
 import { artForCanvas } from '../game/cosmeticSkins';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { RoundControl } from '../components/shared/RoundControl';
@@ -39,6 +40,7 @@ export function AppearanceScreen({
   onSkinUnlocked: (skin: CosmeticSkin) => void;
   onBack: () => void;
 }) {
+  const l10n = useL10n();
   const skin = useCosmeticSkin();
   const viewport = useViewportSize();
 
@@ -50,7 +52,7 @@ export function AppearanceScreen({
     const left = starsAvailable - entry.price;
     if (
       window.confirm(
-        `Открыть «${entry.name}» за ${entry.price}★?\nОстанется ${left}★.`,
+        l10n.appearanceUnlockBody(entry.name, entry.price, left),
       )
     ) {
       onSkinUnlocked(entry);
@@ -151,7 +153,7 @@ export function AppearanceScreen({
           </div>
         </div>
         <div style={{ position: 'absolute', left: 24, top: 20 }}>
-          <RoundControl onClick={onBack} label="Назад">
+          <RoundControl onClick={onBack} label={l10n.back}>
             ‹
           </RoundControl>
         </div>
@@ -218,7 +220,7 @@ export function AppearanceScreen({
           </div>
         </div>
         <div style={{ position: 'absolute', left: 20, top: 14 }}>
-          <RoundControl onClick={onBack} label="Назад">
+          <RoundControl onClick={onBack} label={l10n.back}>
             ‹
           </RoundControl>
         </div>
@@ -278,7 +280,7 @@ export function AppearanceScreen({
           ))}
         </div>
         <div style={{ position: 'absolute', left: 20, top: 22 }}>
-          <RoundControl onClick={onBack} label="Назад">
+          <RoundControl onClick={onBack} label={l10n.back}>
             ‹
           </RoundControl>
         </div>
@@ -313,6 +315,7 @@ function SkinCard({
    * name rather than above it. */
   compact?: boolean;
 }) {
+  const l10n = useL10n();
   const previewWidth = compact ? Math.round((width - 32) * 0.5) : width - 32;
   // Every block is the same size, whatever its name and description happen
   // to be: a row of cards each a different height reads as a mistake, and
@@ -407,8 +410,8 @@ function SkinCard({
       aria-pressed={selected}
       aria-label={
         unlocked
-          ? `${skin.name}${selected ? ', выбрано' : ''}`
-          : `${skin.name}, закрыто, ${skin.price} звёзд`
+          ? `${skin.name}${selected ? l10n.appearanceSelectedSuffix : ''}`
+          : l10n.appearanceLockedLabel(skin.name, skin.price)
       }
       onClick={unlocked ? (selected ? undefined : onChosen) : affordable ? onUnlock : undefined}
       style={{
@@ -551,6 +554,7 @@ function PriceButton({
   starsAvailable: number;
   onUnlock?: () => void;
 }) {
+  const l10n = useL10n();
   const affordable = starsAvailable >= price;
   return (
     <button
@@ -573,7 +577,7 @@ function PriceButton({
         whiteSpace: 'nowrap',
       }}
     >
-      {affordable ? `ОТКРЫТЬ ЗА ${price}★` : `${starsAvailable} / ${price}★`}
+      {affordable ? l10n.appearanceUnlockFor(price).toUpperCase() : `${starsAvailable} / ${price}★`}
     </button>
   );
 }
@@ -581,9 +585,10 @@ function PriceButton({
 /** The purse, at the top of the picker. Without it a price is a number the
  * player has no way to measure themselves against. */
 function StarBalance({ stars, inline = false }: { stars: number; inline?: boolean }) {
+  const l10n = useL10n();
   return (
     <div
-      aria-label={`Доступно ${stars} звёзд`}
+      aria-label={l10n.appearanceStarsAvailable(stars)}
       style={{
         display: 'flex',
         alignItems: 'center',

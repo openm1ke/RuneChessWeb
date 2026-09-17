@@ -437,7 +437,7 @@ function MenuFooterLinks() {
 
   return (
     <nav
-      aria-label="Информация об игре"
+      aria-label={l10n.menuFooterNav}
       style={{
         display: 'flex',
         flexDirection: 'column',

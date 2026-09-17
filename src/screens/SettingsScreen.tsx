@@ -80,6 +80,7 @@ function PortraitSettingsScene({
   language,
   onLanguage,
 }: SettingsProps & { onResetRequested: () => void }) {
+  const l10n = useL10n();
   const skin = useCosmeticSkin();
   return (
     <DesignCanvas>
@@ -145,7 +146,7 @@ function PortraitSettingsScene({
           <ResetProgressCard onResetRequested={onResetRequested} />
         </div>
         <div style={{ position: 'absolute', left: 20, top: 22 }}>
-          <RoundControl onClick={onBack} label="Назад">
+          <RoundControl onClick={onBack} label={l10n.back}>
             ‹
           </RoundControl>
         </div>
@@ -179,6 +180,7 @@ function LandscapeSettingsScene({
   language,
   onLanguage,
 }: SettingsProps & { onResetRequested: () => void }) {
+  const l10n = useL10n();
   const skin = useCosmeticSkin();
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -246,7 +248,7 @@ function LandscapeSettingsScene({
       {/* Rendered after the scroll container above so it's never covered by
           it. */}
       <div style={{ position: 'absolute', top: 22, left: 20 }}>
-        <RoundControl onClick={onBack} label="Назад">
+        <RoundControl onClick={onBack} label={l10n.back}>
           ‹
         </RoundControl>
       </div>
@@ -269,6 +271,7 @@ function MusicSettingsCard({
   SettingsProps,
   'musicEnabled' | 'musicVolume' | 'onMusicEnabledChanged' | 'onVolumeChanged' | 'soundEffectsEnabled' | 'onSoundEffectsEnabledChanged'
 >) {
+  const l10n = useL10n();
   return (
     <div
       style={{
@@ -307,7 +310,7 @@ function MusicSettingsCard({
         <div style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: 1.1, color: 'var(--gold-bright)' }}>
           Музыка
         </div>
-        <RuneToggle value={musicEnabled} onChange={onMusicEnabledChanged} label="Включить музыку" />
+        <RuneToggle value={musicEnabled} onChange={onMusicEnabledChanged} label={l10n.settingsMusicEnable} />
       </div>
       <div style={{ height: 26 }} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -354,7 +357,7 @@ function MusicSettingsCard({
         <div style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: 1.1, color: 'var(--gold-bright)' }}>
           Звуковые эффекты
         </div>
-        <RuneToggle value={soundEffectsEnabled} onChange={onSoundEffectsEnabledChanged} label="Включить звуковые эффекты" />
+        <RuneToggle value={soundEffectsEnabled} onChange={onSoundEffectsEnabledChanged} label={l10n.settingsSoundEffectsEnable} />
       </div>
     </div>
   );
@@ -493,6 +496,7 @@ function PrivacyCard({
   analyticsConsent: boolean | null;
   onAnalyticsConsentChanged: (consent: boolean) => void;
 }) {
+  const l10n = useL10n();
   return (
     <div style={SETTINGS_CARD_STYLE}>
       <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>
@@ -518,13 +522,13 @@ function PrivacyCard({
           Аналитика
         </div>
         <HintBadge
-          title="Аналитика"
-          hint="Помогать улучшать игру: отправлять обезличенные сведения о том, какие уровни проходятся быстро, а где игра буксует. Имя, email и телефон не собираются."
+          title={l10n.settingsAnalytics}
+          hint={l10n.settingsAnalyticsHint}
         />
         <RuneToggle
           value={analyticsConsent === true}
           onChange={onAnalyticsConsentChanged}
-          label="Аналитика"
+          label={l10n.settingsAnalytics}
         />
       </div>
     </div>
@@ -547,6 +551,7 @@ function DailyReminderCard({
   onEnabledChanged: (enabled: boolean) => void;
   onHourChanged: (hour: number) => void;
 }) {
+  const l10n = useL10n();
   return (
     <div style={SETTINGS_CARD_STYLE}>
       <div style={{ color: '#f4d8a1', fontFamily: 'var(--font-display)', fontSize: 15, letterSpacing: 0.8 }}>ЗАДАНИЕ ДНЯ</div>
@@ -570,7 +575,7 @@ function DailyReminderCard({
             Уведомление в браузере, если сегодняшнее задание ещё не решено. Придёт где-то внутри выбранного окна, пока вкладка открыта.
           </div>
         </div>
-        <RuneToggle value={enabled} onChange={onEnabledChanged} label="Напоминать о задании дня" />
+        <RuneToggle value={enabled} onChange={onEnabledChanged} label={l10n.settingsReminderTitle} />
       </div>
       {enabled && (
         <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -578,7 +583,7 @@ function DailyReminderCard({
           <select
             value={hour}
             onChange={(e) => onHourChanged(Number(e.target.value))}
-            aria-label="Окно напоминания"
+            aria-label={l10n.settingsReminderWindow}
             style={{
               padding: '8px 10px',
               borderRadius: 10,
@@ -688,12 +693,13 @@ function RuneToggle({ value, onChange, label }: { value: boolean; onChange: (val
  * hint nobody can find is the same as no hint, and on a touch screen there
  * is no hover at all. Mirrors the mobile app's `HintBadge`. */
 function HintBadge({ title, hint }: { title: string; hint: string }) {
+  const l10n = useL10n();
   const [open, setOpen] = useState(false);
   return (
     <span style={{ position: 'relative', flex: '0 0 auto' }}>
       <button
         type="button"
-        aria-label={`${title} — что это значит`}
+        aria-label={l10n.hintWhatIsThis(title)}
         aria-expanded={open}
         onClick={() => setOpen((was) => !was)}
         style={{

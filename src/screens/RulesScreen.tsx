@@ -1,4 +1,6 @@
 import { DesignCanvas } from '../components/shared/DesignCanvas';
+import { useL10n } from '../l10n/l10nContext';
+import type { Strings } from '../l10n/ru';
 import { RoundControl } from '../components/shared/RoundControl';
 import { PieceArt } from '../components/board/PieceArt';
 import { pieceAttackSummary, pieceNames, type PieceType } from '../game/pieceTypes';
@@ -22,18 +24,28 @@ import { useCosmeticSkin } from '../game/cosmeticSkinContext';
  */
 const PIECE_ORDER: readonly PieceType[] = ['rook', 'bishop', 'knight', 'king', 'queen', 'pawn'];
 
-const STEPS: readonly { n: string; title: string; text: string }[] = [
-  { n: '1', title: 'Прочтите руну', text: 'Число на монете — сколько атак ей нужно.' },
-  { n: '2', title: 'Выберите фигуру', text: 'Берите фигуры из панели под доской.' },
-  { n: '3', title: 'Поставьте её', text: 'Смотрите, куда протянутся лучи атак.' },
-  { n: '4', title: 'Закройте уровень', text: 'Все руны получили своё число — задача решена.' },
-];
+/** The four steps and the three ratings, in whichever language is on.
+ *
+ * Built from the strings rather than held as constants, and deliberately
+ * the same keys the Flutter app's rules screen uses: the two screens are
+ * meant to say the same thing, and the wording here had already drifted a
+ * little from the mobile one before they shared a source. */
+function steps(l10n: Strings): readonly { n: string; title: string; text: string }[] {
+  return [
+    { n: '1', title: l10n.infoStep1Title, text: l10n.infoStep1Body },
+    { n: '2', title: l10n.infoStep2Title, text: l10n.infoStep2Body },
+    { n: '3', title: l10n.infoStep3Title, text: l10n.infoStep3Body },
+    { n: '4', title: l10n.infoStep4Title, text: l10n.infoStep4Body },
+  ];
+}
 
-const STARS: readonly { mark: string; title: string; text: string }[] = [
-  { mark: '★★★', title: 'Точно', text: 'Без лишних ходов и без подсказок.' },
-  { mark: '★★☆', title: 'Хорошо', text: 'Решение без подсказок.' },
-  { mark: '★☆☆', title: 'Решено', text: 'Подсказка помогла пройти уровень.' },
-];
+function stars(l10n: Strings): readonly { mark: string; title: string; text: string }[] {
+  return [
+    { mark: '★★★', title: l10n.infoRatingExact, text: l10n.rulesRatingExactHint },
+    { mark: '★★☆', title: l10n.infoRatingGood, text: l10n.rulesRatingGoodHint },
+    { mark: '★☆☆', title: l10n.infoRatingSolved, text: l10n.rulesRatingSolvedHint },
+  ];
+}
 
 export function RulesScreen({ onBack }: { onBack: () => void }) {
   const viewport = useViewportSize();
@@ -49,6 +61,7 @@ export function RulesScreen({ onBack }: { onBack: () => void }) {
 }
 
 function PortraitRules({ onBack }: { onBack: () => void }) {
+  const l10n = useL10n();
   return (
     <DesignCanvas>
       {(canvas) => (
@@ -72,11 +85,11 @@ function PortraitRules({ onBack }: { onBack: () => void }) {
             }}
           />
           <div style={{ position: 'absolute', top: 22, left: 20 }}>
-            <RoundControl onClick={onBack} label="Назад в меню">
+            <RoundControl onClick={onBack} label={l10n.infoBackToMenu}>
               ‹
             </RoundControl>
           </div>
-          <div style={{ ...titleStyle, top: 98 }}>КАК ИГРАТЬ</div>
+          <div style={{ ...titleStyle, top: 98 }}>{l10n.infoHowToPlay.toUpperCase()}</div>
           <div
             className="dozor-scroll-panel"
             style={{ ...panelStyle, top: 144, left: 32, right: 32, bottom: 24 }}
@@ -90,6 +103,7 @@ function PortraitRules({ onBack }: { onBack: () => void }) {
 }
 
 function LandscapeRules({ onBack }: { onBack: () => void }) {
+  const l10n = useL10n();
   const skin = useCosmeticSkin();
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -101,11 +115,11 @@ function LandscapeRules({ onBack }: { onBack: () => void }) {
       />
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.71)' }} />
       <div style={{ position: 'absolute', top: 22, left: 20 }}>
-        <RoundControl onClick={onBack} label="Назад в меню">
+        <RoundControl onClick={onBack} label={l10n.infoBackToMenu}>
           ‹
         </RoundControl>
       </div>
-      <div style={{ ...titleStyle, top: 22, left: 96, right: 96 }}>КАК ИГРАТЬ</div>
+      <div style={{ ...titleStyle, top: 22, left: 96, right: 96 }}>{l10n.infoHowToPlay.toUpperCase()}</div>
       <div
         className="dozor-scroll-panel"
         style={{ ...panelStyle, top: 82, left: 52, right: 52, bottom: 16, padding: '14px 20px' }}
@@ -117,6 +131,7 @@ function LandscapeRules({ onBack }: { onBack: () => void }) {
 }
 
 function RulesBody({ columns }: { columns: 1 | 2 }) {
+  const l10n = useL10n();
   return (
     <div
       style={{
@@ -127,13 +142,12 @@ function RulesBody({ columns }: { columns: 1 | 2 }) {
     >
       <div>
         <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, lineHeight: 1.45 }}>
-          Это не партия против соперника. На доске лежат руны-монеты, и каждой нужно ровно
-          определённое число атак — ни больше, ни меньше.
+          {l10n.rulesLead}
         </p>
 
-        <SectionTitle>Четыре шага</SectionTitle>
+        <SectionTitle>{l10n.infoFourSteps}</SectionTitle>
         <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
-          {STEPS.map((step) => (
+          {steps(l10n).map((step) => (
             <div key={step.n} style={rowStyle}>
               <div style={badgeStyle}>{step.n}</div>
               <div>
@@ -145,10 +159,9 @@ function RulesBody({ columns }: { columns: 1 | 2 }) {
         </div>
       </div>
       <div>
-        <SectionTitle>Как бьют фигуры</SectionTitle>
+        <SectionTitle>{l10n.infoHowPiecesAttack}</SectionTitle>
         <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#a9bbdd' }}>
-          По обычным шахматным правилам. Луч атаки останавливается на первой фигуре,
-          встреченной по пути, — кроме коня, который прыгает через преграды.
+          {l10n.rulesPiecesLead}
         </p>
         <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
           {PIECE_ORDER.map((type) => (
@@ -172,9 +185,9 @@ function RulesBody({ columns }: { columns: 1 | 2 }) {
           ))}
         </div>
 
-        <SectionTitle>Звёзды</SectionTitle>
+        <SectionTitle>{l10n.rulesStarsTitle}</SectionTitle>
         <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
-          {STARS.map((star) => (
+          {stars(l10n).map((star) => (
             <div key={star.mark} style={rowStyle}>
               <div style={{ ...badgeStyle, width: 58, minWidth: 58, letterSpacing: 1 }}>
                 {star.mark}
@@ -187,11 +200,13 @@ function RulesBody({ columns }: { columns: 1 | 2 }) {
           ))}
         </div>
 
-        <SectionTitle>Уровни</SectionTitle>
+        <SectionTitle>{l10n.rulesLevelsTitle}</SectionTitle>
         <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, lineHeight: 1.45 }}>
-          165 задач: пять обучающих в «Первых рунах», затем «Лунный сад» и «Звёздная
-          обсерватория», где поле больше, а решения многоходовые. Звёзды не тратятся впустую —
-          они поднимают звание и открывают оформления.
+          {l10n.rulesLevelsLead(
+            l10n.campaignTutorialName,
+            l10n.campaignMainName,
+            l10n.campaignBonusName,
+          )}
         </p>      </div>
     </div>
   );
