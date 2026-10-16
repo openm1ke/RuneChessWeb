@@ -140,3 +140,93 @@ img {
   }
 }
 
+
+/* ---- Figure motion, ported from the app's `piece_motion.dart` ----------
+ * A figure in the hand hovers; one set down lands; one sent back springs in
+ * its slot; a new level's figures rise into the tray and its coins surface
+ * as a ripple. Every one of them is decoration: none carries information,
+ * and all of them stop when the system asks for reduced motion. */
+
+/* Bob and lean on the figure's foot. The lean runs a quarter-cycle behind
+ * the rise, so the figure tips at the top and bottom of its bob. */
+@keyframes rc-hover {
+  0%   { transform: translateY(-2px) rotate(-3deg); }
+  25%  { transform: translateY(-4px) rotate(0deg); }
+  50%  { transform: translateY(-2px) rotate(3deg); }
+  75%  { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-2px) rotate(-3deg); }
+}
+.rc-hover {
+  animation: rc-hover 1.5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* Picked up: comes up a touch large and settles to its held size. */
+@keyframes rc-pickup {
+  from { transform: scale(0.9); }
+  to   { transform: scale(1); }
+}
+.rc-pickup {
+  animation: rc-pickup 240ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-origin: bottom center;
+}
+
+/* Set down: drops the last little way and gives as it lands. */
+@keyframes rc-settle {
+  from { transform: translateY(-10px) scale(1.06, 0.92); }
+  to   { transform: none; }
+}
+.rc-settle {
+  animation: rc-settle 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-origin: bottom center;
+}
+
+/* A slot taking a figure back springs to receive it. */
+@keyframes rc-pop {
+  from { transform: scale(1.16); }
+  to   { transform: scale(1); }
+}
+.rc-pop {
+  animation: rc-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* A new level's figure arriving in its slot, in turn after the one before. */
+@keyframes rc-tile-rise {
+  from { opacity: 0; transform: translateY(18px) scale(0.9); }
+  to   { opacity: 1; transform: none; }
+}
+.rc-tile-rise {
+  animation: rc-tile-rise 360ms cubic-bezier(0.33, 1, 0.68, 1) both;
+}
+
+/* A new level's coin surfacing, and the thin gold ring it throws off. */
+@keyframes rc-coin-rise {
+  0%   { opacity: 0; transform: translateY(6px) scale(0.55); }
+  50%  { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+.rc-coin-rise {
+  animation: rc-coin-rise 460ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes rc-coin-glint {
+  from { opacity: 0.55; transform: scale(0.8); }
+  to   { opacity: 0; transform: scale(1.7); }
+}
+.rc-coin-glint {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.6px solid #ffd77a;
+  pointer-events: none;
+  opacity: 0;
+  animation: rc-coin-glint 420ms cubic-bezier(0.33, 1, 0.68, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-hover, .rc-pickup, .rc-settle, .rc-pop, .rc-tile-rise,
+  .rc-coin-rise, .rc-coin-glint, .rc-motion {
+    animation: none !important;
+    transition: none !important;
+  }
+  .rc-coin-glint { display: none; }
+}

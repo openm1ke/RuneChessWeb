@@ -128,6 +128,7 @@ export function LevelResultOverlay({
       if (room > 0 && need > 0) setFit(Math.min(1, room / need));
     };
     measure();
+    if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(measure);
     if (panel.current) observer.observe(panel.current);
     if (strip.current) observer.observe(strip.current);
@@ -136,7 +137,7 @@ export function LevelResultOverlay({
 
   const docked = dock != null;
   const showRetry = result.stars != null && result.stars < 3;
-  const blockWidth = docked ? dock.width - 40 : 248;
+  const blockWidth = docked ? dock.width - 40 : 280;
 
   const handleContinue = () => {
     if (exiting) return;
@@ -437,8 +438,10 @@ export function LevelResultOverlay({
                 background: 'linear-gradient(var(--success-a), var(--success-b))',
                 color: '#04281c',
                 fontFamily: 'var(--font-display)',
-                fontSize: 16,
-                letterSpacing: 2.2,
+                // Shares its row with Replay; landscape's card is narrower.
+                fontSize: docked ? 16 : 14,
+                letterSpacing: docked ? 2.2 : 1.2,
+                whiteSpace: 'nowrap',
                 cursor: 'pointer',
                 boxShadow: '0 6px 18px rgba(0,0,0,0.5)',
               }}

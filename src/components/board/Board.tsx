@@ -1,4 +1,4 @@
-import { useMemo, type PointerEvent, type ReactElement, type RefObject } from 'react';
+import { useMemo, type CSSProperties, type PointerEvent, type ReactElement, type RefObject } from 'react';
 import type { DozorEngine, DozorSnapshot } from '../../game/dozorEngine';
 import { cellKey, type Beam, type Cell, type Piece } from '../../game/models';
 import { pieceSkins, type PieceType } from '../../game/pieceTypes';
@@ -30,12 +30,41 @@ function orderPiecesByBoardDepth(pieces: Piece[], heldId: string | null): Piece[
   return ordered;
 }
 
+/** How far a cell sits from the board's centre, 0 at the middle to 1 at a
+ * corner: a level's coins surface, and a solved level clears, centre first,
+ * so both read as a ripple rather than a blink. */
+function rippleDistance(c: number, r: number, cellPx: number): number {
+  const half = BoardPerspective.sourceSize / 2;
+  const dx = (c + 0.5) * cellPx - half;
+  const dy = (r + 0.5) * cellPx - half;
+  return Math.min(1, Math.hypot(dx, dy) / (half * 1.42));
+}
+
+/** The clearing of a solved level: each thing fades and settles a little
+ * after the one nearer the centre. */
+function exitStyle(exiting: boolean, distance: number, lift = 0): CSSProperties {
+  return {
+    transition: 'opacity 380ms ease-in, transform 380ms ease-in',
+    transitionDelay: exiting ? `${Math.round(distance * 300)}ms` : '0ms',
+    opacity: exiting ? 0 : 1,
+    transform: exiting ? (lift ? `translateY(${-lift}px)` : 'scale(0.7)') : undefined,
+  };
+}
+
 function polygonPoints(points: { x: number; y: number }[]): string {
   return points.map((p) => `${p.x},${p.y}`).join(' ');
 }
 
 /** SVG checkerboard + dashed attack-beam rendering, a port of `BoardPainter`. */
-function BoardSvg({ snapshot, beamPhase }: { snapshot: DozorSnapshot; beamPhase: number }) {
+function BoardSvg({
+  snapshot,
+  beamPhase,
+  exiting = false,
+}: {
+  snapshot: DozorSnapshot;
+  beamPhase: number;
+  exiting?: boolean;
+}) {
   const skin = useCosmeticSkin();
   const boardSize = snapshot.boardSize;
   const cells: ReactElement[] = [];
@@ -100,7 +129,8 @@ function BoardSvg({ snapshot, beamPhase }: { snapshot: DozorSnapshot; beamPhase:
     >
       {cells}
       {preview}
-      {beams}
+      {/* The light goes out with the coins it was reaching. */}
+      <g style={{ opacity: exiting ? 0 : 1, transition: 'opacity 380ms ease-in' }}>{beams}</g>
       <polygon points={polygonPoints(outline)} fill="none" stroke="rgba(0,0,0,0.6)" strokeWidth={4} />
     </svg>
   );
@@ -167,7 +197,19 @@ function BeamPath({ beam, beamPhase }: { beam: Beam; beamPhase: number }) {
   );
 }
 
-function BeaconCoin({ beacon, done, cellPx }: { beacon: Cell & { target: number }; done: boolean; cellPx: number }) {
+function BeaconCoin({
+  beacon,
+  done,
+  cellPx,
+  exiting = false,
+}: {
+  beacon: Cell & { target: number };
+  done: boolean;
+  cellPx: number;
+  exiting?: boolean;
+}) {
+  const distance = rippleDistance(beacon.c, beacon.r, cellPx);
+  const riseDelay = 90 + Math.round(180 * distance);
   const skin = useCosmeticSkin();
   const source = { x: (beacon.c + 0.5) * cellPx, y: (beacon.r + 0.5) * cellPx };
   const center = BoardPerspective.project(source);
@@ -191,6 +233,11 @@ function BeaconCoin({ beacon, done, cellPx }: { beacon: Cell & { target: number 
         zIndex: 0,
       }}
     >
+      <div className="rc-motion" style={{ position: 'absolute', inset: 0, ...exitStyle(exiting, distance) }}>
+      {/* A new level's coins surface as a ripple, each throwing off a thin
+          gold ring as it lands — the coin catching the light once. */}
+      <div className="rc-coin-rise" style={{ position: 'absolute', inset: 0, animationDelay: `${riseDelay}ms` }}>
+      <span className="rc-coin-glint" style={{ animationDelay: `${riseDelay + 160}ms` }} />
       {done && <ActivatedBeaconAura />}
       <div
         style={{
@@ -210,6 +257,8 @@ function BeaconCoin({ beacon, done, cellPx }: { beacon: Cell & { target: number 
           style={{ display: 'block' }}
           draggable={false}
         />
+      </div>
+      </div>
       </div>
     </div>
   );
@@ -287,18 +336,34 @@ function PieceOnBoard({
   cellPx,
   isHeld,
   onDragStart,
+  dragging = false,
+  exiting = false,
 }: {
   piece: Piece;
   engine: DozorEngine;
   cellPx: number;
   isHeld: boolean;
   onDragStart: (piece: Piece, event: PointerEvent) => void;
+  /** In the hand: drawn faint on its square, the way the app marks where a
+   * dragged figure came from. */
+  dragging?: boolean;
+  exiting?: boolean;
 }) {
   const skin = useCosmeticSkin();
   const rect = pieceScreenRect(piece, piece.type, cellPx);
+  const distance = rippleDistance(piece.c, piece.r, cellPx);
   return (
     <div
-      style={{ position: 'absolute', left: rect.left, top: rect.top, width: rect.width, height: rect.height }}
+      className="rc-motion"
+      style={{
+        position: 'absolute',
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+        ...exitStyle(exiting, distance, 10),
+        opacity: exiting ? 0 : dragging ? 0.28 : 1,
+      }}
       onPointerDown={(e) => onDragStart(piece, e)}
       onClick={() => engine.tapPiece(piece.id)}
     >
@@ -372,7 +437,14 @@ function PieceOnBoard({
             transformOrigin: 'bottom center',
           }}
         >
-          <PieceArt type={piece.type} width={rect.artWidth} height={rect.artHeight} />
+          {/* Keyed by its square: set down, or moved, the figure lands;
+              rebuilt where it stands, it does not. Picked up by a tap, it
+              hovers over its square. */}
+          <div key={`${piece.id}@${piece.c},${piece.r}`} className="rc-settle">
+            <div className={isHeld ? 'rc-hover' : undefined}>
+              <PieceArt type={piece.type} width={rect.artWidth} height={rect.artHeight} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -427,6 +499,7 @@ export function Board({
   boardTop = BOARD_TOP,
   scale = 1,
   scaleY,
+  exiting = false,
 }: {
   engine: DozorEngine;
   snapshot: DozorSnapshot;
@@ -441,6 +514,9 @@ export function Board({
   /** Independent vertical scale factor, so the board can stretch to fill a
    * frame whose aspect ratio doesn't quite match the board's own. */
   scaleY?: number;
+  /** A solved level on its way out: coins, figures and beams fade from the
+   * centre outward before the next level takes the board. */
+  exiting?: boolean;
 }) {
   const skin = useCosmeticSkin();
   const scaleX = scale;
@@ -503,7 +579,7 @@ export function Board({
           transformOrigin: 'top left',
         }}
       >
-        <BoardSvg snapshot={snapshot} beamPhase={beamPhase} />
+        <BoardSvg snapshot={snapshot} beamPhase={beamPhase} exiting={exiting} />
         {/* The frame's own gems and corner work lean in over the playing
             surface; the squares are drawn over the table, so without this
             they slice those bits off along the edge. Above the squares and
@@ -546,7 +622,11 @@ export function Board({
         )}
         {snapshot.beacons.map((beacon) => (
           <BeaconCoin
-            key={cellKey(beacon.c, beacon.r)}
+            // A new level's coins are new elements, so each plays its
+            // entrance once; the same coins re-rendered as figures move do
+            // not.
+            key={`${snapshot.levelNumber}-${snapshot.boardSize}-${cellKey(beacon.c, beacon.r)}-${beacon.target}`}
+            exiting={exiting}
             beacon={beacon}
             done={(snapshot.counts[cellKey(beacon.c, beacon.r)] ?? 0) === beacon.target}
             cellPx={snapshot.cellPx}
@@ -562,6 +642,8 @@ export function Board({
             engine={engine}
             cellPx={snapshot.cellPx}
             isHeld={piece.id === snapshot.held}
+            dragging={piece.id === drag.draggingId}
+            exiting={exiting}
             onDragStart={(p, e) => drag.startFromBoard(p, e)}
           />
         ))}

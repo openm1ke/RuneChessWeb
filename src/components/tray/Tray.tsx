@@ -1,4 +1,4 @@
-import { useState, type PointerEvent, type RefObject } from "react";
+import { useLayoutEffect, useRef, useState, type PointerEvent, type RefObject } from "react";
 import { useL10n } from '../../l10n/l10nContext';
 import type { DozorEngine, DozorSnapshot } from "../../game/dozorEngine";
 import {
@@ -53,7 +53,7 @@ function TrayItemTile({
         width: vertical ? "100%" : extent,
         minWidth: 0,
         minHeight: 0,
-        margin: vertical ? `${TILE_GAP / 2}px 0` : `0 ${TILE_GAP / 2}px`,
+        margin: 0,
         height: vertical ? extent : "100%",
         borderRadius: 12,
         background: selected ? "#263f82" : "#172551",
@@ -87,6 +87,12 @@ function TrayItemTile({
           maxWidth: "100%",
         }}
       >
+        {/* Picked by a tap, the figure lifts in its slot and hovers until it
+            is placed — the same "in the hand" a drag shows. */}
+        <div
+          className={selected ? "rc-hover" : undefined}
+          style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", width: "100%", height: "100%" }}
+        >
         <PieceArt
           type={type}
           width={art.width}
@@ -100,6 +106,7 @@ function TrayItemTile({
           // letting her out of the frame.
           style={{ maxWidth: "100%", maxHeight: "100%" }}
         />
+        </div>
       </div>
     </div>
   );
@@ -133,6 +140,49 @@ export function Tray({
 }) {
   const l10n = useL10n();
   const [dragging, setDragging] = useState<PieceType | null>(null);
+
+  // What this level opened with, and which figures have come back since.
+  // A level's figures rise into their slots once, in turn, when it opens;
+  // one that comes back later springs instead. Kept in refs and updated
+  // idempotently, so a second render of the same snapshot changes nothing.
+  const ids = snapshot.tray.map((t) => t.id);
+  const opening = useRef<{ level: number; ids: Set<string>; delays: Map<string, number> } | null>(null);
+  const previous = useRef<string[]>([]);
+  const returns = useRef(new Map<string, number>());
+  if (opening.current?.level !== snapshot.levelNumber) {
+    opening.current = {
+      level: snapshot.levelNumber,
+      ids: new Set(ids),
+      delays: new Map(ids.map((id, i) => [id, 140 + 70 * i])),
+    };
+    returns.current = new Map();
+    previous.current = ids;
+  } else if (previous.current.join() !== ids.join()) {
+    for (const id of ids) {
+      if (!previous.current.includes(id)) returns.current.set(id, (returns.current.get(id) ?? 0) + 1);
+    }
+    previous.current = ids;
+  }
+
+  // The row is placed by figure, not by flex order, so a figure leaving
+  // lets the others glide together instead of jumping — which needs the
+  // row's own width.
+  const row = useRef<HTMLDivElement>(null);
+  const [rowExtent, setRowExtent] = useState(0);
+  useLayoutEffect(() => {
+    const el = row.current;
+    if (!el) return;
+    // Falls back to the panel's own extent where nothing is laid out (a test
+    // environment), so the tiles are still there to find.
+    const fallback = (panelExtent ?? 430 - left - right) - 25;
+    const measure = () =>
+      setRowExtent((vertical ? el.clientHeight : el.clientWidth) || fallback);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [vertical, panelExtent, left, right]);
 
   // Tiles keep one size for the whole level.
   //
@@ -202,9 +252,11 @@ export function Tray({
       </div>
       <div style={{ height: 7 }} />
       <div
+        ref={row}
         style={{
           flex: 1,
           minHeight: 0,
+          position: "relative",
           display: "flex",
           flexDirection: vertical ? "column" : "row",
           alignItems: "center",
@@ -231,26 +283,69 @@ export function Tray({
             </div>
           )
         ) : (
-          snapshot.tray.map((item) => (
-            <TrayItemTile
-              key={item.id}
-              type={item.type}
-              selected={item.id === snapshot.sel}
-              onClick={() => engine.tapTray(item.id)}
-              onPointerDown={(e) => {
-                setDragging(item.type);
-                const clear = () => {
-                  setDragging(null);
-                  window.removeEventListener("pointerup", clear);
-                };
-                window.addEventListener("pointerup", clear);
-                drag.startFromTray(item, e);
-              }}
-              vertical={vertical}
-              extent={tileExtent}
-              height={vertical ? tileExtent : trayRowHeight(height)}
-            />
-          ))
+          // Not before the row is measured: placed at a width of 0 first,
+          // the tiles would visibly glide in from the left on every mount.
+          rowExtent > 0 &&
+          snapshot.tray.map((item, index) => {
+            const count = snapshot.tray.length;
+            const start = (rowExtent - (count * tileExtent + TILE_GAP * (count - 1))) / 2;
+            const offset = start + index * (tileExtent + TILE_GAP);
+            const returned = returns.current.get(item.id) ?? 0;
+            const landedSeq = drag.landed?.id === item.id ? drag.landed.seq : 0;
+            const springs = returned > 0 || landedSeq > 0;
+            const rises = !springs && (opening.current?.ids.has(item.id) ?? false);
+            return (
+              <div
+                key={item.id}
+                className="rc-motion"
+                style={{
+                  position: "absolute",
+                  ...(vertical
+                    ? { top: offset, left: 0, right: 0, height: tileExtent }
+                    : { left: offset, top: 0, bottom: 0, width: tileExtent }),
+                  transition: vertical
+                    ? "top 260ms cubic-bezier(0.33,1,0.68,1)"
+                    : "left 260ms cubic-bezier(0.33,1,0.68,1)",
+                  // Empty while its figure flies home, so the figure is not
+                  // in two places at once.
+                  opacity: drag.flyingId === item.id ? 0 : 1,
+                }}
+              >
+                <div
+                  className={rises ? "rc-tile-rise" : undefined}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    animationDelay: rises ? `${opening.current?.delays.get(item.id) ?? 140}ms` : undefined,
+                  }}
+                >
+                  <div
+                    key={`pop-${returned}-${landedSeq}`}
+                    className={springs ? "rc-pop" : undefined}
+                    style={{ width: "100%", height: "100%" }}
+                  >
+                    <TrayItemTile
+                      type={item.type}
+                      selected={item.id === snapshot.sel}
+                      onClick={() => engine.tapTray(item.id)}
+                      onPointerDown={(e) => {
+                        setDragging(item.type);
+                        const clear = () => {
+                          setDragging(null);
+                          window.removeEventListener("pointerup", clear);
+                        };
+                        window.addEventListener("pointerup", clear);
+                        drag.startFromTray(item, e);
+                      }}
+                      vertical={vertical}
+                      extent={tileExtent}
+                      height={vertical ? tileExtent : trayRowHeight(height)}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
     </div>

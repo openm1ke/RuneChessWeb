@@ -104,6 +104,27 @@ export function GameScreen({
   const trayRef = useRef<HTMLDivElement>(null!);
   const drag = useDragController(engine, boardRef, trayRef);
   const [beamPhase, setBeamPhase] = useState(0);
+  // A solved level clears before the next one takes the board: its coins,
+  // figures and beams fade from the centre outward, then the level changes
+  // and the new coins surface as a ripple. The app does the same under its
+  // level seal.
+  const [exiting, setExiting] = useState(false);
+  const exitTimer = useRef<number | null>(null);
+  useEffect(() => {
+    setExiting(false);
+  }, [snapshot.levelNumber, engine.isDailyChallenge]);
+  useEffect(() => () => {
+    if (exitTimer.current != null) window.clearTimeout(exitTimer.current);
+  }, []);
+  const continueToNextLevel = () => {
+    if (exiting) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      onNextLevel();
+      return;
+    }
+    setExiting(true);
+    exitTimer.current = window.setTimeout(onNextLevel, 480);
+  };
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [extraHintState, setExtraHintState] = useState<RewardedAdState>('idle');
   const [bonusStarState, setBonusStarState] = useState<RewardedAdState>('idle');
@@ -307,7 +328,7 @@ export function GameScreen({
         <LevelResultOverlay
           key={`level-result-${engine.levelIndex}`}
           result={engine.levelResult}
-          onContinue={onNextLevel}
+          onContinue={continueToNextLevel}
           onRetry={() => engine.resetLevel()}
           bonusStarOffered={bonusStarOffered || dailyDoubleOffered}
           bonusStarEnabled={
@@ -456,6 +477,7 @@ export function GameScreen({
           beamPhase={beamPhase}
           drag={drag}
           boardRef={boardRef}
+          exiting={exiting}
           boardLeft={boardLeft}
           boardTop={boardTop}
           scale={finalScaleX}
@@ -516,6 +538,7 @@ export function GameScreen({
           beamPhase={beamPhase}
           drag={drag}
           boardRef={boardRef}
+          exiting={exiting}
           // Centred rather than fixed at 34 units: on a wider canvas that
           // constant would leave the board against the left edge.
           boardLeft={(canvas.width - BoardPerspective.width) / 2}
