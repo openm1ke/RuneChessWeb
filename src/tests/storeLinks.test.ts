@@ -9,7 +9,7 @@ import { en } from '../l10n/en';
 // there is not a cosmetic slip but grounds for rejection.
 import { describe, expect, it } from 'vitest';
 import type { StoreBadge } from '../data/storeLinks';
-import { GOOGLE_PLAY_URL, STORE_LINKS, menuStoreLinks, publishedStoreLinks } from '../data/storeLinks';
+import { STORE_LINKS, menuStoreLinks, publishedStoreLinks } from '../data/storeLinks';
 
 const badge: StoreBadge = { file: 'x.svg', width: 111, height: 40, altKey: 'storeBadgeRuStore' as const };
 
@@ -35,8 +35,8 @@ describe('storeLinks', () => {
     }
   });
 
-  it('carries the two stores the app is actually in', () => {
-    expect(publishedStoreLinks().map(({ name }) => name)).toEqual(['RuStore', 'App Store']);
+  it('carries the three stores the app is actually in', () => {
+    expect(publishedStoreLinks().map(({ name }) => name)).toEqual(['RuStore', 'App Store', 'Google Play']);
   });
 
   it('sends every visitor to their own App Store storefront', () => {
@@ -47,8 +47,10 @@ describe('storeLinks', () => {
   });
 
   it('links the site download CTA to the published Google Play app', () => {
-    expect(GOOGLE_PLAY_URL).toBe('https://play.google.com/store/apps/details?id=ru.runechess.game');
-    expect(STORE_LINKS.find(({ name }) => name === 'Google Play')?.url).toBe(GOOGLE_PLAY_URL);
+    expect(STORE_LINKS.find(({ name }) => name === 'Google Play')).toMatchObject({
+      url: 'https://play.google.com/store/apps/details?id=ru.runechess.game',
+      badge: { file: 'google-play-ru.png', width: 646, height: 250 },
+    });
   });
 
   it('gives every published store the official badge to draw', () => {
@@ -56,7 +58,7 @@ describe('storeLinks', () => {
     // than be drawn with something of our own: every one of these brands
     // forbids a redrawn badge.
     for (const { badge } of publishedStoreLinks()) {
-      expect(badge.file).toMatch(/\.svg$/);
+      expect(badge.file).toMatch(/\.(svg|png)$/);
       expect(badge.width).toBeGreaterThan(0);
       expect(badge.height).toBeGreaterThan(0);
       expect(ru[badge.altKey]).not.toHaveLength(0);
@@ -73,7 +75,7 @@ describe('storeLinks', () => {
 
 describe('menuStoreLinks', () => {
   it('shows the badges on the site', () => {
-    expect(menuStoreLinks(false).map(({ name }) => name)).toEqual(['RuStore', 'App Store']);
+    expect(menuStoreLinks(false).map(({ name }) => name)).toEqual(['RuStore', 'App Store', 'Google Play']);
   });
 
   it('shows no badge at all inside Yandex Games', () => {

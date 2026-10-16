@@ -29,21 +29,14 @@
  */
 const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
 
-/** The Android storefront is live on the public site, but never inside the
- * Yandex Games archive where outbound store links are not allowed. */
-export const GOOGLE_PLAY_URL: string | null = BUILT_FOR_YANDEX_GAMES
-  ? null
-  : 'https://play.google.com/store/apps/details?id=ru.runechess.game';
-
 /**
  * The store's own badge artwork, as the store publishes it.
  *
  * Drawn rather than described, because both Apple and RuStore hand out the
  * badge as a finished asset and forbid redrawing it — the shapes, the
- * wording and the plate behind them are theirs. Both happen to be 40 tall,
- * so the two sit level in a row without either being stretched; the
- * intrinsic size is kept here so the footer can scale them by height and
- * let the width follow.
+ * wording and the plate behind them are theirs. The footer scales every
+ * badge to one shared height and lets the width follow its intrinsic aspect
+ * ratio, so none of the artwork is stretched.
  */
 export interface StoreBadge {
   /** File under `assets/badges/`. */
@@ -53,7 +46,7 @@ export interface StoreBadge {
   /** Which string says what the badge says, for anyone who cannot see it.
    * A key rather than the words, because the footer is drawn in whichever
    * language the visitor is reading. */
-  readonly altKey: 'storeBadgeRuStore' | 'storeBadgeAppStore';
+  readonly altKey: 'storeBadgeRuStore' | 'storeBadgeAppStore' | 'storeBadgeGooglePlay';
 }
 
 export interface StoreLink {
@@ -96,9 +89,18 @@ export const STORE_LINKS: readonly StoreLink[] = BUILT_FOR_YANDEX_GAMES
           altKey: 'storeBadgeAppStore' as const,
         },
       },
-      // Live on the public site. The main menu uses a compact text CTA here
-      // until an official localized Google Play badge is added to assets.
-      { name: 'Google Play', url: GOOGLE_PLAY_URL, badge: null },
+      // Official Russian Google Play badge, downloaded from Google's badge
+      // resource and kept at its native aspect ratio by the footer.
+      {
+        name: 'Google Play',
+        url: 'https://play.google.com/store/apps/details?id=ru.runechess.game',
+        badge: {
+          file: 'google-play-ru.png',
+          width: 646,
+          height: 250,
+          altKey: 'storeBadgeGooglePlay' as const,
+        },
+      },
       { name: 'AppGallery', url: null, badge: null },
     ];
 
