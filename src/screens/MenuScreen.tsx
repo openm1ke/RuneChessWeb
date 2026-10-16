@@ -19,6 +19,9 @@ import { APP_VERSION } from '../appVersion';
  * minimum-size rule is protecting.
  */
 const BADGE_HEIGHT = 28;
+/** The download row is a visual set, so every store plate gets the same
+ * footprint even though the stores publish badges with different ratios. */
+const BADGE_WIDTH = 84;
 
 /** True in the archive built for games.yandex.ru — see vite.config.ts. */
 const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
@@ -478,7 +481,7 @@ function MenuFooterLinks() {
               <img
                 src={asset(`assets/badges/${badge.file}`)}
                 alt={l10n[badge.altKey]}
-                width={(BADGE_HEIGHT * badge.width) / badge.height}
+                width={BADGE_WIDTH}
                 height={BADGE_HEIGHT}
                 style={{ display: 'block' }}
                 draggable={false}
