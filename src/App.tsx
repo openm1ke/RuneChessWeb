@@ -90,7 +90,11 @@ const ADS_AVAILABLE = true;
 const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
 
 function initialScreen(): Screen {
-  return typeof window !== 'undefined' && window.location.hash === '#levels' ? 'levels' : 'menu';
+  if (typeof window === 'undefined') return 'menu';
+  // `#rules` is how how-to-play.html sends a reader straight to the lessons
+  // on the board instead of the menu.
+  if (window.location.hash === '#rules') return 'rules';
+  return window.location.hash === '#levels' ? 'levels' : 'menu';
 }
 
 function setLevelSelectAddress(isOpen: boolean): void {
@@ -111,6 +115,13 @@ export default function App() {
   const dailyReminderService = useMemo(() => new DailyReminderService(), []);
 
   const [screen, setScreen] = useState<Screen>(initialScreen);
+  // Once the lessons are left, a reload must land on the menu, not back in
+  // them.
+  useEffect(() => {
+    if (screen !== 'rules' && window.location.hash === '#rules') {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+    }
+  }, [screen]);
   // Where the appearance picker was opened from. Back has to return the
   // player where they came from; landing them in Settings they never opened
   // is the kind of small lie that makes an app feel unreliable.
