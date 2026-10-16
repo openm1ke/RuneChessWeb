@@ -584,9 +584,14 @@ function GooglePlayDownloadButton() {
         textShadow: '0 1px 3px rgba(0,0,0,0.8)',
       }}
     >
-      <span aria-hidden="true" style={{ color: '#ffd77a', fontSize: 16, lineHeight: 1 }}>
-        ▶
-      </span>
+      <img
+        src={asset('assets/badges/google-play-mark.svg')}
+        alt=""
+        width={24}
+        height={24}
+        aria-hidden="true"
+        style={{ display: 'block' }}
+      />
       {l10n.storeGooglePlay}
     </a>
   );
