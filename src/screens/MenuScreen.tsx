@@ -208,8 +208,7 @@ export function MenuScreen({
           />
           <MenuIconButton
             label={l10n.menuRules}
-            href={BUILT_FOR_YANDEX_GAMES ? undefined : 'how-to-play.html'}
-            onClick={BUILT_FOR_YANDEX_GAMES ? onRules : undefined}
+            onClick={onRules}
             glyph={<RulesIcon />}
             onActivate={onRulesOpened}
           />
@@ -394,8 +393,7 @@ function LandscapeMenuScene({
         />
         <MenuIconButton
           label={l10n.menuRules}
-          href={BUILT_FOR_YANDEX_GAMES ? undefined : 'how-to-play.html'}
-          onClick={BUILT_FOR_YANDEX_GAMES ? onRules : undefined}
+          onClick={onRules}
           glyph={<RulesIcon />}
           onActivate={onRulesOpened}
         />

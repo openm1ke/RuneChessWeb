@@ -11,9 +11,10 @@ import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 /**
  * How to play, inside the game — three lessons on the real board.
  *
- * On runechess.ru the menu's book icon opens `how-to-play.html`, a real
- * page for search engines. Inside the Yandex Games catalogue that link is
- * forbidden (§8.4.2), which is why the rules live in the game at all.
+ * The menu's book icon opens this screen in every build. `how-to-play.html`
+ * stays on runechess.ru as the page for search engines (linked from the
+ * about page and the sitemap) — but a player who is already in the game
+ * learns faster on the board than from a page of text.
  *
  * The screen used to be a page of text: four steps, six figures, three
  * ratings. It described a beam without ever showing one. Each lesson is now

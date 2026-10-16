@@ -137,7 +137,9 @@ export function LevelResultOverlay({
 
   const docked = dock != null;
   const showRetry = result.stars != null && result.stars < 3;
-  const blockWidth = docked ? dock.width - 40 : 280;
+  // Wide enough that the ad offer's title — "Удвоить звёзды: +1" — stays on
+  // one line beside its icon and arrow; at 280 it broke after the colon.
+  const blockWidth = docked ? dock.width - 40 : 340;
 
   const handleContinue = () => {
     if (exiting) return;
