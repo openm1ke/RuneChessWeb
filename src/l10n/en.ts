@@ -395,4 +395,5 @@ Harder puzzles lie ahead.`,
   consentEssentialOnly: "Essential only",
   storeBadgeRuStore: "Get it on RuStore",
   storeBadgeAppStore: "Download on the App Store",
+  storeGooglePlay: "Get it on Google Play",
 };

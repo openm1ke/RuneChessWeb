@@ -400,6 +400,7 @@ export const ru = {
   consentEssentialOnly: "Только необходимые",
   storeBadgeRuStore: "Скачайте из RuStore",
   storeBadgeAppStore: "Загрузите в App Store",
+  storeGooglePlay: "Скачать в Google Play",
 };
 
 /**

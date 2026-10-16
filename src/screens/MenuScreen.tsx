@@ -6,7 +6,7 @@ import { asset } from '../lib/assetUrl';
 import { RulesIcon, SettingsIcon } from '../components/shared/MenuIcons';
 import { playNavigationPress, playNavigationRelease } from '../services/musicService';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
-import { menuStoreLinks } from '../data/storeLinks';
+import { GOOGLE_PLAY_URL, menuStoreLinks } from '../data/storeLinks';
 import { useL10n } from '../l10n/l10nContext';
 import { APP_VERSION } from '../appVersion';
 
@@ -189,6 +189,19 @@ export function MenuScreen({
         >
           <MenuActionButton label={l10n.menuAchievements.toUpperCase()} onClick={onAchievements} fontSize={17} letterSpacing={1.8} />
         </div>
+        <div
+          style={{
+            position: 'absolute',
+            left: wideButtonInset,
+            right: wideButtonInset,
+            bottom: 100,
+            height: 44,
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          <GooglePlayDownloadButton />
+        </div>
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 36, textAlign: 'center' }}>
           <MenuFooterLinks />
         </div>
@@ -289,7 +302,7 @@ function LandscapeMenuScene({
   // The rules and settings icons live in the top-right corner; a column of
   // buttons on that side has to start below them.
   const stackCeiling = 72;
-  const footerRoom = 56;
+  const footerRoom = GOOGLE_PLAY_URL ? 110 : 56;
 
   const centredBrandOrb = Math.min(138, Math.max(96, height * 0.16));
   const centredBrandHeight = centredBrandOrb * 1.48 * (660 / 560);
@@ -382,6 +395,18 @@ function LandscapeMenuScene({
       </div>
       <div style={slot(3, 0.84)}>
         <MenuActionButton label={l10n.menuAchievements.toUpperCase()} onClick={onAchievements} fontSize={16} letterSpacing={1.4} />
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          ...brandColumn,
+          bottom: 78,
+          height: 44,
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
+        <GooglePlayDownloadButton />
       </div>
       <div style={{ position: 'absolute', top: 18, right: 24, display: 'flex', gap: 12, alignItems: 'center' }}>
         <StarCounter
@@ -519,6 +544,51 @@ function MenuFooterLinks() {
         </div>
       )}
     </nav>
+  );
+}
+
+/** A prominent download CTA for the site's main menu. It is intentionally
+ * separate from the tiny legal/store footer so visitors see the Android
+ * version before they have to scroll or look at the page edge. */
+function GooglePlayDownloadButton() {
+  const l10n = useL10n();
+  if (!GOOGLE_PLAY_URL) return null;
+
+  return (
+    <a
+      href={GOOGLE_PLAY_URL}
+      target="_blank"
+      rel="noreferrer noopener"
+      aria-label={l10n.storeGooglePlay}
+      onPointerDown={playNavigationPress}
+      onClick={playNavigationRelease}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 7,
+        width: '100%',
+        maxWidth: 246,
+        height: '100%',
+        padding: '0 16px',
+        border: '1px solid rgba(255, 215, 122, 0.84)',
+        borderRadius: 12,
+        color: '#ffe8ae',
+        background: 'linear-gradient(135deg, rgba(35, 55, 113, 0.98), rgba(11, 25, 64, 0.98))',
+        boxShadow: '0 5px 14px rgba(0, 0, 0, 0.36), inset 0 1px rgba(255,255,255,0.16)',
+        fontSize: 12,
+        fontWeight: 900,
+        letterSpacing: 0.65,
+        lineHeight: 1,
+        textDecoration: 'none',
+        textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+      }}
+    >
+      <span aria-hidden="true" style={{ color: '#ffd77a', fontSize: 16, lineHeight: 1 }}>
+        ▶
+      </span>
+      {l10n.storeGooglePlay}
+    </a>
   );
 }
 

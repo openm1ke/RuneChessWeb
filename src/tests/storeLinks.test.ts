@@ -9,7 +9,7 @@ import { en } from '../l10n/en';
 // there is not a cosmetic slip but grounds for rejection.
 import { describe, expect, it } from 'vitest';
 import type { StoreBadge } from '../data/storeLinks';
-import { STORE_LINKS, menuStoreLinks, publishedStoreLinks } from '../data/storeLinks';
+import { GOOGLE_PLAY_URL, STORE_LINKS, menuStoreLinks, publishedStoreLinks } from '../data/storeLinks';
 
 const badge: StoreBadge = { file: 'x.svg', width: 111, height: 40, altKey: 'storeBadgeRuStore' as const };
 
@@ -44,6 +44,11 @@ describe('storeLinks', () => {
     // player landing there cannot install from it.
     const appStore = STORE_LINKS.find(({ name }) => name === 'App Store');
     expect(appStore?.url).toBe('https://apps.apple.com/app/id6810595002');
+  });
+
+  it('links the site download CTA to the published Google Play app', () => {
+    expect(GOOGLE_PLAY_URL).toBe('https://play.google.com/store/apps/details?id=ru.runechess.game');
+    expect(STORE_LINKS.find(({ name }) => name === 'Google Play')?.url).toBe(GOOGLE_PLAY_URL);
   });
 
   it('gives every published store the official badge to draw', () => {

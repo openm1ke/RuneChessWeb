@@ -29,6 +29,12 @@
  */
 const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
 
+/** The Android storefront is live on the public site, but never inside the
+ * Yandex Games archive where outbound store links are not allowed. */
+export const GOOGLE_PLAY_URL: string | null = BUILT_FOR_YANDEX_GAMES
+  ? null
+  : 'https://play.google.com/store/apps/details?id=ru.runechess.game';
+
 /**
  * The store's own badge artwork, as the store publishes it.
  *
@@ -90,8 +96,9 @@ export const STORE_LINKS: readonly StoreLink[] = BUILT_FOR_YANDEX_GAMES
           altKey: 'storeBadgeAppStore' as const,
         },
       },
-      // Not started: no developer account yet.
-      { name: 'Google Play', url: null, badge: null },
+      // Live on the public site. The main menu uses a compact text CTA here
+      // until an official localized Google Play badge is added to assets.
+      { name: 'Google Play', url: GOOGLE_PLAY_URL, badge: null },
       { name: 'AppGallery', url: null, badge: null },
     ];
 
