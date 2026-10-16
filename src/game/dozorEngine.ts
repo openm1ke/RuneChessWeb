@@ -139,6 +139,26 @@ export class DozorEngine {
     return this.dailyLevel != null;
   }
 
+  /** Set only by `loadLesson`, for the live boards on the rules screen.
+   * Deliberately not the daily slot: a lesson is neither a campaign level
+   * nor the day's puzzle, and routing it through `loadDailyChallenge` would
+   * make `isDailyChallenge` true — which elsewhere means "this result goes
+   * into the player's record". Nothing here is a result. */
+  private lessonLevel: LevelDefinition | null = null;
+  get isLesson(): boolean {
+    return this.lessonLevel != null;
+  }
+
+  /** Loads a scripted position for a "How to play" lesson: the real board
+   * and tray, played by the real rules, with nothing wired up around them
+   * — no progress, no stars, no analytics. Mirrors the app's
+   * `DozorController.loadLesson`. */
+  loadLesson(level: LevelDefinition): void {
+    this.lessonLevel = level;
+    this.loadLevel();
+    this.notify();
+  }
+
   onLevelSolved: ((levelIndex: number, result: LevelAttemptResult) => void) | null = null;
   /** The daily-challenge counterpart of `onLevelSolved`, kept separate
    * because there is no meaningful `levelIndex` to report for it. */
@@ -172,7 +192,7 @@ export class DozorEngine {
   }
 
   get level(): LevelDefinition {
-    return this.dailyLevel ?? campaignLevels[this.levelIndex];
+    return this.lessonLevel ?? this.dailyLevel ?? campaignLevels[this.levelIndex];
   }
   get beacons() {
     return this.level.beacons;
@@ -223,6 +243,9 @@ export class DozorEngine {
 
   private checkForSolve(): void {
     if (this.levelResult != null) return;
+    // A lesson is not an attempt at anything: solving one freezes no
+    // result, awards no star and calls back into nothing.
+    if (this.isLesson) return;
     if (!this.snapshot().solved) return;
     const elapsedSeconds = Math.round(this.elapsedMs() / 1000);
     const requiredMoves = this.level.tray.length;

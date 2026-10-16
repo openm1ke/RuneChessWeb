@@ -1199,7 +1199,7 @@ export default function App() {
         />
       );
     case 'rules':
-      return withConsent(<RulesScreen onBack={goToMenu} />);
+      return withConsent(<RulesScreen onBack={goToMenu} onLevels={() => setScreen('levels')} />);
     case 'achievements':
       return withConsent(
         <AchievementsScreen

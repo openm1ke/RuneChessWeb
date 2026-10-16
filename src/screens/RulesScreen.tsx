@@ -1,293 +1,239 @@
+import { useCallback, useState, type ReactNode } from 'react';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { useL10n } from '../l10n/l10nContext';
 import type { Strings } from '../l10n/ru';
 import { RoundControl } from '../components/shared/RoundControl';
-import { PieceArt } from '../components/board/PieceArt';
-import { pieceAttackSummary, pieceName, type PieceType } from '../game/pieceTypes';
+import { LessonBoard } from '../components/board/LessonBoard';
+import { howToPlayLessons } from '../data/howToPlayLessons';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 
 /**
- * The rules, inside the game.
+ * How to play, inside the game — three lessons on the real board.
  *
- * On runechess.ru the menu's book icon opens `how-to-play.html` — a real
- * page, useful to a search engine. Inside the Yandex Games catalogue that
- * link is forbidden (§8.4.2: no links to any resource, the game's own site
- * included), and moderation rejected the first submission over exactly
- * that. Dropping the button was the quick answer; this is the right one —
- * a player on the platform gets the same explanation without leaving the
- * game.
+ * On runechess.ru the menu's book icon opens `how-to-play.html`, a real
+ * page for search engines. Inside the Yandex Games catalogue that link is
+ * forbidden (§8.4.2), which is why the rules live in the game at all.
  *
- * Deliberately built from the same data the tray already uses
- * (`pieceNames`, `pieceAttackSummary`): one wording for a figure's reach,
- * so the rules screen cannot drift from what the game says mid-puzzle.
+ * The screen used to be a page of text: four steps, six figures, three
+ * ratings. It described a beam without ever showing one. Each lesson is now
+ * a real position on the real board and tray (see `LessonBoard`), with a
+ * title and one sentence — everything else the player needs is in front of
+ * them. Mirrors the app's rules screen.
  */
-const PIECE_ORDER: readonly PieceType[] = ['rook', 'bishop', 'knight', 'king', 'queen', 'pawn'];
-
-/** The four steps and the three ratings, in whichever language is on.
- *
- * Built from the strings rather than held as constants, and deliberately
- * the same keys the Flutter app's rules screen uses: the two screens are
- * meant to say the same thing, and the wording here had already drifted a
- * little from the mobile one before they shared a source. */
-function steps(l10n: Strings): readonly { n: string; title: string; text: string }[] {
-  return [
-    { n: '1', title: l10n.infoStep1Title, text: l10n.infoStep1Body },
-    { n: '2', title: l10n.infoStep2Title, text: l10n.infoStep2Body },
-    { n: '3', title: l10n.infoStep3Title, text: l10n.infoStep3Body },
-    { n: '4', title: l10n.infoStep4Title, text: l10n.infoStep4Body },
-  ];
-}
-
-function stars(l10n: Strings): readonly { mark: string; title: string; text: string }[] {
-  return [
-    { mark: '★★★', title: l10n.infoRatingExact, text: l10n.rulesRatingExactHint },
-    { mark: '★★☆', title: l10n.infoRatingGood, text: l10n.rulesRatingGoodHint },
-    { mark: '★☆☆', title: l10n.infoRatingSolved, text: l10n.rulesRatingSolvedHint },
-  ];
-}
-
-export function RulesScreen({ onBack }: { onBack: () => void }) {
+export function RulesScreen({ onBack, onLevels }: { onBack: () => void; onLevels?: () => void }) {
   const viewport = useViewportSize();
-  // A wide screen is the catalogue's main surface — and the television's,
-  // later. Squeezing the portrait canvas into it leaves the text tiny in a
-  // narrow column, so landscape gets the viewport itself and two columns,
-  // the same split the achievements screen already makes.
-  return viewport.width > viewport.height ? (
-    <LandscapeRules onBack={onBack} />
-  ) : (
-    <PortraitRules onBack={onBack} />
-  );
-}
-
-function PortraitRules({ onBack }: { onBack: () => void }) {
-  const l10n = useL10n();
+  const skin = useCosmeticSkin();
+  const lessons = <Lessons onBack={onBack} onLevels={onLevels ?? onBack} />;
+  if (viewport.width > viewport.height) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+        <img
+          src={skin.adaptiveMenu.ultrawide}
+          alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          draggable={false}
+        />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            margin: '0 auto',
+            maxWidth: 620,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {lessons}
+        </div>
+      </div>
+    );
+  }
   return (
     <DesignCanvas>
       {(canvas) => (
-        <div
-          style={{
-            position: 'relative',
-            width: canvas.width,
-            height: canvas.height,
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ position: 'absolute', inset: 0, background: '#000' }} />
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 120,
-              background: 'linear-gradient(to bottom, #000, transparent)',
-            }}
+        <div style={{ position: 'relative', width: canvas.width, height: canvas.height, overflow: 'hidden' }}>
+          <img
+            src={skin.adaptiveMenu.tall}
+            alt=""
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            draggable={false}
           />
-          <div style={{ position: 'absolute', top: 22, left: 20 }}>
-            <RoundControl onClick={onBack} label={l10n.infoBackToMenu}>
-              ‹
-            </RoundControl>
-          </div>
-          <div style={{ ...titleStyle, top: 98 }}>{l10n.infoHowToPlay.toUpperCase()}</div>
-          <div
-            className="dozor-scroll-panel"
-            style={{ ...panelStyle, top: 144, left: 32, right: 32, bottom: 24 }}
-          >
-            <RulesBody columns={1} />
-          </div>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>{lessons}</div>
         </div>
       )}
     </DesignCanvas>
   );
 }
 
-function LandscapeRules({ onBack }: { onBack: () => void }) {
+/** Title and one sentence per lesson, in lesson order. */
+function copyOf(l10n: Strings, index: number): { title: string; body: string } {
+  switch (index) {
+    case 0:
+      return { title: l10n.infoLessonRayTitle, body: l10n.infoLessonRayBody };
+    case 1:
+      return { title: l10n.infoLessonCountTitle, body: l10n.infoLessonCountBody };
+    default:
+      return { title: l10n.infoLessonReachTitle, body: l10n.infoLessonReachBody };
+  }
+}
+
+function Lessons({ onBack, onLevels }: { onBack: () => void; onLevels: () => void }) {
   const l10n = useL10n();
-  const skin = useCosmeticSkin();
+  const count = howToPlayLessons.length;
+  const [index, setIndex] = useState(0);
+  const [solved, setSolved] = useState<boolean[]>(() => howToPlayLessons.map(() => false));
+  const [resets, setResets] = useState<number[]>(() => howToPlayLessons.map(() => 0));
+  const last = index === count - 1;
+  const { title, body } = copyOf(l10n, index);
+  const solvedHere = solved[index];
+
+  const onSolvedChange = useCallback(
+    (value: boolean) =>
+      setSolved((prev) => (prev[index] === value ? prev : prev.map((v, i) => (i === index ? value : v)))),
+    [index],
+  );
+
   return (
-    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
-      <img
-        src={skin.adaptiveMenu.ultrawide}
-        alt=""
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-        draggable={false}
-      />
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.71)' }} />
-      <div style={{ position: 'absolute', top: 22, left: 20 }}>
-        <RoundControl onClick={onBack} label={l10n.infoBackToMenu}>
+    <>
+      <header style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '22px 20px 6px' }}>
+        <RoundControl onClick={onBack} label={l10n.infoBackToMenu} size={54}>
           ‹
         </RoundControl>
+        <div style={{ flex: 1, textAlign: 'center', fontFamily: 'var(--font-display)', fontSize: 26, color: 'var(--gold-bright)' }}>
+          {l10n.infoHowToPlay}
+        </div>
+        <div
+          style={{
+            minWidth: 54,
+            padding: '7px 12px',
+            borderRadius: 14,
+            background: 'rgba(20,33,66,0.6)',
+            border: '1px solid rgba(215,164,55,0.44)',
+            fontSize: 15,
+            fontWeight: 800,
+            color: '#e8eeff',
+            textAlign: 'center',
+          }}
+        >
+          {index + 1}/{count}
+        </div>
+      </header>
+
+      <div style={{ textAlign: 'center', padding: '6px 20px 0' }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, color: '#ffe2a4' }}>{title}</div>
+        {/* The win line replaces the instruction rather than adding a second
+            paragraph to read. */}
+        <div
+          role={solvedHere ? 'status' : undefined}
+          style={{
+            marginTop: 6,
+            minHeight: 50,
+            fontSize: 17,
+            lineHeight: 1.45,
+            fontWeight: solvedHere ? 900 : 700,
+            color: solvedHere ? 'var(--gold-bright)' : '#d4e0f8',
+          }}
+        >
+          {solvedHere ? l10n.infoLessonSolved : body}
+        </div>
       </div>
-      <div style={{ ...titleStyle, top: 22, left: 96, right: 96 }}>{l10n.infoHowToPlay.toUpperCase()}</div>
-      <div
-        className="dozor-scroll-panel"
-        style={{ ...panelStyle, top: 82, left: 52, right: 52, bottom: 16, padding: '14px 20px' }}
-      >
-        <RulesBody columns={2} />
+
+      <div style={{ flex: 1, minHeight: 0, padding: '6px 16px 0' }}>
+        <LessonBoard
+          key={index}
+          lesson={howToPlayLessons[index]}
+          resetSignal={resets[index]}
+          onSolvedChange={onSolvedChange}
+        />
       </div>
-    </div>
+
+      <div style={{ textAlign: 'center', padding: '4px 0' }}>
+        <button
+          type="button"
+          onClick={() => setResets((prev) => prev.map((v, i) => (i === index ? v + 1 : v)))}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            color: '#bfd0f5',
+            fontFamily: 'var(--font-display)',
+            fontSize: 13,
+            letterSpacing: 0.6,
+            padding: '8px 14px',
+            cursor: 'pointer',
+          }}
+        >
+          ↻ {l10n.infoLessonReset.toUpperCase()}
+        </button>
+      </div>
+
+      <footer style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 20px 18px' }}>
+        <NavButton disabled={index === 0} onClick={() => setIndex((i) => Math.max(0, i - 1))} quiet>
+          ‹ {l10n.back.toUpperCase()}
+        </NavButton>
+        <div style={{ display: 'flex', gap: 6 }} aria-hidden="true">
+          {howToPlayLessons.map((_, i) => (
+            <span
+              key={i}
+              style={{
+                width: i === index ? 20 : 8,
+                height: 8,
+                borderRadius: 8,
+                background: i === index ? '#ffd779' : 'rgba(215,228,255,0.4)',
+                transition: 'width 180ms',
+              }}
+            />
+          ))}
+        </div>
+        {/* Never disabled, however the lesson is going: a player who cannot
+            solve it is exactly the one who must not be held on this screen.
+            It glows once the lesson is solved. */}
+        <NavButton onClick={last ? onLevels : () => setIndex((i) => i + 1)} lit={solvedHere}>
+          {(last ? l10n.infoOpenLevels : l10n.infoNext).toUpperCase()} {last ? '✦' : '›'}
+        </NavButton>
+      </footer>
+    </>
   );
 }
 
-function RulesBody({ columns }: { columns: 1 | 2 }) {
-  const l10n = useL10n();
+function NavButton({
+  children,
+  onClick,
+  disabled = false,
+  quiet = false,
+  lit = false,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  quiet?: boolean;
+  lit?: boolean;
+}) {
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
       style={{
-        display: 'grid',
-        gridTemplateColumns: columns === 2 ? '1fr 1fr' : '1fr',
-        columnGap: 22,
-      }}
-    >
-      <div>
-        <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, lineHeight: 1.45 }}>
-          {l10n.rulesLead}
-        </p>
-
-        <SectionTitle>{l10n.infoFourSteps}</SectionTitle>
-        <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
-          {steps(l10n).map((step) => (
-            <div key={step.n} style={rowStyle}>
-              <div style={badgeStyle}>{step.n}</div>
-              <div>
-                <div style={rowTitleStyle}>{step.title}</div>
-                <div style={rowTextStyle}>{step.text}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div>
-        <SectionTitle>{l10n.infoHowPiecesAttack}</SectionTitle>
-        <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#a9bbdd' }}>
-          {l10n.rulesPiecesLead}
-        </p>
-        <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
-          {PIECE_ORDER.map((type) => (
-            <div key={type} style={rowStyle}>
-              <div
-                style={{
-                  width: 44,
-                  minWidth: 44,
-                  height: 52,
-                  display: 'grid',
-                  placeItems: 'center',
-                }}
-              >
-                <PieceArt type={type} width={38} height={50} />
-              </div>
-              <div>
-                <div style={rowTitleStyle}>{pieceName(l10n, type)}</div>
-                <div style={rowTextStyle}>{pieceAttackSummary(l10n, type)}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <SectionTitle>{l10n.rulesStarsTitle}</SectionTitle>
-        <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
-          {stars(l10n).map((star) => (
-            <div key={star.mark} style={rowStyle}>
-              <div style={{ ...badgeStyle, width: 58, minWidth: 58, letterSpacing: 1 }}>
-                {star.mark}
-              </div>
-              <div>
-                <div style={rowTitleStyle}>{star.title}</div>
-                <div style={rowTextStyle}>{star.text}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <SectionTitle>{l10n.rulesLevelsTitle}</SectionTitle>
-        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, lineHeight: 1.45 }}>
-          {l10n.rulesLevelsLead(
-            l10n.campaignTutorialName,
-            l10n.campaignMainName,
-            l10n.campaignBonusName,
-          )}
-        </p>      </div>
-    </div>
-  );
-}
-
-const titleStyle = {
-  position: 'absolute',
-  left: 0,
-  right: 0,
-  textAlign: 'center',
-  fontFamily: 'var(--font-body)',
-  color: 'var(--gold-bright)',
-  fontSize: 25,
-  fontWeight: 900,
-  letterSpacing: 3.5,
-  textShadow: '0 3px 5px rgba(0,0,0,0.8)',
-} as const;
-
-const panelStyle = {
-  position: 'absolute',
-  borderRadius: 14,
-  background: 'rgba(11,23,51,0.9)',
-  border: '1.5px solid rgba(216,165,55,0.85)',
-  boxShadow: '0 8px 18px rgba(0,0,0,0.6)',
-  padding: 16,
-  overflowY: 'auto',
-  color: '#dbe5f7',
-  fontFamily: 'var(--font-body)',
-} as const;
-
-function SectionTitle({ children }: { children: string }) {
-  return (
-    <div
-      style={{
-        margin: '0 0 8px',
-        color: 'var(--gold-bright)',
-        fontSize: 13,
-        fontWeight: 900,
-        letterSpacing: 1.6,
-        textTransform: 'uppercase',
+        flex: 1,
+        minHeight: 50,
+        borderRadius: 14,
+        padding: '0 10px',
+        fontFamily: 'var(--font-display)',
+        fontSize: 12.5,
+        letterSpacing: 0.5,
+        whiteSpace: 'nowrap',
+        cursor: disabled ? 'default' : 'pointer',
+        opacity: disabled ? 0.45 : 1,
+        border: quiet ? '1px solid rgba(215,164,55,0.5)' : 'none',
+        background: quiet ? 'transparent' : lit ? '#ffd779' : 'rgba(255,215,121,0.24)',
+        color: quiet ? '#e7eeff' : lit ? '#162350' : '#e7eeff',
+        transition: 'background 200ms, color 200ms',
       }}
     >
       {children}
-    </div>
+    </button>
   );
 }
-
-const rowStyle = {
-  display: 'flex',
-  gap: 10,
-  alignItems: 'center',
-  padding: '8px 10px',
-  borderRadius: 10,
-  background: 'rgba(4,13,39,0.55)',
-  border: '1px solid rgba(203,155,52,0.4)',
-} as const;
-
-const badgeStyle = {
-  width: 26,
-  minWidth: 26,
-  height: 26,
-  borderRadius: 8,
-  display: 'grid',
-  placeItems: 'center',
-  background: 'rgba(216,165,55,0.18)',
-  border: '1px solid rgba(216,165,55,0.7)',
-  color: 'var(--gold-bright)',
-  fontSize: 12,
-  fontWeight: 900,
-} as const;
-
-const rowTitleStyle = {
-  color: '#ffe2a4',
-  fontSize: 13,
-  fontWeight: 900,
-  marginBottom: 2,
-} as const;
-
-const rowTextStyle = {
-  color: '#c5d4f0',
-  fontSize: 12,
-  fontWeight: 700,
-  lineHeight: 1.35,
-} as const;
