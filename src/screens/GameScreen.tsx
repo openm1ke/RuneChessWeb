@@ -26,6 +26,12 @@ import type { AchievementDefinition } from '../data/achievements';
 
 const isDev = import.meta.env.DEV;
 
+/** Where the portrait result panel lives: from the board frame's lower
+ * edge (the board plus the frame the table art draws around it) to just
+ * above the canvas's bottom, at a width that gives the bonus-star offer
+ * room to be read. Mirrors the app's `_boardFrameBottom`/`_panelUnits`. */
+const RESULT_DOCK = { top: BOARD_TOP + BoardPerspective.height + 26, bottom: 12, width: 372 };
+
 export function GameScreen({
   engine,
   onBack,
@@ -316,6 +322,9 @@ export function GameScreen({
           doublesDailyStars={dailyDoubleOffered}
           achievement={achievement}
           onAchievementRevealed={onAchievementRevealed}
+          // Portrait: the panel lives in the strip between the board's frame
+          // and the bottom edge, so the solved board stays fully in view.
+          dock={layout?.isLandscape ? null : RESULT_DOCK}
         />
       )}
       {showResetConfirm && (

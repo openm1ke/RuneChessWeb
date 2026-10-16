@@ -196,9 +196,12 @@ function SectionTitle({ label, locked = false }: { label: string; locked?: boole
     <div
       style={{
         padding: '6px 4px 10px',
-        fontSize: 10,
+        // 10 design units arrived at 8-9px on a phone. 17 matches the app's
+        // AppTypeScale.section, which the same complaint raised.
+        fontSize: 17,
+        lineHeight: 1.1,
         fontWeight: 900,
-        letterSpacing: 1.35,
+        letterSpacing: 0.5,
         color: locked ? 'rgba(122,135,159,0.5)' : 'var(--gold)',
       }}
     >
@@ -229,17 +232,17 @@ function MoreLevelsStrip({ remaining }: { remaining: number }) {
     <div
       style={{
         marginTop: 12,
-        height: 44,
+        height: 50,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 14,
         background: 'rgba(10,16,34,0.2)',
         border: '1px solid rgba(92,102,125,0.24)',
-        fontSize: 12,
+        fontSize: 16,
         fontWeight: 800,
         letterSpacing: 0.4,
-        color: 'rgba(174,187,214,0.56)',
+        color: 'rgba(174,187,214,0.7)',
       }}
     >
       {l10n.levelsMoreAhead(remaining)}

@@ -1,5 +1,5 @@
 import { achievementTitle } from '../../data/achievements';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useL10n } from '../../l10n/l10nContext';
 import type { LevelAttemptResult } from '../../game/starRating';
 import type { AchievementDefinition } from '../../data/achievements';
@@ -20,6 +20,7 @@ export function LevelResultOverlay({
   doublesDailyStars = false,
   achievement = null,
   onAchievementRevealed,
+  dock = null,
 }: {
   result: LevelAttemptResult;
   onContinue: () => void;
@@ -44,6 +45,11 @@ export function LevelResultOverlay({
    * mirrors the mobile app's `resultAchievement`. */
   achievement?: AchievementDefinition | null;
   onAchievementRevealed?: () => void;
+  /** Portrait only: the strip the panel lives in, in canvas units — from
+   * the board frame's lower edge to `bottom` above the canvas's own. The
+   * panel is centred there and scales down inside it rather than ever
+   * climbing onto the board. Null keeps the centred card (landscape). */
+  dock?: { top: number; bottom: number; width: number } | null;
 }) {
   const l10n = useL10n();
   const scored = result.stars != null;
@@ -109,6 +115,28 @@ export function LevelResultOverlay({
   const captionWindow: [number, number] = scored ? [0.88, 1.0] : [0, 0];
   const buttonWindow: [number, number] = scored ? [0.92, 1.0] : [0.55, 1.0];
 
+  const strip = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState(1);
+  // offsetHeight ignores transforms, so this measures the panel's natural
+  // height however it is currently scaled.
+  useLayoutEffect(() => {
+    if (!dock) return;
+    const measure = () => {
+      const room = strip.current?.clientHeight ?? 0;
+      const need = panel.current?.offsetHeight ?? 0;
+      if (room > 0 && need > 0) setFit(Math.min(1, room / need));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    if (panel.current) observer.observe(panel.current);
+    if (strip.current) observer.observe(strip.current);
+    return () => observer.disconnect();
+  }, [dock, bonusStarOffered, bonusStarNotice, achievement, result.stars]);
+
+  const docked = dock != null;
+  const blockWidth = docked ? dock.width - 40 : 248;
+
   const handleContinue = () => {
     if (exiting) return;
     playResultContinue();
@@ -125,24 +153,39 @@ export function LevelResultOverlay({
         transition: 'opacity 240ms ease-in',
       }}
     >
+      {/* A light wash, not a blackout: the solved board is what the player
+          wants to look at while deciding whether to replay. It still takes
+          the taps, so the board cannot be played under the panel. */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: `rgba(0,0,0,${0.7 * Math.min(1, t / 0.35)})`,
+          background: `rgba(26,16,38,${(docked ? 0.35 : 0.55) * Math.min(1, t / 0.35)})`,
         }}
       />
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        ref={strip}
+        style={
+          docked
+            ? { position: 'absolute', left: 0, right: 0, top: dock.top, bottom: dock.bottom, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            : { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+        }
+      >
         <div
+          ref={panel}
           style={{
-            margin: '0 44px',
-            padding: '26px 24px 20px',
+            flex: 'none',
+            width: docked ? dock.width : undefined,
+            boxSizing: 'border-box',
+            margin: docked ? 0 : '0 44px',
+            padding: docked ? '20px 20px 18px' : '26px 24px 20px',
             borderRadius: 22,
             background: 'linear-gradient(to bottom, rgba(30,48,104,0.96), rgba(15,26,60,0.96))',
             border: '2px solid var(--gold-border)',
             boxShadow: '0 14px 30px rgba(0,0,0,0.6)',
             opacity: phase(cardWindow[0], cardWindow[1] * 0.6),
-            transform: `scale(${0.8 + 0.2 * phase(cardWindow[0], cardWindow[1])})`,
+            transform: `scale(${fit * (docked ? 0.88 + 0.12 * phase(cardWindow[0], cardWindow[1]) : 0.8 + 0.2 * phase(cardWindow[0], cardWindow[1]))})`,
+            transformOrigin: 'center',
             textAlign: 'center',
             minWidth: 260,
           }}
@@ -151,8 +194,8 @@ export function LevelResultOverlay({
             style={{
               opacity: phase(titleWindow[0], titleWindow[1]),
               fontFamily: 'var(--font-display)',
-              fontSize: 19,
-              letterSpacing: 2.2,
+              fontSize: 22,
+              letterSpacing: 1.6,
               color: 'var(--gold-bright)',
             }}
           >
@@ -163,8 +206,8 @@ export function LevelResultOverlay({
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 11,
-                  letterSpacing: 1.3,
+                  fontSize: 13,
+                  letterSpacing: 0.9,
                   color: '#ffd678',
                   marginBottom: 8,
                 }}
@@ -176,7 +219,7 @@ export function LevelResultOverlay({
                 style={{
                   marginTop: 6,
                   fontFamily: 'var(--font-display)',
-                  fontSize: 13,
+                  fontSize: 17,
                   color: 'var(--gold-bright)',
                 }}
               >
@@ -203,7 +246,7 @@ export function LevelResultOverlay({
                 <div
                   style={{
                     opacity: phase(captionWindow[0], captionWindow[1]),
-                    fontSize: 13,
+                    fontSize: 16,
                     fontWeight: 700,
                     color: 'var(--text-soft)',
                   }}
@@ -224,7 +267,7 @@ export function LevelResultOverlay({
                   role="status"
                   style={{
                     marginTop: 10,
-                    fontSize: 12,
+                    fontSize: 13.5,
                     fontWeight: 800,
                     color: 'var(--gold-bright)',
                   }}
@@ -236,7 +279,7 @@ export function LevelResultOverlay({
           ) : (
             <div style={{ height: 6 }} />
           )}
-          <div style={{ height: 20 }} />
+          <div style={{ height: 16 }} />
           <div
             style={{
               opacity: phase(buttonWindow[0], buttonWindow[1]),
@@ -244,7 +287,7 @@ export function LevelResultOverlay({
               // themselves these controls size to their own labels, which
               // made "ПРОДОЛЖИТЬ" and the ad offer different widths for no
               // reason the player could read as meaning anything.
-              width: 248,
+              width: blockWidth,
               maxWidth: '100%',
               margin: '0 auto',
               display: 'flex',
@@ -264,10 +307,10 @@ export function LevelResultOverlay({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 11,
-                  minHeight: 56,
+                  gap: 12,
+                  minHeight: 68,
                   marginBottom: 14,
-                  padding: '10px 14px 10px 12px',
+                  padding: '13px 16px 13px 14px',
                   borderRadius: 14,
                   border: '1.6px solid rgba(207,162,68,0.54)',
                   background: 'rgba(255,215,122,0.12)',
@@ -281,14 +324,14 @@ export function LevelResultOverlay({
                 <span
                   style={{
                     flex: '0 0 auto',
-                    width: 34,
-                    height: 34,
+                    width: 42,
+                    height: 42,
                     borderRadius: '50%',
                     background: 'rgba(255,215,122,0.18)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 19,
+                    fontSize: 23,
                     color: 'var(--gold-bright)',
                   }}
                   aria-hidden="true"
@@ -299,7 +342,9 @@ export function LevelResultOverlay({
                   <span
                     style={{
                       display: 'block',
-                      fontSize: 14,
+                      // What the video buys, readable at a glance: 14/11.5
+                      // arrived at 10-12px and 9-10px on a phone.
+                      fontSize: 17,
                       fontWeight: 800,
                       letterSpacing: 0.3,
                       color: 'var(--gold-bright)',
@@ -312,8 +357,8 @@ export function LevelResultOverlay({
                   <span
                     style={{
                       display: 'block',
-                      marginTop: 2,
-                      fontSize: 11.5,
+                      marginTop: 3,
+                      fontSize: 16,
                       fontWeight: 700,
                       color: 'var(--text-soft)',
                     }}
@@ -322,7 +367,7 @@ export function LevelResultOverlay({
                   </span>
                 </span>
                 <span
-                  style={{ flex: '0 0 auto', fontSize: 18, color: 'rgba(255,215,122,0.78)' }}
+                  style={{ flex: '0 0 auto', fontSize: 22, color: 'rgba(255,215,122,0.78)' }}
                   aria-hidden="true"
                 >
                   {bonusStarEnabled ? '▶' : '…'}
@@ -333,14 +378,14 @@ export function LevelResultOverlay({
               type="button"
               onClick={handleContinue}
               style={{
-                height: 48,
+                height: 56,
                 borderRadius: 14,
                 border: '2.5px solid var(--gold)',
                 background: 'linear-gradient(var(--success-a), var(--success-b))',
                 color: '#04281c',
                 fontFamily: 'var(--font-display)',
-                fontSize: 14,
-                letterSpacing: 3,
+                fontSize: 16,
+                letterSpacing: 2.2,
                 cursor: 'pointer',
                 boxShadow: '0 6px 18px rgba(0,0,0,0.5)',
               }}
@@ -352,12 +397,12 @@ export function LevelResultOverlay({
                 type="button"
                 onClick={onRetry}
                 style={{
-                  height: 40,
-                  marginTop: 12,
+                  height: 48,
+                  marginTop: 6,
                   border: 'none',
                   background: 'transparent',
                   color: 'rgba(255,226,164,0.72)',
-                  fontSize: 13,
+                  fontSize: 17,
                   fontWeight: 800,
                   letterSpacing: 0.6,
                   textDecoration: 'underline',

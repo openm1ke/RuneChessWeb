@@ -22,7 +22,7 @@ export function ProgressSummary({
   const l10n = useL10n();
   if (compact) {
     return (
-      <div style={{ fontSize: 12, fontWeight: 800, color: 'rgba(198,211,237,0.75)' }}>
+      <div style={{ fontSize: 16, fontWeight: 800, color: 'rgba(198,211,237,0.8)' }}>
         {l10n.progressCompleted(progress.completedLevels, progress.totalLevels)}
         {` · ${progress.stars} ${l10n.progressStars(progress.stars)}${l10n.progressOfMax(progress.maxStars)}`}
       </div>
@@ -82,7 +82,7 @@ function RankRow({ stars }: { stars: number }) {
         />
       </div>
       <div style={{ height: 6 }} />
-      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(206,225,255,0.6)' }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(206,225,255,0.66)' }}>
         {next == null
           ? l10n.progressTopRank
           : l10n.progressToNextRank(toNext ?? 0, rankTitle(l10n, next.id))}

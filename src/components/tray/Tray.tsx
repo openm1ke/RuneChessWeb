@@ -182,9 +182,11 @@ export function Tray({
           // The figure's line is the longest thing this row ever shows;
           // it gets its own size so it fits the 218px portrait panel whole
           // instead of ellipsising ("…ПО ДИАГОНАЛИ…" helps nobody).
-          fontSize: inHand ? 9.5 : 10.5,
+          // Was 9.5/10.5 — 8-9px on a phone. The panel is wider now (inset
+          // 64), which is the room the figure's longer line needed.
+          fontSize: inHand ? 12 : 13,
           fontWeight: 900,
-          letterSpacing: inHand ? 0.4 : 2.4,
+          letterSpacing: inHand ? 0.3 : 1.8,
           color: inHand ? pieceSkins[inHand].color : "var(--gold)",
           fontFamily: "var(--font-body)",
           whiteSpace: "nowrap",
@@ -217,7 +219,7 @@ export function Tray({
             // and nothing had ever mentioned it existed.
             <div
               style={{
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: 700,
                 lineHeight: 1.35,
                 textAlign: "center",

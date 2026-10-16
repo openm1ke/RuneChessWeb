@@ -9,7 +9,9 @@
 /** Gap between tiles, and the extent a tile never exceeds — past this a
  * figure is just a small sprite in a large empty box. */
 export const TILE_GAP = 7;
-const MAX_TILE_EXTENT = 64;
+// Raised from 64 with the panel: the canvas reaches a phone at x0.75-0.91,
+// and a five-figure level divided the old panel into ~29px tiles.
+const MAX_TILE_EXTENT = 78;
 /** The panel's own horizontal padding, which the tile row cannot use. */
 const TRAY_PADDING = 20;
 /** Panel padding and header height, subtracted to find the row of tiles. */
@@ -18,7 +20,7 @@ const TRAY_PADDING_BOTTOM = 10;
 const TRAY_HEADER_HEIGHT = 21;
 
 /** The portrait tray's box on the 430x932 design canvas. */
-export const TRAY_PORTRAIT = { left: 96, right: 96, bottom: 120, height: 104 };
+export const TRAY_PORTRAIT = { left: 64, right: 64, bottom: 120, height: 116 };
 
 /** The panel's own width, and where it sits on a canvas this wide: it keeps
  * the width it was drawn at and is centred, so a broad screen gets a panel

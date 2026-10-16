@@ -155,7 +155,9 @@ export function TutorialCoachmark({
   // The card's own on-screen rect — computed once so the arrows that point
   // at interface buttons (hint, ready) can visibly start from its edge
   // instead of an unrelated fixed point floating in empty space.
-  const cardTop = layout.isLandscape ? Math.max(12, Math.min(82, board.top - 66)) : 140;
+  const cardTop = layout.isLandscape ? Math.max(12, Math.min(82, board.top - 66)) : 128;
+  // 128, not 140: at the readable instruction size the longest card (level
+  // 5's overflow step) runs to three lines and would graze the board frame.
   const cardLeftX = layout.isLandscape ? canvasWidth * 0.18 : 24;
   const cardRightX = canvasWidth - (layout.isLandscape ? canvasWidth * 0.18 : 24);
 
@@ -185,7 +187,7 @@ export function TutorialCoachmark({
     // balloon instead of appearing to come from empty space.
     arrow = layout.isLandscape
       ? { from: { x: cardRightX - 24, y: cardTop }, to: { x: canvasWidth - 42, y: 46 } }
-      : { from: { x: cardRightX - 20, y: cardTop + 2 }, to: { x: 367, y: 63 } };
+      : { from: { x: cardRightX - 20, y: cardTop + 2 }, to: { x: canvasWidth - 66, y: 70 } };
   } else if (focus === 'ray' && snapshot.beams.length > 0) {
     const beam = snapshot.beams[0];
     arrow = {
@@ -216,7 +218,7 @@ export function TutorialCoachmark({
           top: cardTop,
           left: cardLeftX,
           right: canvasWidth - cardRightX,
-          padding: '9px 14px 10px',
+          padding: '12px 16px 13px',
           borderRadius: 13,
           background: 'rgba(11,23,55,0.92)',
           border: `1.5px solid ${accent}`,
@@ -228,8 +230,8 @@ export function TutorialCoachmark({
       >
         <div
           style={{
-            width: 28,
-            height: 28,
+            width: 36,
+            height: 36,
             flexShrink: 0,
             borderRadius: '50%',
             border: `1px solid ${accent}`,
@@ -240,13 +242,15 @@ export function TutorialCoachmark({
             // Which lesson this is, and how many there are — the badge used
             // to show the level number alone, which says nothing about how
             // long the tutorial lasts.
-            fontSize: 9,
+            fontSize: 14,
             color: accent,
           }}
         >
           {level}/{FIRST_SCORED_LEVEL_INDEX}
         </div>
-        <div style={{ fontSize: 11.4, lineHeight: 1.3, fontWeight: 800, color: '#f1f5ff' }}>{text}</div>
+        {/* The instruction is the whole lesson. 11.4 design units reached a
+            phone at 9-10px; 17 lands at 13-15px. Matches the app. */}
+        <div style={{ fontSize: 17, lineHeight: 1.22, fontWeight: 800, color: '#f1f5ff' }}>{text}</div>
       </div>
     </div>
   );

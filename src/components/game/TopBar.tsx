@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import { useL10n } from '../../l10n/l10nContext';
 import { dailyDateLabel } from '../../l10n/dailyDate';
 import { RoundControl } from '../shared/RoundControl';
@@ -39,6 +40,8 @@ function CalendarIcon() {
   );
 }
 
+const CONTROL_SIZE = 54;
+
 export function TopControls({
   onBack,
   onHint,
@@ -67,12 +70,16 @@ export function TopControls({
   const l10n = useL10n();
   return (
     <div style={{ position: 'absolute', top: 22, left: 20, right: 20, display: 'flex', justifyContent: 'space-between' }}>
-      <RoundControl onClick={onBack} label={l10n.back}>
+      {/* 54, not 44: the canvas reaches a phone at x0.75-0.91, so 44 design
+          units arrived at 33-40px — under both platforms' minimum touch
+          target. Matches the app. */}
+      <RoundControl onClick={onBack} label={l10n.back} size={CONTROL_SIZE}>
         ‹
       </RoundControl>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
         <div style={{ position: 'relative' }}>
           <RoundControl
+            size={CONTROL_SIZE}
             onClick={onHint}
             disabled={!hintEnabled}
             label={hintsLeft == null ? l10n.sceneHint : l10n.sceneHintLeft(hintsLeft)}
@@ -84,6 +91,7 @@ export function TopControls({
         {onCalendar && (
           <div style={{ position: 'relative' }}>
             <RoundControl
+              size={CONTROL_SIZE}
               onClick={onCalendar}
               label={dailyStreak > 0 ? l10n.sceneCalendarStreak(dailyStreak) : l10n.sceneCalendar}
             >
@@ -114,7 +122,7 @@ function HintCountBadge({ count }: { count: number }) {
         border: '1.5px solid #0e193c',
         background: count > 0 ? '#e8b93f' : '#2a3459',
         color: count > 0 ? '#23180a' : 'rgba(206,225,255,0.6)',
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 900,
         lineHeight: '17px',
         textAlign: 'center',
@@ -141,7 +149,7 @@ function StreakBadge({ streak }: { streak: number }) {
         border: '1.5px solid #0e193c',
         background: '#e8b93f',
         color: '#23180a',
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 900,
         lineHeight: '17px',
         textAlign: 'center',
@@ -167,11 +175,26 @@ export function TopStatus({
   dailyDate?: Date | null;
 }) {
   const l10n = useL10n();
+  const pill = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState(1);
+  // The daily challenge's label is the longest thing this pill carries, and
+  // at a readable size it no longer fits between the round controls. Shrink
+  // the whole pill to the room it has rather than let it run under them —
+  // the app does the same with a FittedBox.
+  useLayoutEffect(() => {
+    const el = pill.current;
+    if (!el) return;
+    const room = el.parentElement?.clientWidth ?? el.offsetWidth;
+    setFit(Math.min(1, room / Math.max(1, el.offsetWidth)));
+  }, [done, total, level, dailyDate, l10n]);
   return (
-    <div style={{ position: 'absolute', top: 25, left: 76, right: 76, height: 40, display: 'flex', justifyContent: 'center' }}>
+    <div style={{ position: 'absolute', top: 25, left: 78, right: 78, height: 46, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div
+        ref={pill}
         style={{
-          padding: '8px 12px',
+          transform: fit < 1 ? `scale(${fit})` : undefined,
+          flex: 'none',
+          padding: '8px 14px',
           borderRadius: 999,
           background: 'rgba(9,16,38,0.5)',
           border: '1px solid rgba(224,168,63,0.4)',
@@ -181,16 +204,16 @@ export function TopStatus({
           whiteSpace: 'nowrap',
         }}
       >
-        <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.1, color: 'rgba(206,225,255,0.84)' }}>
+        <span style={{ fontSize: 16, fontWeight: 900, letterSpacing: 0.8, color: 'rgba(206,225,255,0.84)' }}>
           {dailyDate
             ? l10n.headerDailyChallenge(dailyDateLabel(l10n, dailyDate)).toUpperCase()
             : l10n.headerLevel(level).toUpperCase()}
         </span>
-        <span style={{ width: 1, height: 14, background: 'rgba(224,168,63,0.4)' }} />
-        <span style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--gold)' }}>
+        <span style={{ width: 1, height: 17, background: 'rgba(224,168,63,0.4)' }} />
+        <span style={{ fontSize: 17, fontFamily: 'var(--font-display)', color: 'var(--gold)' }}>
           {done} / {total}
         </span>
-        <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: 0.8, color: 'rgba(206,225,255,0.78)' }}>
+        <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: 0.6, color: 'rgba(206,225,255,0.78)' }}>
           {l10n.sceneCoins.toUpperCase()}
         </span>
       </div>
@@ -211,7 +234,9 @@ export function BottomUtilityControls({
 }) {
   const l10n = useL10n();
   return (
-    <div style={{ position: 'absolute', left: 28, bottom: 122, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
+    // At 20, not 28: the tray widened to an inset of 64 and would otherwise
+    // run under the reset control.
+    <div style={{ position: 'absolute', left: 20, bottom: 122, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
       {showSkip && onSkip && (
         <RoundControl onClick={onSkip} onLongPress={onResetOnboarding} size={34} label={l10n.sceneSkipDev}>
           ⏭
