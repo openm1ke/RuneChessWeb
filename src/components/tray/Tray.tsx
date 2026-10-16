@@ -9,7 +9,7 @@ import {
 } from "../../game/pieceTypes";
 import { PieceArt } from "../board/PieceArt";
 import type { DragController } from "../board/useDragController";
-import { TILE_GAP, TRAY_PORTRAIT, trayRowHeight, trayTileExtent } from "./trayGeometry";
+import { TILE_GAP, TRAY_PORTRAIT, TRAY_PORTRAIT_WIDTH, trayRowHeight, trayTileExtent } from "./trayGeometry";
 import { cellHeightForTile, pieceDrawBox } from "../../game/pieceMetrics";
 import { useCosmeticSkin } from "../../game/cosmeticSkinContext";
 import { uprightRotationOf } from "../../game/cosmeticSkins";
@@ -141,6 +141,8 @@ export function Tray({
   const l10n = useL10n();
   const [dragging, setDragging] = useState<PieceType | null>(null);
 
+  const panelWidth = panelExtent ?? TRAY_PORTRAIT_WIDTH;
+
   // What this level opened with, and which figures have come back since.
   // A level's figures rise into their slots once, in turn, when it opens;
   // one that comes back later springs instead. Kept in refs and updated
@@ -174,7 +176,7 @@ export function Tray({
     if (!el) return;
     // Falls back to the panel's own extent where nothing is laid out (a test
     // environment), so the tiles are still there to find.
-    const fallback = (panelExtent ?? 430 - left - right) - 25;
+    const fallback = panelWidth - 25;
     const measure = () =>
       setRowExtent((vertical ? el.clientHeight : el.clientWidth) || fallback);
     measure();
@@ -182,7 +184,7 @@ export function Tray({
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [vertical, panelExtent, left, right]);
+  }, [vertical, panelWidth]);
 
   // Tiles keep one size for the whole level.
   //
@@ -192,10 +194,12 @@ export function Tray({
   // survivors jump wider under the finger that had just aimed at one. Sizing
   // from the level's *starting* count fixes both: the row simply gets
   // shorter, centred, as figures leave.
-  const tileExtent = trayTileExtent(
-    snapshot.levelTrayCount,
-    panelExtent ?? 430 - left - right,
-  );
+  // The portrait panel keeps the width it was drawn at, whatever the
+  // canvas's: `430 - left - right` assumed a 430-unit canvas, and on a wider
+  // one (a tablet, a desktop window) the insets grew until the "width" went
+  // to zero or below — tiles collapsed, and the coach mark's arrow pointed at
+  // a slot that was no longer there.
+  const tileExtent = trayTileExtent(snapshot.levelTrayCount, panelWidth);
 
   // What the figure in hand is and how it strikes: the one line worth
   // reading while a figure is in the air. Deliberately not a long-press
@@ -239,6 +243,7 @@ export function Tray({
           letterSpacing: inHand ? 0.3 : 1.8,
           color: inHand ? pieceSkins[inHand].color : "var(--gold)",
           fontFamily: "var(--font-body)",
+          textAlign: "center",
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
