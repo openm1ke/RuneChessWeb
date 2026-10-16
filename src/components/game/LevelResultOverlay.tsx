@@ -135,6 +135,7 @@ export function LevelResultOverlay({
   }, [dock, bonusStarOffered, bonusStarNotice, achievement, result.stars]);
 
   const docked = dock != null;
+  const showRetry = result.stars != null && result.stars < 3;
   const blockWidth = docked ? dock.width - 40 : 248;
 
   const handleContinue = () => {
@@ -178,7 +179,7 @@ export function LevelResultOverlay({
             width: docked ? dock.width : undefined,
             boxSizing: 'border-box',
             margin: docked ? 0 : '0 44px',
-            padding: docked ? '20px 20px 18px' : '26px 24px 20px',
+            padding: docked ? '16px 20px 16px' : '26px 24px 20px',
             borderRadius: 22,
             background: 'linear-gradient(to bottom, rgba(30,48,104,0.96), rgba(15,26,60,0.96))',
             border: '2px solid var(--gold-border)',
@@ -202,34 +203,56 @@ export function LevelResultOverlay({
             {l10n.resultLevelComplete.toUpperCase()}
           </div>
           {achievement && (
-            <div style={{ opacity: phase(titleWindow[0], titleWindow[1]), marginTop: 12 }}>
-              <div
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 13,
-                  letterSpacing: 0.9,
-                  color: '#ffd678',
-                  marginBottom: 8,
-                }}
-              >
-                {l10n.resultAchievementUnlocked.toUpperCase()}
+            // A row, not a stack: icon beside its name. Stacked, the reveal
+            // made the panel too tall for the strip under the board, and the
+            // whole panel — achievement included — was scaled down to ~70%
+            // to fit. Side by side it is half the height, so the icon can be
+            // drawn larger and the panel stays at its full size.
+            <div
+              style={{
+                opacity: phase(titleWindow[0], titleWindow[1]),
+                marginTop: 12,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                padding: '6px 12px',
+                borderRadius: 16,
+                background: 'rgba(255,215,122,0.08)',
+                border: '1px solid rgba(255,215,122,0.28)',
+                textAlign: 'left',
+              }}
+            >
+              <div style={{ flex: 'none' }}>
+                <AchievementReveal achievement={achievement} size={68} animate onRevealed={onAchievementRevealed} />
               </div>
-              <AchievementReveal achievement={achievement} size={80} animate onRevealed={onAchievementRevealed} />
-              <div
-                style={{
-                  marginTop: 6,
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 17,
-                  color: 'var(--gold-bright)',
-                }}
-              >
-                {achievementTitle(l10n, achievement.id)}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 13,
+                    letterSpacing: 0.9,
+                    color: '#ffd678',
+                  }}
+                >
+                  {l10n.resultAchievementUnlocked.toUpperCase()}
+                </div>
+                <div
+                  style={{
+                    marginTop: 5,
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 20,
+                    lineHeight: 1.15,
+                    color: 'var(--gold-bright)',
+                  }}
+                >
+                  {achievementTitle(l10n, achievement.id)}
+                </div>
               </div>
             </div>
           )}
           {result.stars != null ? (
             <>
-              <div style={{ height: 18 }} />
+              <div style={{ height: 12 }} />
               <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
                 {[0, 1, 2].map((i) => (
                   <AnimatedResultStar
@@ -241,7 +264,7 @@ export function LevelResultOverlay({
                   />
                 ))}
               </div>
-              <div style={{ height: 14 }} />
+              <div style={{ height: bonusStarOffered ? 4 : 10 }} />
               {!bonusStarOffered && (
                 <div
                   style={{
@@ -279,7 +302,7 @@ export function LevelResultOverlay({
           ) : (
             <div style={{ height: 6 }} />
           )}
-          <div style={{ height: 16 }} />
+          <div style={{ height: 12 }} />
           <div
             style={{
               opacity: phase(buttonWindow[0], buttonWindow[1]),
@@ -309,7 +332,7 @@ export function LevelResultOverlay({
                   alignItems: 'center',
                   gap: 12,
                   minHeight: 68,
-                  marginBottom: 14,
+                  marginBottom: 10,
                   padding: '13px 16px 13px 14px',
                   borderRadius: 14,
                   border: '1.6px solid rgba(207,162,68,0.54)',
@@ -374,10 +397,40 @@ export function LevelResultOverlay({
                 </span>
               </button>
             )}
+            {/* Replay sits beside Continue, not under it: a third row was the
+                height that pushed the fullest panel past the strip. Only
+                offered below three stars — a perfect run has nothing to
+                retry for. */}
+            <div style={{ display: 'flex', gap: 10 }}>
+            {showRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                style={{
+                  flex: '0 0 40%',
+                  height: 56,
+                  borderRadius: 14,
+                  border: '2px solid rgba(255,226,164,0.45)',
+                  background: 'rgba(14,25,60,0.6)',
+                  color: 'rgba(255,226,164,0.86)',
+                  fontSize: 14.5,
+                  fontWeight: 800,
+                  letterSpacing: 0.2,
+                  lineHeight: 1.1,
+                  padding: '0 6px',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                }}
+              >
+                {l10n.resultRetry}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleContinue}
               style={{
+                flex: 1,
+                minWidth: 0,
                 height: 56,
                 borderRadius: 14,
                 border: '2.5px solid var(--gold)',
@@ -392,27 +445,7 @@ export function LevelResultOverlay({
             >
               {l10n.commonContinue.toUpperCase()}
             </button>
-            {result.stars != null && result.stars < 3 && (
-              <button
-                type="button"
-                onClick={onRetry}
-                style={{
-                  height: 48,
-                  marginTop: 6,
-                  border: 'none',
-                  background: 'transparent',
-                  color: 'rgba(255,226,164,0.72)',
-                  fontSize: 17,
-                  fontWeight: 800,
-                  letterSpacing: 0.6,
-                  textDecoration: 'underline',
-                  textDecorationColor: 'rgba(255,226,164,0.35)',
-                  cursor: 'pointer',
-                }}
-              >
-                {l10n.resultRetry}
-              </button>
-            )}
+            </div>
           </div>
         </div>
       </div>

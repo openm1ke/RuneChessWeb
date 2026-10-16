@@ -30,7 +30,7 @@ const isDev = import.meta.env.DEV;
  * edge (the board plus the frame the table art draws around it) to just
  * above the canvas's bottom, at a width that gives the bonus-star offer
  * room to be read. Mirrors the app's `_boardFrameBottom`/`_panelUnits`. */
-const RESULT_DOCK = { top: BOARD_TOP + BoardPerspective.height + 26, bottom: 12, width: 372 };
+const RESULT_DOCK = { top: BOARD_TOP + BoardPerspective.height + 26, bottom: 8, width: 372 };
 
 export function GameScreen({
   engine,
