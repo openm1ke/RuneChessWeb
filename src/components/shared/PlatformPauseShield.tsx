@@ -21,7 +21,9 @@ export function PlatformPauseShield() {
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 2147483000,
+        // Above everything of ours (the highest is 1000) and below anything
+        // an ad network puts on the page.
+        zIndex: 1100,
         background: 'rgba(6, 10, 24, 0.45)',
         touchAction: 'none',
       }}

@@ -145,10 +145,22 @@ export function playgamaLanguage(): string | null {
 /** Whether the platform has the game paused — an overlay, an ad, another
  * tab. Read through [subscribePlaygamaPause] by whatever has to stop. */
 let paused = false;
+/** A full-screen ad is up. Playgama draws it inside the game's own page on
+ * some platforms (its sandbox among them), so nothing of ours may sit on
+ * top of it: the pause shield stood over the video, which then played
+ * unseen and unclickable while the button hung on "opening the ad". */
+let adShowing = false;
 const pauseListeners = new Set<() => void>();
 
+/** Whether the game is paused and the pause is ours to draw — that is, not
+ * while an ad, which covers the game by itself, is on screen. The clock,
+ * the animations and the sound stay paused either way. */
 export function isPlaygamaPaused(): boolean {
-  return paused;
+  return paused && !adShowing;
+}
+
+function notifyPause(): void {
+  for (const listener of pauseListeners) listener();
 }
 
 export function subscribePlaygamaPause(listener: () => void): () => void {
@@ -177,9 +189,17 @@ export function watchPlaygamaPauseAndAudio(handlers: {
     paused = isPaused;
     if (isPaused) handlers.onPause();
     else handlers.onResume();
-    for (const listener of pauseListeners) listener();
+    notifyPause();
     applySound();
   });
+  const trackAd = (state: string) => {
+    const showing = state === 'loading' || state === 'opened' || state === 'rewarded';
+    if (showing === adShowing) return;
+    adShowing = showing;
+    notifyPause();
+  };
+  bridge.advertisement.on(bridge.EVENT_NAME.REWARDED_STATE_CHANGED, trackAd);
+  bridge.advertisement.on(bridge.EVENT_NAME.INTERSTITIAL_STATE_CHANGED, trackAd);
   bridge.platform.on(bridge.EVENT_NAME.AUDIO_STATE_CHANGED, (isEnabled) => {
     audioOff = !isEnabled;
     applySound();
