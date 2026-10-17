@@ -83,11 +83,18 @@ type Screen =
 
 const isDev = import.meta.env.DEV;
 
-/** РСЯ Rewarded is available on the standalone site. Yandex Games remains
- * excluded below: it requires its own platform advertising integration. */
-const ADS_AVAILABLE = true;
 /** True in the archive built for games.yandex.ru — see vite.config.ts. */
 const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
+/** Whether runechess.ru itself may show РСЯ rewarded videos.
+ *
+ * Off since 17.10.2026: РСЯ has switched advertising off for the site, so
+ * every offer there ended in "no video available". With it off the site
+ * builds no ad service at all, which takes the star, skip and doubling
+ * offers away and makes the hint free (see `freeHints` in GameScreen).
+ * Inside the Yandex Games catalogue the ads are the platform's own
+ * (`ysdk.adv`) and are not affected. Turning this back on also needs the
+ * РСЯ loader restored in index.html. */
+const SITE_ADS_ENABLED = false;
 
 function initialScreen(): Screen {
   if (typeof window === 'undefined') return 'menu';
@@ -213,6 +220,7 @@ export default function App() {
         ? new YandexGamesRewardedAdsService(yandexGamesSdk, analyticsService)
         : undefined;
     }
+    if (!SITE_ADS_ENABLED) return undefined;
     // Constructed here rather than once at the top, because constructing it
     // has a side effect: it injects РСЯ's loader script into the document.
     // Inside the catalogue that script is dead weight at best and a
@@ -1287,7 +1295,8 @@ export default function App() {
             onSkipOffered={() => analyticsService.adOfferShown('skip_level')}
             onResetOnboarding={resetOnboardingForDebug}
             seenOnboardingLevels={seenOnboardingLevels}
-            rewardedAdsService={ADS_AVAILABLE ? activeRewardedAdsService : undefined}
+            rewardedAdsService={activeRewardedAdsService}
+            freeHints={!SITE_ADS_ENABLED && !BUILT_FOR_YANDEX_GAMES && !isOnYandexGamesPlatform}
             achievement={levelResultAchievement}
             onAchievementRevealed={playAchievementReveal}
             onOpenDailyCalendar={() => setDailyCalendarMode('view')}

@@ -49,7 +49,7 @@ describe('storeLinks', () => {
   it('links the site download CTA to the published Google Play app', () => {
     expect(STORE_LINKS.find(({ name }) => name === 'Google Play')).toMatchObject({
       url: 'https://play.google.com/store/apps/details?id=ru.runechess.game',
-      badge: { file: 'google-play-ru.png', width: 646, height: 250 },
+      badge: { file: 'google-play-ru.png', width: 646, height: 192 },
     });
   });
 

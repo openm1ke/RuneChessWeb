@@ -11,17 +11,15 @@ import { useL10n } from '../l10n/l10nContext';
 import { APP_VERSION } from '../appVersion';
 
 /**
- * How tall a store badge is drawn in the menu footer, in scene units.
+ * How tall every store badge is drawn in the menu footer, in scene units.
  *
- * Both badges are 40 tall at their natural size and are scaled down from
- * there; 28 keeps the pair inside the footer without crowding the version
- * line, and still leaves Apple's lettering legible, which is what its
- * minimum-size rule is protecting.
+ * One height for all three, and each badge's own width from its own aspect
+ * ratio. They used to be forced into one 84×28 box each, which stretched
+ * RuStore's plate sideways and squeezed Google's — and every store's brand
+ * rules forbid distorting the badge. Equal height, equal gaps and one row
+ * is the set the stores themselves show side by side.
  */
-const BADGE_HEIGHT = 28;
-/** The download row is a visual set, so every store plate gets the same
- * footprint even though the stores publish badges with different ratios. */
-const BADGE_WIDTH = 84;
+const BADGE_HEIGHT = 30;
 
 /** True in the archive built for games.yandex.ru — see vite.config.ts. */
 const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
@@ -479,7 +477,7 @@ function MenuFooterLinks() {
               <img
                 src={asset(`assets/badges/${badge.file}`)}
                 alt={l10n[badge.altKey]}
-                width={BADGE_WIDTH}
+                width={Math.round((BADGE_HEIGHT * badge.width) / badge.height)}
                 height={BADGE_HEIGHT}
                 style={{ display: 'block' }}
                 draggable={false}

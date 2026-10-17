@@ -35,23 +35,21 @@
       }
     </script>
     <link rel="stylesheet" href="./assets/fonts/fonts.css" />
-    <!-- The menu screen (the app's first paint) is the only screen whose
-         background art is worth a priority hint — everything else (game
-         board, level-select, completion screens) only ever loads once the
-         player actually navigates there. -->
-    <link rel="preload" as="image" type="image/webp" href="./assets/images/menu-castle-bg-clean.webp" />
     <title>RuneChess — шахматная головоломка</title>
-    <!-- Yandex Games SDK — safe to load unconditionally, including on the
-         plain runechess.ru site: outside the Yandex Games iframe `YaGames`
-         simply never appears, which `yandexGamesSdk.ts` treats as "not on
-         the platform" rather than an error. See YANDEX_GAMES_PLATFORM_PLAN.md. -->
-    <script src="https://yandex.ru/games/sdk/v2"></script>
-    <!-- РСЯ Rewarded: очередь должна существовать до загрузки скрипта.
-         Сам ролик вызывается только явным действием игрока из приложения. -->
-    <script>
-      window.yaContextCb = window.yaContextCb || [];
+    <!-- Yandex Games SDK — only inside a frame. The catalogue always runs
+         the game in its own iframe; on runechess.ru the page is the top
+         window, and the SDK loaded there throws "No parent to post message"
+         several times a second for as long as the page is open. Written
+         synchronously so `YaGames` exists before the app asks for it. The
+         catalogue build swaps this for a plain script tag (vite.config.ts).
+         See YANDEX_GAMES_PLATFORM_PLAN.md. -->
+    <script id="yandex-games-sdk-loader">
+      (function () {
+        var framed;
+        try { framed = window.self !== window.top; } catch (e) { framed = true; }
+        if (framed) document.write('<script src="https://yandex.ru/games/sdk/v2"><\/script>');
+      })();
     </script>
-    <script async src="https://yandex.ru/ads/system/context.js"></script>
   </head>
   <body>
     <div id="root"></div>

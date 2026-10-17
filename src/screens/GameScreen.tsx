@@ -47,6 +47,7 @@ export function GameScreen({
   onOpenDailyCalendar,
   dailyStreak = 0,
   hintsLeft = 0,
+  freeHints = false,
   hintWaitMs: hintWait = null,
   onHintSpent,
   onHintOffered,
@@ -81,6 +82,11 @@ export function GameScreen({
   dailyStreak?: number;
   /** Free hints left, and the wait for the next one — see `hintWallet.ts`. */
   hintsLeft?: number;
+  /** No rewarded ads exist in this build (runechess.ru since РСЯ switched
+   * the site off), so there is nothing to refill the wallet with: the hint
+   * is the free toggle on every level, the way the tutorial has it. It still
+   * costs the level its extra stars, as any hint does. */
+  freeHints?: boolean;
   hintWaitMs?: number | null;
   /** Spends one free hint; called only when a hint is about to be shown. */
   onHintSpent?: () => void;
@@ -150,7 +156,7 @@ export function GameScreen({
   // wallet, and the ad is the way to get one *now* rather than the only way
   // to get one at all — a dead lightbulb with no network was the worst
   // possible answer for a stuck player.
-  const gated = onCampaignLevel || engine.isDailyChallenge;
+  const gated = !freeHints && (onCampaignLevel || engine.isDailyChallenge);
   const [hintOfferOpen, setHintOfferOpen] = useState(false);
   const [skipOfferOpen, setSkipOfferOpen] = useState(false);
   /** The skip offer is made once per level, at the third reset: repeating it

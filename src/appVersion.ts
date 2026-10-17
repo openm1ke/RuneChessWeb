@@ -5,4 +5,4 @@
  * the kind of string that stops being true at the next release and says so
  * to every visitor. Mirrors `appVersionName` in the Flutter app.
  */
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.0.2';

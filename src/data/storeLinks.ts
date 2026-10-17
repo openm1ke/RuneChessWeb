@@ -90,14 +90,18 @@ export const STORE_LINKS: readonly StoreLink[] = BUILT_FOR_YANDEX_GAMES
         },
       },
       // Official Russian Google Play badge, downloaded from Google's badge
-      // resource and kept at its native aspect ratio by the footer.
+      // resource. Google ships it with transparent bands above and below the
+      // plate (646×250 around a 646×192 badge), which drew it visibly
+      // smaller than its neighbours at the same height; the file is cropped
+      // to the plate itself, and the clear space around it comes from the
+      // footer's gap instead.
       {
         name: 'Google Play',
         url: 'https://play.google.com/store/apps/details?id=ru.runechess.game',
         badge: {
           file: 'google-play-ru.png',
           width: 646,
-          height: 250,
+          height: 192,
           altKey: 'storeBadgeGooglePlay' as const,
         },
       },

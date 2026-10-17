@@ -31,6 +31,13 @@ const stripSiteReferences = {
   transformIndexHtml(html: string) {
     if (!forYandexGames) return html;
     return html
+      // Inside the catalogue the game is always framed, and the SDK is the
+      // whole point: load it unconditionally, as a plain tag, so the build
+      // also works when tried locally at the top level.
+      .replace(
+        /<script id="yandex-games-sdk-loader">[\s\S]*?<\/script>/,
+        '<script src="https://yandex.ru/games/sdk/v2"></script>',
+      )
       .replace(/\s*<script[^>]*yandex\.ru\/ads\/system\/context\.js[^>]*><\/script>/g, '')
       .replace(/\s*<link rel="canonical"[^>]*>/g, '')
       .replace(/\s*<meta property="og:[^"]*"[^>]*>/g, '')
