@@ -8,6 +8,7 @@
  */
 import { isLanguage, type Language } from '../l10n/l10nContext';
 import { persistentStore } from './persistentStore';
+import { BUILT_FOR_PLAYGAMA } from '../buildTarget';
 
 export const LANGUAGE_STORAGE_KEY = 'runechess.language';
 const STORAGE_KEY = LANGUAGE_STORAGE_KEY;
@@ -55,6 +56,9 @@ export function resolveLanguage(platformLanguage?: string | null): Language {
   const chosen = loadLanguage();
   if (chosen) return chosen;
   if (isLanguage(platformLanguage)) return platformLanguage;
+  // Playgama's checklist (§2): the platform's language decides, and English
+  // is the default and the fallback — its audience is not runechess.ru's.
+  if (BUILT_FOR_PLAYGAMA) return 'en';
   for (const candidate of navigatorLanguages()) {
     const base = candidate.split('-')[0]?.toLowerCase();
     if (isLanguage(base)) return base;

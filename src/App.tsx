@@ -154,7 +154,10 @@ export default function App() {
   // Resolved once, before the first paint: the player's stored choice, then
   // the browser, then Russian. The Yandex Games SDK arrives later and can
   // override the browser's answer — but never the player's.
-  const [language, setLanguage] = useState<Language>(() => resolveLanguage());
+  const [language, setLanguage] = useState<Language>(() =>
+    // Bridge is already up when the Playgama build draws the app (main.tsx).
+    resolveLanguage(BUILT_FOR_PLAYGAMA ? playgamaLanguage() : undefined),
+  );
   const l10n = stringsFor(language);
 
   // The page's own label follows the game, by every route the language can
@@ -268,14 +271,10 @@ export default function App() {
   useEffect(() => {
     musicService.init();
 
-    // Playgama: Bridge is already up and the saves already loaded by the
-    // time the app is drawn (main.tsx). What is left is the platform's
-    // language and its pause and audio requests.
+    // Playgama: Bridge is already up, the saves and the language already
+    // settled by the time the app is drawn (main.tsx). What is left is the
+    // platform's pause and audio requests.
     if (BUILT_FOR_PLAYGAMA) {
-      const fromPlatform = playgamaLanguage();
-      if (!loadLanguage() && isLanguage(fromPlatform)) {
-        setLanguage(fromPlatform);
-      }
       watchPlaygamaPauseAndAudio({
         onSilence: () => musicService.pauseAll(),
         onRestore: () => musicService.resumeAll(),
