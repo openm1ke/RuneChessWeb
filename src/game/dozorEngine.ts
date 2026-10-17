@@ -378,8 +378,18 @@ export class DozorEngine {
   resetLevel(): void {
     this.onLevelReset?.(this.levelIndex, this.currentAttemptMetrics());
     const resets = this.resetCount + 1;
+    // The lesson's arc is progress through the level, not state of the
+    // board, so it survives a reset the way `resetCount` does — and in the
+    // fifth lesson the reset is a step *forward* through it. `loadLevel`
+    // rewinds it to `trial`, which sent the player back to the very square
+    // that had just overshot. `overflow` plus an empty board is what
+    // `syncLessonPhase` (run by `notify`) turns into `solution`, so the
+    // coach mark comes back pointing at the square that actually solves the
+    // level. Mirrors `DozorController.resetLevel()`.
+    const phase = this.lessonPhase;
     this.loadLevel();
     this.resetCount = resets;
+    this.lessonPhase = phase;
     this.notify();
   }
 
