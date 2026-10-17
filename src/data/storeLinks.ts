@@ -21,13 +21,10 @@
  * link nobody clicks is still a link shipped into the catalogue.
  */
 
-/**
- * True in the archive built for games.yandex.ru — see vite.config.ts.
- *
- * Vite substitutes this for a literal at build time, so the branch below
- * folds away and the addresses never reach the catalogue bundle.
- */
-const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
+// Vite substitutes the build target for a literal, so in a catalogue
+// build the branch below folds away and the addresses never reach the
+// bundle. See `buildTarget.ts`.
+import { BUILT_FOR_CATALOGUE } from '../buildTarget';
 
 /**
  * The store's own badge artwork, as the store publishes it.
@@ -58,7 +55,7 @@ export interface StoreLink {
   readonly badge: StoreBadge | null;
 }
 
-export const STORE_LINKS: readonly StoreLink[] = BUILT_FOR_YANDEX_GAMES
+export const STORE_LINKS: readonly StoreLink[] = BUILT_FOR_CATALOGUE
   ? []
   : [
       // Live since 09.09.2026 — package ru.runechess.game.rustore. The

@@ -14,6 +14,7 @@ import react from '@vitejs/plugin-react';
 // environment variable, and one line is a smaller price than a dependency.
 declare const process: { env: Record<string, string | undefined> };
 const forYandexGames = process.env.VITE_YANDEX_GAMES === '1';
+const forPlaygama = process.env.VITE_PLAYGAMA === '1';
 
 /** Strips from index.html everything that belongs to runechess.ru and not
  * to a game running inside somebody else's iframe.
@@ -29,14 +30,18 @@ const forYandexGames = process.env.VITE_YANDEX_GAMES === '1';
 const stripSiteReferences = {
   name: 'strip-site-references',
   transformIndexHtml(html: string) {
-    if (!forYandexGames) return html;
+    if (!forYandexGames && !forPlaygama) return html;
     return html
-      // Inside the catalogue the game is always framed, and the SDK is the
-      // whole point: load it unconditionally, as a plain tag, so the build
-      // also works when tried locally at the top level.
+      // Inside a catalogue the game is always framed, and that catalogue's
+      // SDK is the whole point: load it unconditionally, as a plain tag, so
+      // the build also works when tried locally at the top level. Playgama
+      // gets its Bridge instead — which itself loads Yandex's SDK when the
+      // game is redistributed there, so ours must not be on the page too.
       .replace(
         /<script id="yandex-games-sdk-loader">[\s\S]*?<\/script>/,
-        '<script src="https://yandex.ru/games/sdk/v2"></script>',
+        forPlaygama
+          ? '<script src="https://bridge.playgama.com/v2/stable/playgama-bridge.js"></script>'
+          : '<script src="https://yandex.ru/games/sdk/v2"></script>',
       )
       .replace(/\s*<script[^>]*yandex\.ru\/ads\/system\/context\.js[^>]*><\/script>/g, '')
       .replace(/\s*<link rel="canonical"[^>]*>/g, '')

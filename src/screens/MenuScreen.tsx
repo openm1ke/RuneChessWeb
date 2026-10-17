@@ -9,6 +9,7 @@ import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 import { menuStoreLinks } from '../data/storeLinks';
 import { useL10n } from '../l10n/l10nContext';
 import { APP_VERSION } from '../appVersion';
+import { BUILT_FOR_CATALOGUE } from '../buildTarget';
 
 /**
  * How tall every store badge is drawn in the menu footer, in scene units.
@@ -21,8 +22,6 @@ import { APP_VERSION } from '../appVersion';
  */
 const BADGE_HEIGHT = 30;
 
-/** True in the archive built for games.yandex.ru — see vite.config.ts. */
-const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
 import { StarCounter } from '../components/shared/StarCounter';
 
 export function MenuScreen({
@@ -425,14 +424,14 @@ function MenuFooterLinks() {
   // site included — and the pages these point at carry the domain in their
   // text. On the site they stay; inside the catalogue the footer is just
   // the version line.
-  const links: readonly (readonly [string, string])[] = BUILT_FOR_YANDEX_GAMES
+  const links: readonly (readonly [string, string])[] = BUILT_FOR_CATALOGUE
     ? []
     : [[l10n.privacyPolicy.toUpperCase(), 'privacy.html']];
 
   // Where to get the app on a phone. Empty until something is actually
   // published, and absent entirely inside the Yandex Games catalogue — see
   // `menuStoreLinks`, which is where that rule is decided and tested.
-  const stores = menuStoreLinks(BUILT_FOR_YANDEX_GAMES);
+  const stores = menuStoreLinks(BUILT_FOR_CATALOGUE);
 
   return (
     <nav

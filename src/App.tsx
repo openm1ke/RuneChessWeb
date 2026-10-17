@@ -7,6 +7,14 @@ import { AnalyticsService, type AchievementUnlockTrigger, type LevelEntrySource 
 import { RewardedAdsService } from './services/rewardedAdsService';
 import type { RewardedAds } from './services/rewardedAdsService';
 import { YandexGamesRewardedAdsService } from './services/yandexGamesRewardedAdsService';
+import { PlaygamaRewardedAdsService } from './services/playgamaRewardedAdsService';
+import {
+  playgamaBridge,
+  playgamaLanguage,
+  showPlaygamaInterstitial,
+  watchPlaygamaPauseAndAudio,
+} from './services/playgamaPlatform';
+import { BUILT_FOR_PLAYGAMA, BUILT_FOR_YANDEX_GAMES } from './buildTarget';
 import { RulesScreen } from './screens/RulesScreen';
 import {
   platformLanguage,
@@ -83,8 +91,6 @@ type Screen =
 
 const isDev = import.meta.env.DEV;
 
-/** True in the archive built for games.yandex.ru — see vite.config.ts. */
-const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
 /** Whether runechess.ru itself may show РСЯ rewarded videos.
  *
  * Off since 17.10.2026: РСЯ has switched advertising off for the site, so
@@ -215,6 +221,12 @@ export default function App() {
     // decided at build time, `isOnYandexGamesPlatform` only after a round
     // trip, and constructing the РСЯ service in between would inject its
     // loader script into a page that must not have one.
+    // Playgama has its own ads through Bridge, and none at all when Bridge
+    // did not come up (see `startPlaygama`) — then the hint is simply free.
+    if (BUILT_FOR_PLAYGAMA) {
+      const bridge = playgamaBridge();
+      return bridge ? new PlaygamaRewardedAdsService(bridge, analyticsService) : undefined;
+    }
     if (BUILT_FOR_YANDEX_GAMES || isOnYandexGamesPlatform) {
       return yandexGamesSdk
         ? new YandexGamesRewardedAdsService(yandexGamesSdk, analyticsService)
@@ -255,6 +267,20 @@ export default function App() {
 
   useEffect(() => {
     musicService.init();
+
+    // Playgama: Bridge is already up and the saves already loaded by the
+    // time the app is drawn (main.tsx). What is left is the platform's
+    // language and its pause and audio requests.
+    if (BUILT_FOR_PLAYGAMA) {
+      const fromPlatform = playgamaLanguage();
+      if (!loadLanguage() && isLanguage(fromPlatform)) {
+        setLanguage(fromPlatform);
+      }
+      watchPlaygamaPauseAndAudio({
+        onSilence: () => musicService.pauseAll(),
+        onRestore: () => musicService.resumeAll(),
+      });
+    }
 
     // Yandex Games platform integration (no-op on the plain runechess.ru
     // site — see getYandexGamesSdk's doc comment). LoadingAPI.ready() fires
@@ -866,6 +892,12 @@ export default function App() {
     }
     engine.nextLevel();
     if (engine.levelIndex > before) {
+      // Playgama's required interstitial, at the natural pause between two
+      // scored levels — never inside the tutorial. Bridge declines the call
+      // itself when the last one was under a minute ago.
+      if (BUILT_FOR_PLAYGAMA && engine.levelIndex > FIRST_SCORED_LEVEL_INDEX) {
+        showPlaygamaInterstitial('level_completed');
+      }
       levelEntrySourceRef.current = 'next_level';
       analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX, 'next_level');
       const nextUnlocked = new Set(unlockedLevels);
@@ -1135,7 +1167,9 @@ export default function App() {
     <L10nContext.Provider value={stringsFor(language)}>
     <CosmeticSkinContext.Provider value={skin}>
       {content}
-      {analyticsConsent == null && (
+      {/* Nothing to consent to in the Playgama build: it carries no
+          analytics at all (see `AnalyticsService.enable`). */}
+      {analyticsConsent == null && !BUILT_FOR_PLAYGAMA && (
         <ConsentBanner
           onAcceptAnalytics={() => setAnalyticsConsentAndSave(true)}
           onDeclineAnalytics={() => setAnalyticsConsentAndSave(false)}
@@ -1296,7 +1330,9 @@ export default function App() {
             onResetOnboarding={resetOnboardingForDebug}
             seenOnboardingLevels={seenOnboardingLevels}
             rewardedAdsService={activeRewardedAdsService}
-            freeHints={!SITE_ADS_ENABLED && !BUILT_FOR_YANDEX_GAMES && !isOnYandexGamesPlatform}
+            freeHints={
+              activeRewardedAdsService == null && !BUILT_FOR_YANDEX_GAMES && !isOnYandexGamesPlatform
+            }
             achievement={levelResultAchievement}
             onAchievementRevealed={playAchievementReveal}
             onOpenDailyCalendar={() => setDailyCalendarMode('view')}

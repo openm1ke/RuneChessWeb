@@ -7,13 +7,15 @@
  * Mirrors `LanguageRepository` in the Flutter app.
  */
 import { isLanguage, type Language } from '../l10n/l10nContext';
+import { persistentStore } from './persistentStore';
 
-const STORAGE_KEY = 'runechess.language';
+export const LANGUAGE_STORAGE_KEY = 'runechess.language';
+const STORAGE_KEY = LANGUAGE_STORAGE_KEY;
 
 /** The player's own choice, or null while they have not made one. */
 export function loadLanguage(): Language | null {
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const stored = persistentStore().getItem(STORAGE_KEY);
     // A value that is no longer one of ours — a language dropped from a
     // later build, or something else writing to this key — falls back to
     // detection rather than to a language the app cannot draw.
@@ -26,7 +28,7 @@ export function loadLanguage(): Language | null {
 
 export function saveLanguage(language: Language): void {
   try {
-    window.localStorage.setItem(STORAGE_KEY, language);
+    persistentStore().setItem(STORAGE_KEY, language);
   } catch {
     // The choice is lost on reload, which is better than a crash on a
     // browser that refuses storage.

@@ -1,3 +1,4 @@
+import { persistentStore } from './persistentStore';
 import { campaignLevels } from '../data/campaignLevels';
 import { FIRST_SCORED_LEVEL_INDEX } from '../game/dozorEngine';
 import type { AchievementProgressState, StreakState } from '../game/achievementProgress';
@@ -66,12 +67,16 @@ const KEYS = {
   dailyDoubledDates: 'dozor.daily_doubled_dates_v1',
 } as const;
 
+/** Every key this repository reads or writes — what a platform with an
+ * asynchronous store has to load before the game starts. */
+export const PROGRESS_STORAGE_KEYS: readonly string[] = Object.values(KEYS);
+
 const DEFAULT_DAILY_REMINDER_HOUR = 11;
 
 /** A stored non-negative whole number, or zero for anything else. */
 function readCount(key: string): number {
   try {
-    const raw = window.localStorage.getItem(key);
+    const raw = persistentStore().getItem(key);
     if (raw == null) return 0;
     const value = Number.parseInt(raw, 10);
     return Number.isFinite(value) && value > 0 ? value : 0;
@@ -83,7 +88,7 @@ function readCount(key: string): number {
 
 function readStreak(key: string): StreakState {
   try {
-    const raw = window.localStorage.getItem(key);
+    const raw = persistentStore().getItem(key);
     if (raw == null) return { lastLevel: null, length: 0 };
     const [lastLevelRaw, lengthRaw] = raw.split(',');
     const lastLevel = Number.parseInt(lastLevelRaw, 10);
@@ -101,10 +106,10 @@ function readStreak(key: string): StreakState {
 function writeStreak(key: string, streak: StreakState): void {
   try {
     if (streak.lastLevel == null || streak.length <= 0) {
-      window.localStorage.removeItem(key);
+      persistentStore().removeItem(key);
       return;
     }
-    window.localStorage.setItem(key, `${streak.lastLevel},${streak.length}`);
+    persistentStore().setItem(key, `${streak.lastLevel},${streak.length}`);
   } catch (error) {
     logError(`write ${key}`, error);
   }
@@ -119,7 +124,7 @@ function readIndexSet(key: string): Set<number> {
 
 function readJson<T>(key: string): T | null {
   try {
-    const raw = window.localStorage.getItem(key);
+    const raw = persistentStore().getItem(key);
     if (raw == null) return null;
     return JSON.parse(raw) as T;
   } catch (error) {
@@ -130,7 +135,7 @@ function readJson<T>(key: string): T | null {
 
 function writeJson(key: string, value: unknown): void {
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    persistentStore().setItem(key, JSON.stringify(value));
   } catch (error) {
     logError(`write ${key}`, error);
   }
@@ -138,7 +143,7 @@ function writeJson(key: string, value: unknown): void {
 
 function removeValue(key: string): void {
   try {
-    window.localStorage.removeItem(key);
+    persistentStore().removeItem(key);
   } catch (error) {
     logError(`remove ${key}`, error);
   }
@@ -153,9 +158,10 @@ function logError(action: string, error: unknown): void {
 /**
  * Reads and writes every piece of local player state (unlocked levels,
  * onboarding progress, tutorial completion, best stars per level, and the
- * music settings) through `localStorage`. This is the only place in the app
- * that talks to `localStorage` directly — a port of `ProgressRepository`
- * from the Flutter app (`SharedPreferences` → `localStorage`).
+ * music settings) through `persistentStore()` — `localStorage` everywhere
+ * but Playgama. This is the only place in the app that keeps progress — a
+ * port of `ProgressRepository` from the Flutter app (`SharedPreferences` →
+ * `localStorage`).
  */
 export class ProgressRepository {
   load(): ProgressSnapshot {
@@ -309,7 +315,7 @@ export class ProgressRepository {
   /** The chosen cosmetic set, or null for "whatever the game defaults to". */
   loadCosmeticSkinId(): string | null {
     try {
-      return window.localStorage.getItem(KEYS.cosmeticSkin);
+      return persistentStore().getItem(KEYS.cosmeticSkin);
     } catch (error) {
       logError('load cosmetic skin', error);
       return null;
@@ -318,7 +324,7 @@ export class ProgressRepository {
 
   saveCosmeticSkinId(id: string): void {
     try {
-      window.localStorage.setItem(KEYS.cosmeticSkin, id);
+      persistentStore().setItem(KEYS.cosmeticSkin, id);
     } catch (error) {
       logError('save cosmetic skin', error);
     }
@@ -327,7 +333,7 @@ export class ProgressRepository {
   /** The sets the player has bought — the free ones are not stored. */
   loadUnlockedSkinIds(): Set<string> {
     try {
-      const raw = window.localStorage.getItem(KEYS.unlockedSkins);
+      const raw = persistentStore().getItem(KEYS.unlockedSkins);
       if (raw == null) return new Set();
       const decoded: unknown = JSON.parse(raw);
       if (!Array.isArray(decoded)) return new Set();
@@ -365,7 +371,7 @@ export class ProgressRepository {
    * cannot be taken twice for one day however the page is reloaded. */
   loadDailyDoubledDates(): Set<string> {
     try {
-      const raw = window.localStorage.getItem(KEYS.dailyDoubledDates);
+      const raw = persistentStore().getItem(KEYS.dailyDoubledDates);
       if (raw == null) return new Set();
       const decoded: unknown = JSON.parse(raw);
       if (!Array.isArray(decoded)) return new Set();

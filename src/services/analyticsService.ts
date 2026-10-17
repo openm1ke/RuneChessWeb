@@ -1,3 +1,4 @@
+import { BUILT_FOR_PLAYGAMA } from '../buildTarget';
 import type { LevelAttemptResult } from '../game/starRating';
 
 const COUNTER_ID = 112107479;
@@ -38,6 +39,11 @@ export class AnalyticsService {
   }
 
   enable(): void {
+    // Playgama forbids external analytics outright (its technical
+    // requirements, §3) — requests to them may be blocked on partner sites.
+    // A literal at build time, so the Metrica loader below is compiled out
+    // of that archive altogether.
+    if (BUILT_FOR_PLAYGAMA) return;
     if (this.enabled || import.meta.env.DEV || typeof window === 'undefined') return;
     this.enabled = true;
 

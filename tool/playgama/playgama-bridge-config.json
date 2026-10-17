@@ -1,0 +1,22 @@
+{
+    "advertisement": {
+        "minimumDelayBetweenInterstitial": 60,
+        "initialInterstitialDelay": 60,
+        "interstitial": {
+            "preloadOnStart": "level_completed",
+            "placementFallback": "level_completed",
+            "placements": [
+                { "id": "level_completed" }
+            ]
+        },
+        "rewarded": {
+            "placementFallback": "extraHint",
+            "placements": [
+                { "id": "extraHint" },
+                { "id": "bonusStar" },
+                { "id": "skipLevel" },
+                { "id": "dailyDouble" }
+            ]
+        }
+    }
+}

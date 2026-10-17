@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
-    "build:yandex-games": "bash tool/build-yandex-games.sh"
+    "build:yandex-games": "bash tool/build-yandex-games.sh",
+    "build:playgama": "bash tool/build-playgama.sh"
   },
   "dependencies": {
     "react": "^19.0.0",

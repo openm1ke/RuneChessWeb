@@ -1,7 +1,6 @@
 import { useL10n } from '../../l10n/l10nContext';
-/** True in the archive built for games.yandex.ru — see vite.config.ts.
- * §8.4.2 forbids links out of the game, this one included. */
-const BUILT_FOR_YANDEX_GAMES = import.meta.env.VITE_YANDEX_GAMES === '1';
+import { BUILT_FOR_CATALOGUE } from '../../buildTarget';
+// Both catalogues forbid links out of the game, this one included.
 
 export function ConsentBanner({
   onAcceptAnalytics,
@@ -46,7 +45,7 @@ export function ConsentBanner({
         <button type="button" onClick={onDeclineAnalytics} style={secondaryButtonStyle}>
           {l10n.consentEssentialOnly}
         </button>
-        {!BUILT_FOR_YANDEX_GAMES && (
+        {!BUILT_FOR_CATALOGUE && (
           <a
             href="./privacy.html"
             style={{ marginLeft: 'auto', color: '#b9ccf5', fontSize: 12 }}
