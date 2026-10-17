@@ -22,10 +22,20 @@ import { useCosmeticSkin } from '../game/cosmeticSkinContext';
  * title and one sentence — everything else the player needs is in front of
  * them. Mirrors the app's rules screen.
  */
-export function RulesScreen({ onBack, onLevels }: { onBack: () => void; onLevels?: () => void }) {
+export function RulesScreen({
+  onBack,
+  onLevels,
+  finishLabel,
+}: {
+  onBack: () => void;
+  onLevels?: () => void;
+  /** The last lesson's button, when the lessons were opened on the way to
+   * somewhere — "Play" or the daily challenge — instead of "Open levels". */
+  finishLabel?: string;
+}) {
   const viewport = useViewportSize();
   const skin = useCosmeticSkin();
-  const lessons = <Lessons onBack={onBack} onLevels={onLevels ?? onBack} />;
+  const lessons = <Lessons onBack={onBack} onLevels={onLevels ?? onBack} finishLabel={finishLabel} />;
   if (viewport.width > viewport.height) {
     return (
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
@@ -81,7 +91,15 @@ function copyOf(l10n: Strings, index: number): { title: string; body: string } {
   }
 }
 
-function Lessons({ onBack, onLevels }: { onBack: () => void; onLevels: () => void }) {
+function Lessons({
+  onBack,
+  onLevels,
+  finishLabel,
+}: {
+  onBack: () => void;
+  onLevels: () => void;
+  finishLabel?: string;
+}) {
   const l10n = useL10n();
   const count = howToPlayLessons.length;
   const [index, setIndex] = useState(0);
@@ -192,7 +210,7 @@ function Lessons({ onBack, onLevels }: { onBack: () => void; onLevels: () => voi
             solve it is exactly the one who must not be held on this screen.
             It glows once the lesson is solved. */}
         <NavButton onClick={last ? onLevels : () => setIndex((i) => i + 1)} lit={solvedHere}>
-          {(last ? l10n.infoOpenLevels : l10n.infoNext).toUpperCase()} {last ? '✦' : '›'}
+          {(last ? (finishLabel ?? l10n.infoOpenLevels) : l10n.infoNext).toUpperCase()} {last ? '✦' : '›'}
         </NavButton>
       </footer>
     </>

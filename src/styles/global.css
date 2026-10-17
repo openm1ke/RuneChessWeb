@@ -11,7 +11,12 @@ body,
   padding: 0;
   width: 100%;
   height: 100%;
-  background: #000;
+  /* Transparent down to <html>, which carries the castle art (index.html):
+     whatever a screen does not paint — a frame caught mid-resize, a
+     letterbox — shows the game's own room rather than black bars, which
+     Playgama's scale test reads as a layout that does not fill the
+     viewport. */
+  background: transparent;
   color: #fff;
   font-family: var(--font-body);
   overflow: hidden;
@@ -229,4 +234,12 @@ img {
     transition: none !important;
   }
   .rc-coin-glint { display: none; }
+}
+
+/* The platform has paused the game (Playgama): every animation holds still
+   until it lets go. See PlatformPauseShield. */
+.rc-platform-paused *,
+.rc-platform-paused *::before,
+.rc-platform-paused *::after {
+  animation-play-state: paused !important;
 }

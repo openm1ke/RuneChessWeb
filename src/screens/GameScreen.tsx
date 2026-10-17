@@ -21,6 +21,7 @@ import {
 import { useDozorEngine } from '../game/useDozorEngine';
 import { FIRST_SCORED_LEVEL_INDEX, type DozorEngine } from '../game/dozorEngine';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
+import { usePlatformPaused } from '../components/shared/usePlatformPaused';
 import type { RewardedAds, RewardedAdState } from '../services/rewardedAdsService';
 import type { AchievementDefinition } from '../data/achievements';
 
@@ -287,8 +288,11 @@ export function GameScreen({
     });
   };
 
+  const platformPaused = usePlatformPaused();
   useEffect(() => {
-    if (snapshot.beams.length === 0) return;
+    // A platform pause stops the beams where they are, with the rest of
+    // the game (see PlatformPauseShield).
+    if (snapshot.beams.length === 0 || platformPaused) return;
     let raf = 0;
     const start = performance.now();
     const tick = (time: number) => {
@@ -298,7 +302,7 @@ export function GameScreen({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [snapshot.beams.length]);
+  }, [snapshot.beams.length, platformPaused]);
 
   // The daily challenge overrides `engine.level` but leaves `levelIndex`
   // pointing at whatever campaign level the player was on, so a newcomer

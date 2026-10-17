@@ -278,6 +278,10 @@ export default function App() {
       watchPlaygamaPauseAndAudio({
         onSilence: () => musicService.setPlatformSilenced(true),
         onRestore: () => musicService.setPlatformSilenced(false),
+        // The attempt's clock stops the way it does for a hidden tab; the
+        // board itself is frozen by `PlatformPauseShield` and GameScreen.
+        onPause: () => engine.onHidden(),
+        onResume: () => engine.onVisible(),
       });
     }
 
@@ -323,6 +327,11 @@ export default function App() {
       ]),
     );
     setTutorialComplete(snapshot.tutorialComplete);
+    // A player who already has progress learned the rules before the
+    // lessons existed: they are not sent back to school.
+    setLessonsSeen(
+      progressRepository.loadLessonsSeen() || snapshot.highestLevel > 0 || snapshot.tutorialComplete,
+    );
     setLevelStars(snapshot.levelStars);
     levelStarsRef.current = snapshot.levelStars;
     setAchievementUnlockedAt(snapshot.achievementUnlockedAt);
@@ -785,6 +794,28 @@ export default function App() {
       engine.levelIndex < FIRST_SCORED_LEVEL_INDEX,
       engine.attemptMetrics,
     );
+  };
+
+  /** Whether the "How to play" lessons have been opened — and where the
+   * player was heading when they were shown them first. */
+  const [lessonsSeen, setLessonsSeen] = useState(true);
+  const [afterLessons, setAfterLessons] = useState<'play' | 'daily' | null>(null);
+  const markLessonsSeen = () => {
+    if (lessonsSeen) return;
+    setLessonsSeen(true);
+    progressRepository.saveLessonsSeen();
+  };
+  /** A first-time player pressing Play or the daily challenge gets the
+   * three lessons first; their last button carries on to what was pressed.
+   * Playgama's QA asks for exactly this, and a daily puzzle with six pieces
+   * is no place to learn what a rune is. */
+  const lessonsFirst = (action: 'play' | 'daily', go: () => void) => {
+    if (lessonsSeen) {
+      go();
+      return;
+    }
+    setAfterLessons(action);
+    setScreen('rules');
   };
 
   const goToMenu = () => {
@@ -1251,7 +1282,30 @@ export default function App() {
         />
       );
     case 'rules':
-      return withConsent(<RulesScreen onBack={goToMenu} onLevels={() => setScreen('levels')} />);
+      return withConsent(
+        <RulesScreen
+          onBack={() => {
+            markLessonsSeen();
+            setAfterLessons(null);
+            goToMenu();
+          }}
+          onLevels={() => {
+            markLessonsSeen();
+            const next = afterLessons;
+            setAfterLessons(null);
+            if (next === 'play') goToGame();
+            else if (next === 'daily') openDailyChallenge();
+            else setScreen('levels');
+          }}
+          finishLabel={
+            afterLessons === 'play'
+              ? l10n.menuPlay
+              : afterLessons === 'daily'
+                ? l10n.menuDailyChallenge
+                : undefined
+          }
+        />,
+      );
     case 'achievements':
       return withConsent(
         <AchievementsScreen
@@ -1372,14 +1426,14 @@ export default function App() {
     default:
       return withConsent(
         <MenuScreen
-          onPlay={() => goToGame()}
+          onPlay={() => lessonsFirst('play', () => goToGame())}
           onLevels={openLevelSelect}
           onSettings={() => setScreen('settings')}
           onAchievements={() => setScreen('achievements')}
           currentLevel={highestLevel + 1}
           onRulesOpened={(proceed) => analyticsService.rulesOpened(proceed)}
           onRules={() => setScreen('rules')}
-          onDailyChallenge={openDailyChallenge}
+          onDailyChallenge={() => lessonsFirst('daily', openDailyChallenge)}
           dailyChallengeSolvedToday={dailyChallengeHistory.has(dailyChallengeKey(new Date()))}
           // The purse, and what it was earned from: a purchase moves the
           // first and never the second — see `starWallet.ts`.

@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { PlatformPauseShield } from './components/shared/PlatformPauseShield';
 import { BUILT_FOR_PLAYGAMA } from './buildTarget';
 import { reportPlaygamaGameReady, startPlaygama } from './services/playgamaPlatform';
 import { PROGRESS_STORAGE_KEYS } from './services/progressRepository';
@@ -11,6 +12,7 @@ function render(): void {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />
+      {BUILT_FOR_PLAYGAMA && <PlatformPauseShield />}
     </StrictMode>,
   );
 }

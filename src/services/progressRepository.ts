@@ -65,6 +65,9 @@ const KEYS = {
   starsSpent: 'dozor.stars_spent_v1',
   dailyBonusStars: 'dozor.daily_bonus_stars_v1',
   dailyDoubledDates: 'dozor.daily_doubled_dates_v1',
+  // The three "How to play" lessons have been opened once — after that,
+  // Play and the daily challenge go straight to the board.
+  lessonsSeen: 'runechess.lessons_seen_v1',
 } as const;
 
 /** Every key this repository reads or writes — what a platform with an
@@ -479,5 +482,13 @@ export class ProgressRepository {
 
   saveAnnouncedFreezeDate(key: string): void {
     writeJson(KEYS.announcedFreezeDate, key);
+  }
+
+  loadLessonsSeen(): boolean {
+    return readJson<boolean>(KEYS.lessonsSeen) === true;
+  }
+
+  saveLessonsSeen(): void {
+    writeJson(KEYS.lessonsSeen, true);
   }
 }

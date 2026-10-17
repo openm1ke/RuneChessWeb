@@ -142,24 +142,47 @@ export function playgamaLanguage(): string | null {
   return language ? language.slice(0, 2).toLowerCase() : null;
 }
 
+/** Whether the platform has the game paused — an overlay, an ad, another
+ * tab. Read through [subscribePlaygamaPause] by whatever has to stop. */
+let paused = false;
+const pauseListeners = new Set<() => void>();
+
+export function isPlaygamaPaused(): boolean {
+  return paused;
+}
+
+export function subscribePlaygamaPause(listener: () => void): () => void {
+  pauseListeners.add(listener);
+  return () => pauseListeners.delete(listener);
+}
+
 /**
- * Silences the game whenever the platform asks: another tab, a minimised
- * window, an ad on screen. A game that keeps playing music behind an ad
- * fails moderation outright.
+ * Obeys the platform's pause and audio requests. They are two different
+ * things and Playgama's QA checks both: a pause must stop the game itself —
+ * its clock, its animations, the player's input — not just the music, and
+ * a muted platform must stay silent even before any music has started.
  */
-export function watchPlaygamaPauseAndAudio(handlers: { onSilence: () => void; onRestore: () => void }): void {
+export function watchPlaygamaPauseAndAudio(handlers: {
+  onSilence: () => void;
+  onRestore: () => void;
+  onPause: () => void;
+  onResume: () => void;
+}): void {
   const bridge = ready;
   if (!bridge) return;
-  let paused = false;
   let audioOff = !bridge.platform.isAudioEnabled;
-  const apply = () => (paused || audioOff ? handlers.onSilence() : handlers.onRestore());
+  const applySound = () => (paused || audioOff ? handlers.onSilence() : handlers.onRestore());
   bridge.platform.on(bridge.EVENT_NAME.PAUSE_STATE_CHANGED, (isPaused) => {
+    if (isPaused === paused) return;
     paused = isPaused;
-    apply();
+    if (isPaused) handlers.onPause();
+    else handlers.onResume();
+    for (const listener of pauseListeners) listener();
+    applySound();
   });
   bridge.platform.on(bridge.EVENT_NAME.AUDIO_STATE_CHANGED, (isEnabled) => {
     audioOff = !isEnabled;
-    apply();
+    applySound();
   });
   if (audioOff) handlers.onSilence();
 }
