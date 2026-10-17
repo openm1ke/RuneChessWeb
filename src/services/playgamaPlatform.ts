@@ -174,6 +174,43 @@ export function subscribePlaygamaPause(listener: () => void): () => void {
  * its clock, its animations, the player's input — not just the music, and
  * a muted platform must stay silent even before any music has started.
  */
+/** Set by [watchPlaygamaPauseAndAudio]; everything that changes `paused`
+ * goes through [setPaused] so the clock, the sound and the shield move
+ * together. */
+let pauseHandlers: { onPause: () => void; onResume: () => void; applySound: () => void } | null = null;
+/** The current pause began while an ad was up. */
+let pausedByAd = false;
+/** When the last ad closed — a pause that arrives a moment after it is the
+ * ad's own, delivered late, not the player leaving. */
+let adEndedAt = 0;
+
+function setPaused(next: boolean): void {
+  if (next === paused) return;
+  paused = next;
+  if (!next) pausedByAd = false;
+  if (next) pauseHandlers?.onPause();
+  else pauseHandlers?.onResume();
+  notifyPause();
+  pauseHandlers?.applySound();
+}
+
+/**
+ * The player tapped the paused game. The shield only answers taps that
+ * reach it, and a tap can only reach it when the platform is no longer
+ * covering the game — so a pause still standing then is one whose "resume"
+ * never came. Playgama's sandbox does exactly that after a rewarded video:
+ * pause on open, nothing on close, and the game sat dimmed for good.
+ */
+export function resumePlaygamaFromTap(): void {
+  if (!adShowing) setPaused(false);
+}
+
+/**
+ * Obeys the platform's pause and audio requests. They are two different
+ * things and Playgama's QA checks both: a pause must stop the game itself —
+ * its clock, its animations, the player's input — not just the music, and
+ * a muted platform must stay silent even before any music has started.
+ */
 export function watchPlaygamaPauseAndAudio(handlers: {
   onSilence: () => void;
   onRestore: () => void;
@@ -184,18 +221,22 @@ export function watchPlaygamaPauseAndAudio(handlers: {
   if (!bridge) return;
   let audioOff = !bridge.platform.isAudioEnabled;
   const applySound = () => (paused || audioOff ? handlers.onSilence() : handlers.onRestore());
+  pauseHandlers = { onPause: handlers.onPause, onResume: handlers.onResume, applySound };
   bridge.platform.on(bridge.EVENT_NAME.PAUSE_STATE_CHANGED, (isPaused) => {
-    if (isPaused === paused) return;
-    paused = isPaused;
-    if (isPaused) handlers.onPause();
-    else handlers.onResume();
-    notifyPause();
-    applySound();
+    if (isPaused && !adShowing && Date.now() - adEndedAt < 1500) return;
+    if (isPaused && adShowing) pausedByAd = true;
+    setPaused(isPaused);
   });
   const trackAd = (state: string) => {
     const showing = state === 'loading' || state === 'opened' || state === 'rewarded';
     if (showing === adShowing) return;
     adShowing = showing;
+    if (!showing) {
+      adEndedAt = Date.now();
+      // The ad's pause ends with the ad, whether or not the platform says
+      // so: on the sandbox it does not.
+      if (pausedByAd) setPaused(false);
+    }
     notifyPause();
   };
   bridge.advertisement.on(bridge.EVENT_NAME.REWARDED_STATE_CHANGED, trackAd);

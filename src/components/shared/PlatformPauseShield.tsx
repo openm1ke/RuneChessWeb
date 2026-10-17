@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { usePlatformPaused } from './usePlatformPaused';
+import { resumePlaygamaFromTap } from '../../services/playgamaPlatform';
 
 /**
  * While the platform has the game paused, nothing in it moves or answers:
@@ -17,7 +18,10 @@ export function PlatformPauseShield() {
   return (
     <div
       aria-hidden="true"
-      onPointerDown={(event) => event.preventDefault()}
+      onPointerDown={(event) => {
+        event.preventDefault();
+        resumePlaygamaFromTap();
+      }}
       style={{
         position: 'fixed',
         inset: 0,
