@@ -703,7 +703,9 @@ export default function App() {
   };
 
   const rescheduleDailyReminderWatch = (): void => {
-    if (dailyReminderEnabledRef.current) dailyReminderService.startWatching(dailyReminderState);
+    // No browser notifications from inside a catalogue's frame on someone
+    // else's site — see `BUILT_FOR_PLAYGAMA` in SettingsScreen too.
+    if (dailyReminderEnabledRef.current && !BUILT_FOR_PLAYGAMA) dailyReminderService.startWatching(dailyReminderState);
     else dailyReminderService.stopWatching();
   };
 
@@ -717,6 +719,7 @@ export default function App() {
    * `await` before the permission request) — browsers only honor
    * `Notification.requestPermission()` from within a real user gesture. */
   const ensureDailyReminderActive = async (isFirstCompletion: boolean): Promise<void> => {
+    if (BUILT_FOR_PLAYGAMA) return;
     const activating = isFirstCompletion && !dailyReminderEnabledRef.current;
     if (!activating && !dailyReminderEnabledRef.current) return;
     if (dailyReminderService.isPermanentlyDenied()) return;

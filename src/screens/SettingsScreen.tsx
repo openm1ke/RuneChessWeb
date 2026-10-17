@@ -4,6 +4,7 @@ import { artForCanvas } from '../game/cosmeticSkins';
 import { RoundControl } from '../components/shared/RoundControl';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { formatHourWindow } from '../services/dailyReminderMessages';
+import { BUILT_FOR_PLAYGAMA } from '../buildTarget';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 import { LANGUAGES, useL10n, type Language } from '../l10n/l10nContext';
 
@@ -127,21 +128,32 @@ function PortraitSettingsScene({
             soundEffectsEnabled={soundEffectsEnabled}
             onSoundEffectsEnabledChanged={onSoundEffectsEnabledChanged}
           />
-          <div style={{ height: 20 }} />
-          <DailyReminderCard
-            enabled={dailyReminderEnabled}
-            hour={dailyReminderHour}
-            onEnabledChanged={onDailyReminderEnabledChanged}
-            onHourChanged={onDailyReminderHourChanged}
-          />
+          {/* The Playgama build has no reminders (a catalogue's frame is no
+              place for browser notifications) and no analytics to consent
+              to, so neither card is shown there. */}
+          {!BUILT_FOR_PLAYGAMA && (
+            <>
+              <div style={{ height: 20 }} />
+              <DailyReminderCard
+                enabled={dailyReminderEnabled}
+                hour={dailyReminderHour}
+                onEnabledChanged={onDailyReminderEnabledChanged}
+                onHourChanged={onDailyReminderHourChanged}
+              />
+            </>
+          )}
           <div style={{ height: 20 }} />
           <AppearanceCard skinName={skinName} onAppearance={onAppearance} />
           <LanguageCard language={language} onLanguage={onLanguage} />
-          <div style={{ height: 20 }} />
-          <PrivacyCard
-            analyticsConsent={analyticsConsent}
-            onAnalyticsConsentChanged={onAnalyticsConsentChanged}
-          />
+          {!BUILT_FOR_PLAYGAMA && (
+            <>
+              <div style={{ height: 20 }} />
+              <PrivacyCard
+                analyticsConsent={analyticsConsent}
+                onAnalyticsConsentChanged={onAnalyticsConsentChanged}
+              />
+            </>
+          )}
           <div style={{ height: 20 }} />
           <ResetProgressCard onResetRequested={onResetRequested} />
         </div>
@@ -226,21 +238,32 @@ function LandscapeSettingsScene({
             soundEffectsEnabled={soundEffectsEnabled}
             onSoundEffectsEnabledChanged={onSoundEffectsEnabledChanged}
           />
-          <div style={{ height: 18 }} />
-          <DailyReminderCard
-            enabled={dailyReminderEnabled}
-            hour={dailyReminderHour}
-            onEnabledChanged={onDailyReminderEnabledChanged}
-            onHourChanged={onDailyReminderHourChanged}
-          />
+          {/* The Playgama build has no reminders (a catalogue's frame is no
+              place for browser notifications) and no analytics to consent
+              to, so neither card is shown there. */}
+          {!BUILT_FOR_PLAYGAMA && (
+            <>
+              <div style={{ height: 18 }} />
+              <DailyReminderCard
+                enabled={dailyReminderEnabled}
+                hour={dailyReminderHour}
+                onEnabledChanged={onDailyReminderEnabledChanged}
+                onHourChanged={onDailyReminderHourChanged}
+              />
+            </>
+          )}
           <div style={{ height: 18 }} />
           <AppearanceCard skinName={skinName} onAppearance={onAppearance} />
           <LanguageCard language={language} onLanguage={onLanguage} />
-          <div style={{ height: 18 }} />
-          <PrivacyCard
-            analyticsConsent={analyticsConsent}
-            onAnalyticsConsentChanged={onAnalyticsConsentChanged}
-          />
+          {!BUILT_FOR_PLAYGAMA && (
+            <>
+              <div style={{ height: 18 }} />
+              <PrivacyCard
+                analyticsConsent={analyticsConsent}
+                onAnalyticsConsentChanged={onAnalyticsConsentChanged}
+              />
+            </>
+          )}
           <div style={{ height: 18 }} />
           <ResetProgressCard onResetRequested={onResetRequested} />
         </div>
