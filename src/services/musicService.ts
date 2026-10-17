@@ -21,9 +21,13 @@ export function setSoundEffectsEnabled(enabled: boolean): void {
   soundEffectsEnabled = enabled;
 }
 
+/** The platform has asked for silence — see `MusicService.setPlatformSilenced`.
+ * Separate from the player's own setting above, which it must not touch. */
+let effectsSilenced = false;
+
 /** Plays a single short sound effect, fire-and-forget. */
 function playSound(src: string, volume: number): void {
-  if (!soundEffectsEnabled) return;
+  if (!soundEffectsEnabled || effectsSilenced) return;
   try {
     const audio = new Audio(src);
     audio.volume = volume;
@@ -235,24 +239,39 @@ export class MusicService {
   async startMenu(): Promise<void> {
     if (!this.enabled) return;
     const request = ++this.menuRequest;
+    if (this.silenced) {
+      // Remembered, not played: it starts when the platform lifts the mute.
+      this.wasMenuPlayingBeforePause = true;
+      this.wasGamePlayingBeforePause = false;
+      return;
+    }
     await this.menu.play(this.menuVolume, MusicService.fadeSeconds);
     if (request !== this.menuRequest) this.menu.pause();
+    else if (this.silenced) this.holdForSilence();
   }
 
   async stopMenu(fade = false): Promise<void> {
     this.menuRequest++;
+    this.wasMenuPlayingBeforePause = false;
     await this.menu.stop(fade ? MusicService.fadeSeconds : 0);
   }
 
   async startGame(): Promise<void> {
     if (!this.enabled) return;
     const request = ++this.gameRequest;
+    if (this.silenced) {
+      this.wasGamePlayingBeforePause = true;
+      this.wasMenuPlayingBeforePause = false;
+      return;
+    }
     await this.game.play(this.gameVolume, MusicService.fadeSeconds);
     if (request !== this.gameRequest) this.game.pause();
+    else if (this.silenced) this.holdForSilence();
   }
 
   async stopGame(fade = false): Promise<void> {
     this.gameRequest++;
+    this.wasGamePlayingBeforePause = false;
     await this.game.stop(fade ? MusicService.fadeSeconds : 0);
   }
 
@@ -264,6 +283,9 @@ export class MusicService {
    * [stopMenu]/[stopGame], which are a deliberate screen change and start
    * the next room from the top. */
   pauseAll(): void {
+    // Already silent for the platform: what is remembered is what the
+    // platform will want back, and an ad or a hidden tab must not wipe it.
+    if (this.silenced) return;
     this.wasMenuPlayingBeforePause = this.menu.isPlaying;
     this.wasGamePlayingBeforePause = this.game.isPlaying;
     this.menu.pause();
@@ -274,8 +296,42 @@ export class MusicService {
    * was not playing at the time, so a player who muted the music stays
    * muted. */
   resumeAll(): void {
+    // Only the platform lifts its own mute — see [setPlatformSilenced].
+    if (this.silenced) return;
     if (this.wasMenuPlayingBeforePause) void this.menu.resume(this.menuVolume);
     if (this.wasGamePlayingBeforePause) void this.game.resume(this.gameVolume);
+  }
+
+  private silenced = false;
+
+  /**
+   * The platform's mute: Playgama's `isAudioEnabled` false at start, its
+   * audio and pause events later. Unlike [pauseAll], it is a state rather
+   * than a moment — music asked for while it holds does not start (it is
+   * remembered instead), sound effects stay quiet, and no other pause can
+   * end it early. Playgama's QA mutes the platform, reloads the game and
+   * listens: the menu music used to start anyway, because the mute was
+   * applied before there was anything playing to pause.
+   */
+  setPlatformSilenced(silenced: boolean): void {
+    if (silenced === this.silenced) return;
+    if (silenced) {
+      this.pauseAll();
+      this.silenced = true;
+      effectsSilenced = true;
+    } else {
+      this.silenced = false;
+      effectsSilenced = false;
+      this.resumeAll();
+    }
+  }
+
+  /** A track that finished loading after the mute arrived. */
+  private holdForSilence(): void {
+    this.wasMenuPlayingBeforePause = this.menu.isPlaying || this.wasMenuPlayingBeforePause;
+    this.wasGamePlayingBeforePause = this.game.isPlaying || this.wasGamePlayingBeforePause;
+    this.menu.pause();
+    this.game.pause();
   }
 
   applyVolume(): void {

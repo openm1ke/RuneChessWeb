@@ -276,8 +276,8 @@ export default function App() {
     // platform's pause and audio requests.
     if (BUILT_FOR_PLAYGAMA) {
       watchPlaygamaPauseAndAudio({
-        onSilence: () => musicService.pauseAll(),
-        onRestore: () => musicService.resumeAll(),
+        onSilence: () => musicService.setPlatformSilenced(true),
+        onRestore: () => musicService.setPlatformSilenced(false),
       });
     }
 
