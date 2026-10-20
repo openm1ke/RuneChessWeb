@@ -38,6 +38,9 @@ export interface PlaygamaBridge {
     set(keys: string[], values: string[]): Promise<void>;
     delete(keys: string[]): Promise<void>;
   };
+  analytics?: {
+    send(name: string, data?: Record<string, string | number | boolean>): unknown;
+  };
   advertisement: {
     isRewardedSupported: boolean;
     isInterstitialSupported: boolean;
@@ -270,6 +273,23 @@ export function showPlaygamaInterstitial(placement: string): void {
     bridge.advertisement.showInterstitial(placement);
   } catch (error) {
     warn('showInterstitial', error);
+  }
+}
+
+/**
+ * The game's own progression events, through Bridge analytics — the one
+ * channel Playgama allows (its checklist forbids external analytics). The
+ * names are the telemetry guide's: stable, with the level in the data, never
+ * in the name. Sessions, play time and ads are recorded by Bridge itself
+ * and are not repeated here.
+ */
+export function sendPlaygamaEvent(name: string, data: Record<string, string | number | boolean>): void {
+  const analytics = ready?.analytics;
+  if (!analytics) return;
+  try {
+    analytics.send(name, data);
+  } catch (error) {
+    warn('analytics.send', error);
   }
 }
 

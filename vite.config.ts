@@ -43,6 +43,15 @@ const stripSiteReferences = {
           ? '<script src="https://bridge.playgama.com/v2/stable/playgama-bridge.js"></script>'
           : '<script src="https://yandex.ru/games/sdk/v2"></script>',
       )
+      // Playgama opens a first-time player straight on level 1; without
+      // these the board appears a beat before its coin and its pawn do.
+      .replace(
+        '</head>',
+        forPlaygama
+          ? '<link rel="preload" as="image" type="image/webp" href="./assets/images/coin-1.webp" />' +
+              '<link rel="preload" as="image" type="image/webp" href="./assets/images/p-pawn-android.webp" /></head>'
+          : '</head>',
+      )
       .replace(/\s*<script[^>]*yandex\.ru\/ads\/system\/context\.js[^>]*><\/script>/g, '')
       .replace(/\s*<link rel="canonical"[^>]*>/g, '')
       .replace(/\s*<meta property="og:[^"]*"[^>]*>/g, '')

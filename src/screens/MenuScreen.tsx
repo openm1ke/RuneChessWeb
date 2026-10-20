@@ -525,7 +525,7 @@ function MenuBrand({ orbSize }: { orbSize: number }) {
   const width = height * (1200 / 660);
   return (
     <img
-      src={asset('assets/branding/runechess-logo.png')}
+      src={asset('assets/branding/runechess-logo.webp')}
       alt="RuneChess"
       style={{
         display: 'block',

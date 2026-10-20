@@ -1,4 +1,5 @@
 import { BUILT_FOR_PLAYGAMA } from '../buildTarget';
+import { sendPlaygamaEvent } from './playgamaPlatform';
 import type { LevelAttemptResult } from '../game/starRating';
 
 const COUNTER_ID = 112107479;
@@ -355,6 +356,7 @@ export class AnalyticsService {
   }
 
   private goal(name: string, params: Record<string, AnalyticsParameter>): void {
+    if (BUILT_FOR_PLAYGAMA) forwardToPlaygama(name, params);
     // Do not pollute the production analytics counter while running the local
     // Vite development server. Failure of the counter or an ad blocker must
     // never affect play.
@@ -365,5 +367,55 @@ export class AnalyticsService {
   private visitParams(params: Record<string, AnalyticsParameter>): void {
     if (!this.enabled || typeof window.ym !== 'function') return;
     window.ym(COUNTER_ID, 'params', params);
+  }
+}
+
+/**
+ * The level funnel, re-told for Playgama's analytics: where players start,
+ * finish, restart and give up. Only these — the rest of the Metrica goals
+ * answer questions about runechess.ru, and Bridge already records sessions,
+ * play time and every ad on its own.
+ */
+function forwardToPlaygama(name: string, params: Record<string, AnalyticsParameter>): void {
+  const level = typeof params.level === 'number' ? params.level : null;
+  const step = (kind: string): Record<string, string | number> =>
+    level == null ? { step_id: kind, step_index: 0, kind } : { step_id: `level_${level}`, step_index: level, kind };
+  const numbers = (...keys: string[]) => {
+    const out: Record<string, number> = {};
+    for (const key of keys) {
+      const value = params[key];
+      if (typeof value === 'number') out[key] = value;
+    }
+    return out;
+  };
+  const kind = params.is_tutorial === true ? 'tutorial' : 'campaign';
+  switch (name) {
+    case 'level_started':
+      sendPlaygamaEvent('progression_started', step(kind));
+      break;
+    case 'level_completed':
+      sendPlaygamaEvent('progression_completed', {
+        ...step(kind),
+        ...numbers('stars', 'elapsed_seconds', 'moves', 'hints_used'),
+      });
+      break;
+    case 'level_reset':
+      sendPlaygamaEvent('progression_restarted', { ...step(kind), ...numbers('elapsed_seconds', 'moves') });
+      break;
+    case 'level_abandoned':
+      sendPlaygamaEvent('progression_abandoned', {
+        ...step(kind),
+        ...numbers('elapsed_seconds', 'moves', 'hints_used'),
+      });
+      break;
+    case 'daily_challenge_started':
+      sendPlaygamaEvent('progression_started', step('daily'));
+      break;
+    case 'daily_challenge_completed':
+      sendPlaygamaEvent('progression_completed', { ...step('daily'), ...numbers('stars', 'hints_used') });
+      break;
+    case 'tutorial_completed':
+      sendPlaygamaEvent('tutorial_completed', {});
+      break;
   }
 }
