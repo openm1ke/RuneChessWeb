@@ -162,6 +162,12 @@ export function isPlaygamaPaused(): boolean {
   return paused && !adShowing;
 }
 
+/** The platform has the game stopped for any reason — a pause or an ad on
+ * screen. What the frame-time sampler must not count. */
+export function isPlaygamaHalted(): boolean {
+  return paused || adShowing;
+}
+
 function notifyPause(): void {
   for (const listener of pauseListeners) listener();
 }

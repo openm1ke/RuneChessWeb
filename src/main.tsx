@@ -18,6 +18,7 @@ function render(): void {
 }
 
 if (BUILT_FOR_PLAYGAMA) {
+  document.documentElement.classList.add('rc-ratio-capped');
   // Bridge first, then the saves it holds, then the game: the app reads its
   // progress synchronously the moment it mounts. `game_ready` goes out once
   // the first frame has actually been painted, not merely scheduled.

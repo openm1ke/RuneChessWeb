@@ -243,3 +243,17 @@ img {
 .rc-platform-paused *::after {
   animation-play-state: paused !important;
 }
+
+/* Playgama (§27 of its checklist): the game field is never wider than twice
+   its height. #root narrows and centres, the castle art on <html> fills the
+   margins, and the transform makes #root the containing block of every
+   position: fixed screen inside it, so they fill the field, not the window.
+   See MAX_FIELD_ASPECT in useViewportSize.ts. */
+html.rc-ratio-capped #root {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: min(100vw, 200vh);
+  transform: translateX(-50%);
+}

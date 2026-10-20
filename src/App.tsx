@@ -8,6 +8,7 @@ import { RewardedAdsService } from './services/rewardedAdsService';
 import type { RewardedAds } from './services/rewardedAdsService';
 import { YandexGamesRewardedAdsService } from './services/yandexGamesRewardedAdsService';
 import { PlaygamaRewardedAdsService } from './services/playgamaRewardedAdsService';
+import { setPlaygamaGameplayActive } from './services/playgamaPerformance';
 import {
   playgamaBridge,
   playgamaLanguage,
@@ -546,6 +547,13 @@ export default function App() {
       }
     });
   }, [activeRewardedAdsService, musicService]);
+
+  // Playgama's performance_sample: frames are sampled only while a level is
+  // on screen (see playgamaPerformance.ts).
+  useEffect(() => {
+    if (!BUILT_FOR_PLAYGAMA) return;
+    setPlaygamaGameplayActive(screen === 'game');
+  }, [screen]);
 
   useEffect(() => {
     // A long press on a piece is how the game is played on a phone, and the
