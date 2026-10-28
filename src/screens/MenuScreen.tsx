@@ -9,7 +9,7 @@ import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 import { menuStoreLinks } from '../data/storeLinks';
 import { useL10n } from '../l10n/l10nContext';
 import { APP_VERSION } from '../appVersion';
-import { BUILT_FOR_CATALOGUE } from '../buildTarget';
+import { BUILT_FOR_CATALOGUE, BUILT_FOR_VK } from '../buildTarget';
 
 /**
  * How tall every store badge is drawn in the menu footer, in scene units.
@@ -224,7 +224,7 @@ export function MenuScreen({
             color: 'rgba(154,163,180,0.55)',
           }}
         >
-          {l10n.menuVersion(APP_VERSION)}
+          {versionLine(l10n.menuVersion(APP_VERSION))}
         </div>
       </div>
         );
@@ -412,10 +412,16 @@ function LandscapeMenuScene({
           color: 'rgba(154,163,180,0.55)',
         }}
       >
-        {l10n.menuVersion(APP_VERSION)}
+        {versionLine(l10n.menuVersion(APP_VERSION))}
       </div>
     </div>
   );
+}
+
+/** VK rule 2.1.5: the age rating is on screen from the first launch. The
+ * menu is the first screen, and its version line the quietest place for it. */
+function versionLine(version: string): string {
+  return BUILT_FOR_VK ? `0+ · ${version}` : version;
 }
 
 function MenuFooterLinks() {

@@ -1,4 +1,4 @@
-import { BUILT_FOR_PLAYGAMA } from '../buildTarget';
+import { BUILT_FOR_PLAYGAMA, BUILT_WITHOUT_SITE_SERVICES } from '../buildTarget';
 import { sendPlaygamaEvent } from './playgamaPlatform';
 import type { LevelAttemptResult } from '../game/starRating';
 
@@ -42,9 +42,9 @@ export class AnalyticsService {
   enable(): void {
     // Playgama forbids external analytics outright (its technical
     // requirements, §3) — requests to them may be blocked on partner sites.
-    // A literal at build time, so the Metrica loader below is compiled out
-    // of that archive altogether.
-    if (BUILT_FOR_PLAYGAMA) return;
+    // VK allows no network but its own (rule 5.1.2). A literal at build
+    // time, so the Metrica loader below is compiled out of both archives.
+    if (BUILT_WITHOUT_SITE_SERVICES) return;
     if (this.enabled || import.meta.env.DEV || typeof window === 'undefined') return;
     this.enabled = true;
 

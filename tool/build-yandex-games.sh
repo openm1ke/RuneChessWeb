@@ -35,7 +35,7 @@ rm -rf "$STAGE/config"
 # Yandex's own policies at the bottom. The menu no longer offers them in
 # this build (see BUILT_FOR_YANDEX_GAMES), and shipping unreachable pages
 # that still name the domain would be asking for the same answer twice.
-rm -f "$STAGE"/{about.html,how-to-play.html,privacy.html}
+rm -f "$STAGE"/{about.html,how-to-play.html,privacy.html,terms.html}
 
 # The store badges go with them. Nothing in the catalogue build references
 # them any more — the addresses are compiled out of the bundle, see

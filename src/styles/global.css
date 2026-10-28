@@ -244,16 +244,20 @@ img {
   animation-play-state: paused !important;
 }
 
-/* Playgama (§27 of its checklist): the game field is never wider than twice
-   its height. #root narrows and centres, the castle art on <html> fills the
-   margins, and the transform makes #root the containing block of every
-   position: fixed screen inside it, so they fill the field, not the window.
-   See MAX_FIELD_ASPECT in useViewportSize.ts. */
+/* Playgama (§27 of its checklist) and VK: the game field is never wider
+   than twice its height. #root narrows and centres, the castle art on
+   <html> fills the margins, and the transform makes #root the containing
+   block of every position: fixed screen inside it, so they fill the field,
+   not the window. In VK it also leaves out what the mobile client covers
+   (the insets, rule 3.2.2; zero everywhere else). See MAX_FIELD_ASPECT in
+   useViewportSize.ts. */
 html.rc-ratio-capped #root {
   position: fixed;
-  top: 0;
-  bottom: 0;
+  top: var(--vk-inset-top, 0px);
+  bottom: var(--vk-inset-bottom, 0px);
+  /* Not the 100% above: top and bottom decide the height here. */
+  height: auto;
   left: 50%;
-  width: min(100vw, 200vh);
+  width: min(100vw, calc(2 * (100vh - var(--vk-inset-top, 0px) - var(--vk-inset-bottom, 0px))));
   transform: translateX(-50%);
 }

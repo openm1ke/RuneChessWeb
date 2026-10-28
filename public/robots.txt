@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# The VK Games copy of the game (tool/build-vk.sh) — it lives inside VK.
+Disallow: /vk/
 
 Sitemap: https://runechess.ru/sitemap.xml

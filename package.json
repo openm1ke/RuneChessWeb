@@ -11,9 +11,11 @@
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
     "build:yandex-games": "bash tool/build-yandex-games.sh",
-    "build:playgama": "bash tool/build-playgama.sh"
+    "build:playgama": "bash tool/build-playgama.sh",
+    "build:vk": "bash tool/build-vk.sh"
   },
   "dependencies": {
+    "@vkontakte/vk-bridge": "^3.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

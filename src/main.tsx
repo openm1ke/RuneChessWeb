@@ -2,8 +2,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { PlatformPauseShield } from './components/shared/PlatformPauseShield';
-import { BUILT_FOR_PLAYGAMA } from './buildTarget';
+import { BUILT_FOR_PLAYGAMA, BUILT_FOR_VK } from './buildTarget';
 import { reportPlaygamaGameReady, startPlaygama } from './services/playgamaPlatform';
+import { startVk } from './services/vkPlatform';
 import { PROGRESS_STORAGE_KEYS } from './services/progressRepository';
 import { LANGUAGE_STORAGE_KEY } from './services/languageRepository';
 import './styles/global.css';
@@ -26,6 +27,12 @@ if (BUILT_FOR_PLAYGAMA) {
     render();
     requestAnimationFrame(() => requestAnimationFrame(reportPlaygamaGameReady));
   });
+} else if (BUILT_FOR_VK) {
+  document.documentElement.classList.add('rc-ratio-capped');
+  // Same order for VK: the cloud saves have to be in memory before the app
+  // reads them. `startVk` resolves within seconds even when VK does not
+  // answer — the game then starts on this device's own copy.
+  void startVk([...PROGRESS_STORAGE_KEYS, LANGUAGE_STORAGE_KEY]).then(render);
 } else {
   render();
 }

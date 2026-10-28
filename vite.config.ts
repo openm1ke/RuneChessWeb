@@ -15,6 +15,7 @@ import react from '@vitejs/plugin-react';
 declare const process: { env: Record<string, string | undefined> };
 const forYandexGames = process.env.VITE_YANDEX_GAMES === '1';
 const forPlaygama = process.env.VITE_PLAYGAMA === '1';
+const forVk = process.env.VITE_VK === '1';
 
 /** Strips from index.html everything that belongs to runechess.ru and not
  * to a game running inside somebody else's iframe.
@@ -30,18 +31,26 @@ const forPlaygama = process.env.VITE_PLAYGAMA === '1';
 const stripSiteReferences = {
   name: 'strip-site-references',
   transformIndexHtml(html: string) {
-    if (!forYandexGames && !forPlaygama) return html;
+    if (!forYandexGames && !forPlaygama && !forVk) return html;
     return html
       // Inside a catalogue the game is always framed, and that catalogue's
       // SDK is the whole point: load it unconditionally, as a plain tag, so
       // the build also works when tried locally at the top level. Playgama
       // gets its Bridge instead — which itself loads Yandex's SDK when the
       // game is redistributed there, so ours must not be on the page too.
+      //
+      // VK Bridge is bundled with the game (src/services/vkPlatform.ts), and
+      // the VK frame must not load Yandex's SDK at all: rule 5.1.2 allows no
+      // ad network but VK's own, and the loader would see a frame and fetch
+      // it. The VK build is published on our own host, so it also tells
+      // search engines to stay away from a copy of the site's game.
       .replace(
         /<script id="yandex-games-sdk-loader">[\s\S]*?<\/script>/,
-        forPlaygama
-          ? '<script src="https://bridge.playgama.com/v2/stable/playgama-bridge.js"></script>'
-          : '<script src="https://yandex.ru/games/sdk/v2"></script>',
+        forVk
+          ? '<meta name="robots" content="noindex, nofollow" />'
+          : forPlaygama
+            ? '<script src="https://bridge.playgama.com/v2/stable/playgama-bridge.js"></script>'
+            : '<script src="https://yandex.ru/games/sdk/v2"></script>',
       )
       // Playgama opens a first-time player straight on level 1; without
       // these the board appears a beat before its coin and its pawn do.

@@ -1,0 +1,74 @@
+<!doctype html>
+<!-- A local stand-in for VK around the VK build — never part of the build
+     itself. It answers the Bridge calls the game makes (init, launch
+     params, config, storage, ads) the way VK documents them, so the build
+     can be tried without the platform: open
+     http://127.0.0.1:4190/tool/vk/vk-host.html?game=/release-artifacts/runechess-vk/
+     from a server at the repository root. -->
+<html lang="ru"><head><meta charset="utf-8"><title>RuneChess — стенд VK</title>
+<style>
+html,body{margin:0;background:#19191a;color:#eee;font:13px sans-serif}
+header{padding:6px 8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{padding:6px 8px}
+iframe{display:block;border:0;margin:auto;width:100%;height:calc(100vh - 44px)}
+body.mobile iframe{width:390px;height:780px}
+#ad{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:#000d;font-size:18px}
+</style></head>
+<body><header>Стенд VK (локально)
+<button id="desktop">Десктоп</button><button id="mobile">Телефон + insets</button>
+<button id="hide">ViewHide</button><button id="restore">ViewRestore</button>
+<button id="offline">Хранилище: онлайн</button><button id="noads">Реклама: есть</button>
+<button id="reload">Перезапуск</button><button id="wipe">Стереть облако</button>
+<span id="log"></span></header>
+<iframe title="RuneChess" allow="autoplay"></iframe>
+<div id="ad"><div id="adtitle"></div><div><button id="watch">Досмотреть</button> <button id="skip">Закрыть раньше</button></div></div>
+<script>
+const frame = document.querySelector('iframe');
+const params = new URLSearchParams(location.search);
+const mobile = params.has('mobile');
+const gameURL = new URL(params.get('game') || '/release-artifacts/runechess-vk/', location.href);
+const saved = JSON.parse(localStorage.getItem('runechess.mock-vk') || '{}');
+let offline = false, noAds = false, pendingAd = null;
+const log = (text) => { document.querySelector('#log').textContent = text; console.log('[vk-host]', text); };
+if (mobile) document.body.classList.add('mobile');
+const emit = (type, data = {}) => frame.contentWindow.postMessage({ type, data }, gameURL.origin);
+const insets = mobile ? { top: 44, bottom: 34, left: 0, right: 0 } : { top: 0, bottom: 0, left: 0, right: 0 };
+window.addEventListener('message', ({ source, data }) => {
+  if (source !== frame.contentWindow || data?.type !== 'vk-connect') return;
+  const { handler, params: p } = data;
+  const reply = (result) => emit(handler + 'Result', { ...result, request_id: p.request_id });
+  const fail = (reason) => emit(handler + 'Failed', { error_type: 'client_error', request_id: p.request_id, error_data: { error_code: 1, error_reason: reason } });
+  if (offline && handler.startsWith('VKWebAppStorage')) return fail('offline');
+  switch (handler) {
+    case 'VKWebAppInit': return reply({ result: true });
+    case 'VKWebAppGetLaunchParams': return reply({ vk_app_id: 1, vk_user_id: 1, vk_platform: mobile ? 'mobile_iphone' : 'desktop_web', vk_language: params.get('lang') || 'ru' });
+    case 'VKWebAppGetConfig': return reply({ appearance: 'dark', insets });
+    case 'VKWebAppStorageGet': return reply({ keys: p.keys.map((key) => ({ key, value: saved[key] || '' })) });
+    case 'VKWebAppStorageSet':
+      saved[p.key] = p.value; localStorage.setItem('runechess.mock-vk', JSON.stringify(saved));
+      log('StorageSet ' + p.key); return reply({ result: true });
+    case 'VKWebAppCheckNativeAds': return reply({ result: !noAds });
+    case 'VKWebAppShowNativeAds':
+      if (noAds) return fail('No ads');
+      log('ShowNativeAds ' + p.ad_format);
+      pendingAd = reply;
+      document.querySelector('#adtitle').textContent = 'Реклама VK: ' + p.ad_format;
+      document.querySelector('#ad').style.display = 'flex';
+      return;
+    default: return fail('not in the stand');
+  }
+});
+const endAd = (watched) => { document.querySelector('#ad').style.display = 'none'; pendingAd?.({ result: watched }); pendingAd = null; };
+document.querySelector('#watch').onclick = () => endAd(true);
+document.querySelector('#skip').onclick = () => endAd(false);
+document.querySelector('#desktop').onclick = () => { params.delete('mobile'); location.search = params; };
+document.querySelector('#mobile').onclick = () => { params.set('mobile', ''); location.search = params; };
+document.querySelector('#hide').onclick = () => emit('VKWebAppViewHide');
+document.querySelector('#restore').onclick = () => emit('VKWebAppViewRestore');
+document.querySelector('#offline').onclick = (e) => { offline = !offline; e.target.textContent = 'Хранилище: ' + (offline ? 'офлайн' : 'онлайн'); };
+document.querySelector('#noads').onclick = (e) => { noAds = !noAds; e.target.textContent = 'Реклама: ' + (noAds ? 'нет' : 'есть'); };
+document.querySelector('#reload').onclick = () => { frame.src = frame.src; };
+document.querySelector('#wipe').onclick = () => { localStorage.removeItem('runechess.mock-vk'); for (const k in saved) delete saved[k]; log('облако стёрто'); };
+gameURL.search = 'vk_app_id=1&vk_user_id=1&vk_platform=' + (mobile ? 'mobile_iphone' : 'desktop_web');
+frame.src = gameURL.href;
+</script></body></html>

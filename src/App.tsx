@@ -8,6 +8,8 @@ import { RewardedAdsService } from './services/rewardedAdsService';
 import type { RewardedAds } from './services/rewardedAdsService';
 import { YandexGamesRewardedAdsService } from './services/yandexGamesRewardedAdsService';
 import { PlaygamaRewardedAdsService } from './services/playgamaRewardedAdsService';
+import { VkRewardedAdsService } from './services/vkRewardedAdsService';
+import { isVkReady, showVkInterstitial, vkLanguage, watchVkView } from './services/vkPlatform';
 import { setPlaygamaGameplayActive } from './services/playgamaPerformance';
 import {
   playgamaBridge,
@@ -15,7 +17,7 @@ import {
   showPlaygamaInterstitial,
   watchPlaygamaPauseAndAudio,
 } from './services/playgamaPlatform';
-import { BUILT_FOR_PLAYGAMA, BUILT_FOR_YANDEX_GAMES } from './buildTarget';
+import { BUILT_FOR_PLAYGAMA, BUILT_FOR_VK, BUILT_FOR_YANDEX_GAMES, BUILT_WITHOUT_SITE_SERVICES } from './buildTarget';
 import { RulesScreen } from './screens/RulesScreen';
 import {
   platformLanguage,
@@ -156,8 +158,9 @@ export default function App() {
   // the browser, then Russian. The Yandex Games SDK arrives later and can
   // override the browser's answer — but never the player's.
   const [language, setLanguage] = useState<Language>(() =>
-    // Bridge is already up when the Playgama build draws the app (main.tsx).
-    resolveLanguage(BUILT_FOR_PLAYGAMA ? playgamaLanguage() : undefined),
+    // Bridge is already up when the Playgama and VK builds draw the app
+    // (main.tsx).
+    resolveLanguage(BUILT_FOR_PLAYGAMA ? playgamaLanguage() : BUILT_FOR_VK ? vkLanguage() : undefined),
   );
   const l10n = stringsFor(language);
 
@@ -231,6 +234,11 @@ export default function App() {
       const bridge = playgamaBridge();
       return bridge ? new PlaygamaRewardedAdsService(bridge, analyticsService) : undefined;
     }
+    // VK's own ads (rule 5.1.2), and the free hint when the game was opened
+    // outside VK.
+    if (BUILT_FOR_VK) {
+      return isVkReady() ? new VkRewardedAdsService(analyticsService) : undefined;
+    }
     if (BUILT_FOR_YANDEX_GAMES || isOnYandexGamesPlatform) {
       return yandexGamesSdk
         ? new YandexGamesRewardedAdsService(yandexGamesSdk, analyticsService)
@@ -268,6 +276,14 @@ export default function App() {
   const dailyChallengeDateRef = useRef<Date | null>(null);
   /** One `level_abandoned` per attempt — see `reportAbandonedLevel`. */
   const abandonReportedRef = useRef(false);
+  /** VK silences the game for two independent reasons — the app hidden,
+   * an interstitial on screen — and the end of one must not lift the
+   * other. */
+  const vkSilenceRef = useRef({ hidden: false, ad: false });
+  const vkSilence = (reason: 'hidden' | 'ad', on: boolean) => {
+    vkSilenceRef.current[reason] = on;
+    musicService.setPlatformSilenced(vkSilenceRef.current.hidden || vkSilenceRef.current.ad);
+  };
 
   useEffect(() => {
     musicService.init();
@@ -283,6 +299,21 @@ export default function App() {
         // board itself is frozen by `PlatformPauseShield` and GameScreen.
         onPause: () => engine.onHidden(),
         onResume: () => engine.onVisible(),
+      });
+    }
+
+    // VK hides the app — the mobile client's home button, a call — and
+    // brings it back (rule 2.2.5: the sound must stop).
+    if (BUILT_FOR_VK) {
+      watchVkView({
+        onHide: () => {
+          vkSilence('hidden', true);
+          engine.onHidden();
+        },
+        onRestore: () => {
+          vkSilence('hidden', false);
+          engine.onVisible();
+        },
       });
     }
 
@@ -720,7 +751,7 @@ export default function App() {
   const rescheduleDailyReminderWatch = (): void => {
     // No browser notifications from inside a catalogue's frame on someone
     // else's site — see `BUILT_FOR_PLAYGAMA` in SettingsScreen too.
-    if (dailyReminderEnabledRef.current && !BUILT_FOR_PLAYGAMA) dailyReminderService.startWatching(dailyReminderState);
+    if (dailyReminderEnabledRef.current && !BUILT_WITHOUT_SITE_SERVICES) dailyReminderService.startWatching(dailyReminderState);
     else dailyReminderService.stopWatching();
   };
 
@@ -734,7 +765,7 @@ export default function App() {
    * `await` before the permission request) — browsers only honor
    * `Notification.requestPermission()` from within a real user gesture. */
   const ensureDailyReminderActive = async (isFirstCompletion: boolean): Promise<void> => {
-    if (BUILT_FOR_PLAYGAMA) return;
+    if (BUILT_WITHOUT_SITE_SERVICES) return;
     const activating = isFirstCompletion && !dailyReminderEnabledRef.current;
     if (!activating && !dailyReminderEnabledRef.current) return;
     if (dailyReminderService.isPermanentlyDenied()) return;
@@ -923,6 +954,15 @@ export default function App() {
       // itself when the last one was under a minute ago.
       if (BUILT_FOR_PLAYGAMA && engine.levelIndex > FIRST_SCORED_LEVEL_INDEX) {
         showPlaygamaInterstitial('level_completed');
+      }
+      // VK (rule 5.1.5.1): an interstitial only while the next level
+      // loads, never in the lessons, never at launch and never within two
+      // minutes of the last ad — `showVkInterstitial` keeps those gaps.
+      if (BUILT_FOR_VK && engine.levelIndex > FIRST_SCORED_LEVEL_INDEX) {
+        showVkInterstitial({
+          onStart: () => vkSilence('ad', true),
+          onEnd: () => vkSilence('ad', false),
+        });
       }
       levelEntrySourceRef.current = 'next_level';
       analyticsService.levelStarted(engine.levelIndex, engine.levelIndex < FIRST_SCORED_LEVEL_INDEX, 'next_level');
@@ -1193,9 +1233,9 @@ export default function App() {
     <L10nContext.Provider value={stringsFor(language)}>
     <CosmeticSkinContext.Provider value={skin}>
       {content}
-      {/* Nothing to consent to in the Playgama build: it carries no
-          analytics at all (see `AnalyticsService.enable`). */}
-      {analyticsConsent == null && !BUILT_FOR_PLAYGAMA && (
+      {/* Nothing to consent to in the Playgama and VK builds: they carry
+          no analytics at all (see `AnalyticsService.enable`). */}
+      {analyticsConsent == null && !BUILT_WITHOUT_SITE_SERVICES && (
         <ConsentBanner
           onAcceptAnalytics={() => setAnalyticsConsentAndSave(true)}
           onDeclineAnalytics={() => setAnalyticsConsentAndSave(false)}
@@ -1353,7 +1393,9 @@ export default function App() {
             onBack={goToMenu}
             onNextLevel={nextLevel}
             onSkipLevel={isDev && !engine.isDailyChallenge ? skipLevel : undefined}
-            onSkipForAd={engine.isDailyChallenge ? undefined : skipLevel}
+            // VK rule 4.2.12: a level is passed only by playing it, never
+            // handed over for an ad — so the VK build offers no skip.
+            onSkipForAd={engine.isDailyChallenge || BUILT_FOR_VK ? undefined : skipLevel}
             onSkipOffered={() => analyticsService.adOfferShown('skip_level')}
             onResetOnboarding={resetOnboardingForDebug}
             seenOnboardingLevels={seenOnboardingLevels}

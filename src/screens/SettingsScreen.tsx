@@ -4,7 +4,7 @@ import { artForCanvas } from '../game/cosmeticSkins';
 import { RoundControl } from '../components/shared/RoundControl';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { formatHourWindow } from '../services/dailyReminderMessages';
-import { BUILT_FOR_PLAYGAMA } from '../buildTarget';
+import { BUILT_WITHOUT_SITE_SERVICES } from '../buildTarget';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 import { LANGUAGES, useL10n, type Language } from '../l10n/l10nContext';
 
@@ -128,10 +128,10 @@ function PortraitSettingsScene({
             soundEffectsEnabled={soundEffectsEnabled}
             onSoundEffectsEnabledChanged={onSoundEffectsEnabledChanged}
           />
-          {/* The Playgama build has no reminders (a catalogue's frame is no
-              place for browser notifications) and no analytics to consent
-              to, so neither card is shown there. */}
-          {!BUILT_FOR_PLAYGAMA && (
+          {/* The Playgama and VK builds have no reminders (a catalogue's
+              frame is no place for browser notifications) and no analytics
+              to consent to, so neither card is shown there. */}
+          {!BUILT_WITHOUT_SITE_SERVICES && (
             <>
               <div style={{ height: 20 }} />
               <DailyReminderCard
@@ -145,7 +145,7 @@ function PortraitSettingsScene({
           <div style={{ height: 20 }} />
           <AppearanceCard skinName={skinName} onAppearance={onAppearance} />
           <LanguageCard language={language} onLanguage={onLanguage} />
-          {!BUILT_FOR_PLAYGAMA && (
+          {!BUILT_WITHOUT_SITE_SERVICES && (
             <>
               <div style={{ height: 20 }} />
               <PrivacyCard
@@ -238,10 +238,10 @@ function LandscapeSettingsScene({
             soundEffectsEnabled={soundEffectsEnabled}
             onSoundEffectsEnabledChanged={onSoundEffectsEnabledChanged}
           />
-          {/* The Playgama build has no reminders (a catalogue's frame is no
-              place for browser notifications) and no analytics to consent
-              to, so neither card is shown there. */}
-          {!BUILT_FOR_PLAYGAMA && (
+          {/* The Playgama and VK builds have no reminders (a catalogue's
+              frame is no place for browser notifications) and no analytics
+              to consent to, so neither card is shown there. */}
+          {!BUILT_WITHOUT_SITE_SERVICES && (
             <>
               <div style={{ height: 18 }} />
               <DailyReminderCard
@@ -255,7 +255,7 @@ function LandscapeSettingsScene({
           <div style={{ height: 18 }} />
           <AppearanceCard skinName={skinName} onAppearance={onAppearance} />
           <LanguageCard language={language} onLanguage={onLanguage} />
-          {!BUILT_FOR_PLAYGAMA && (
+          {!BUILT_WITHOUT_SITE_SERVICES && (
             <>
               <div style={{ height: 18 }} />
               <PrivacyCard

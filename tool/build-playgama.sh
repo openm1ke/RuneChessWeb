@@ -25,7 +25,7 @@ VITE_PLAYGAMA=1 npm run build
 cp -R dist/. "$STAGE/"
 rm -f "$STAGE"/{CNAME,robots.txt,sitemap.xml,ads.txt,app-ads.txt}
 rm -rf "$STAGE/config"
-rm -f "$STAGE"/{about.html,how-to-play.html,privacy.html}
+rm -f "$STAGE"/{about.html,how-to-play.html,privacy.html,terms.html}
 rm -rf "$STAGE/assets/badges"
 cp tool/playgama/playgama-bridge-config.json "$STAGE/"
 

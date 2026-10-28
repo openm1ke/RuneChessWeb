@@ -24,7 +24,12 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # The VK Games build first: both builds write dist/, and the site's
+      # goes last so it is what dist/ holds. VK opens the game from
+      # https://runechess.ru/vk/ (see tool/build-vk.sh).
+      - run: npm run build:vk
       - run: npm run build
+      - run: cp -R release-artifacts/runechess-vk dist/vk
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
