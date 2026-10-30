@@ -9,7 +9,15 @@ import {
 } from "../../game/pieceTypes";
 import { PieceArt } from "../board/PieceArt";
 import type { DragController } from "../board/useDragController";
-import { TILE_GAP, TRAY_PORTRAIT, TRAY_PORTRAIT_WIDTH, trayRowHeight, trayTileExtent } from "./trayGeometry";
+import {
+  SLOT_LABEL_GAP,
+  SLOT_LABEL_HEIGHT,
+  TILE_GAP,
+  TRAY_PORTRAIT,
+  TRAY_PORTRAIT_WIDTH,
+  trayRowHeight,
+  trayTileExtent,
+} from "./trayGeometry";
 import { cellHeightForTile, pieceDrawBox } from "../../game/pieceMetrics";
 import { useCosmeticSkin } from "../../game/cosmeticSkinContext";
 import { uprightRotationOf } from "../../game/cosmeticSkins";
@@ -112,6 +120,31 @@ function TrayItemTile({
   );
 }
 
+/** The tile a figure leaves behind on the board: an empty, quieter frame
+ * with a tick in it. */
+function PlacedSlotTile() {
+  return (
+    <div
+      aria-hidden
+      style={{
+        width: "100%",
+        height: "100%",
+        borderRadius: 12,
+        background: "rgba(16,27,62,0.4)",
+        border: "2px solid rgba(122,107,83,0.3)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "rgba(255,215,122,0.7)",
+        fontSize: 22,
+        fontWeight: 900,
+      }}
+    >
+      ✓
+    </div>
+  );
+}
+
 export function Tray({
   engine,
   snapshot,
@@ -123,6 +156,7 @@ export function Tray({
   height = TRAY_PORTRAIT.height,
   vertical = false,
   panelExtent,
+  showNames = true,
 }: {
   engine: DozorEngine;
   snapshot: DozorSnapshot;
@@ -137,6 +171,10 @@ export function Tray({
   /** How wide (or tall) the tile row may be. Defaults to the portrait
    * panel's own width. */
   panelExtent?: number;
+  /** The figure's name under each tile. Off only where the panel is too
+   * short to give it a line without shrinking the figure (the rules page's
+   * small lesson board, which hands out one figure at a time). */
+  showNames?: boolean;
 }) {
   const l10n = useL10n();
   const [dragging, setDragging] = useState<PieceType | null>(null);
@@ -199,7 +237,14 @@ export function Tray({
   // one (a tablet, a desktop window) the insets grew until the "width" went
   // to zero or below — tiles collapsed, and the coach mark's arrow pointed at
   // a slot that was no longer there.
-  const tileExtent = trayTileExtent(snapshot.levelTrayCount, panelWidth);
+  const names = showNames && !vertical;
+  const rowHeight = trayRowHeight(height);
+  const tileExtent = trayTileExtent(
+    snapshot.levelTrayCount,
+    panelWidth,
+    vertical ? undefined : rowHeight,
+    names,
+  );
 
   // What the figure in hand is and how it strikes: the one line worth
   // reading while a figure is in the air. Deliberately not a long-press
@@ -207,6 +252,9 @@ export function Tray({
   const selected = snapshot.tray.find((t) => t.id === snapshot.sel);
   const inHand = dragging ?? selected?.type ?? null;
   const showHint = snapshot.tray.length > 0 && snapshot.pieces.length === 0;
+  // Every figure is out and the level is still unsolved: the way on is to
+  // bring one back, and nothing else on screen says so.
+  const showDragBack = snapshot.tray.length === 0 && !snapshot.solved;
 
   return (
     <div
@@ -253,7 +301,9 @@ export function Tray({
           ? `${pieceName(l10n, inHand).toUpperCase()} · ${pieceAttackSummary(l10n, inHand).toUpperCase()}`
           : showHint
             ? l10n.trayDragToBoard.toUpperCase()
-            : l10n.trayPieces.toUpperCase()}
+            : showDragBack
+              ? l10n.trayDragBack.toUpperCase()
+              : l10n.trayPieces.toUpperCase()}
       </div>
       <div style={{ height: 7 }} />
       <div
@@ -268,90 +318,109 @@ export function Tray({
           justifyContent: "center",
         }}
       >
-        {snapshot.tray.length === 0 ? (
-          snapshot.solved ? null : (
-            // The panel used to go blank with "0 ОСТАЛОСЬ" at exactly the
-            // moment a player who has run out of figures without solving the
-            // level needs to know what to do. Dragging one back is the answer,
-            // and nothing had ever mentioned it existed.
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                lineHeight: 1.35,
-                textAlign: "center",
-                color: "rgba(255,231,178,0.62)",
-                fontFamily: "var(--font-body)",
-              }}
-            >
-              {l10n.trayAllPlaced}
-            </div>
-          )
-        ) : (
-          // Not before the row is measured: placed at a width of 0 first,
-          // the tiles would visibly glide in from the left on every mount.
-          rowExtent > 0 &&
-          snapshot.tray.map((item, index) => {
-            const count = snapshot.tray.length;
+        {/* Every figure the level hands out keeps its own slot, named, for
+            the whole level; a placed one leaves a tick behind instead of the
+            row closing up. The row used to shrink as figures left, so the
+            tray only ever showed what was still to do — never how far along
+            the player was, and never what the remaining figures were called.
+            Not before the row is measured: placed at a width of 0 first, the
+            tiles would visibly jump on every mount. */}
+        {rowExtent > 0 &&
+          engine.level.tray.map((levelItem, index) => {
+            const count = snapshot.levelTrayCount;
             const start = (rowExtent - (count * tileExtent + TILE_GAP * (count - 1))) / 2;
             const offset = start + index * (tileExtent + TILE_GAP);
-            const returned = returns.current.get(item.id) ?? 0;
-            const landedSeq = drag.landed?.id === item.id ? drag.landed.seq : 0;
+            const item = snapshot.tray.find((t) => t.id === levelItem.id);
+            const returned = returns.current.get(levelItem.id) ?? 0;
+            const landedSeq = drag.landed?.id === levelItem.id ? drag.landed.seq : 0;
             const springs = returned > 0 || landedSeq > 0;
-            const rises = !springs && (opening.current?.ids.has(item.id) ?? false);
+            const rises = !springs && (opening.current?.ids.has(levelItem.id) ?? false);
+            const tileHeight = vertical ? tileExtent : names ? tileExtent : rowHeight;
             return (
               <div
-                key={item.id}
-                className="rc-motion"
+                key={levelItem.id}
+                data-tray-slot={levelItem.id}
                 style={{
                   position: "absolute",
                   ...(vertical
                     ? { top: offset, left: 0, right: 0, height: tileExtent }
                     : { left: offset, top: 0, bottom: 0, width: tileExtent }),
-                  transition: vertical
-                    ? "top 260ms cubic-bezier(0.33,1,0.68,1)"
-                    : "left 260ms cubic-bezier(0.33,1,0.68,1)",
-                  // Empty while its figure flies home, so the figure is not
-                  // in two places at once.
-                  opacity: drag.flyingId === item.id ? 0 : 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <div
-                  className={rises ? "rc-tile-rise" : undefined}
                   style={{
                     width: "100%",
-                    height: "100%",
-                    animationDelay: rises ? `${opening.current?.delays.get(item.id) ?? 140}ms` : undefined,
+                    height: tileHeight,
+                    flex: "none",
+                    // Empty while its figure flies home, so the figure is not
+                    // in two places at once.
+                    opacity: drag.flyingId === levelItem.id ? 0 : 1,
                   }}
                 >
-                  <div
-                    key={`pop-${returned}-${landedSeq}`}
-                    className={springs ? "rc-pop" : undefined}
-                    style={{ width: "100%", height: "100%" }}
-                  >
-                    <TrayItemTile
-                      type={item.type}
-                      selected={item.id === snapshot.sel}
-                      onClick={() => engine.tapTray(item.id)}
-                      onPointerDown={(e) => {
-                        setDragging(item.type);
-                        const clear = () => {
-                          setDragging(null);
-                          window.removeEventListener("pointerup", clear);
-                        };
-                        window.addEventListener("pointerup", clear);
-                        drag.startFromTray(item, e);
+                  {item == null ? (
+                    <PlacedSlotTile />
+                  ) : (
+                    <div
+                      className={rises ? "rc-tile-rise" : undefined}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        animationDelay: rises ? `${opening.current?.delays.get(item.id) ?? 140}ms` : undefined,
                       }}
-                      vertical={vertical}
-                      extent={tileExtent}
-                      height={vertical ? tileExtent : trayRowHeight(height)}
-                    />
-                  </div>
+                    >
+                      <div
+                        key={`pop-${returned}-${landedSeq}`}
+                        className={springs ? "rc-pop" : undefined}
+                        style={{ width: "100%", height: "100%" }}
+                      >
+                        <TrayItemTile
+                          type={item.type}
+                          selected={item.id === snapshot.sel}
+                          onClick={() => engine.tapTray(item.id)}
+                          onPointerDown={(e) => {
+                            setDragging(item.type);
+                            const clear = () => {
+                              setDragging(null);
+                              window.removeEventListener("pointerup", clear);
+                            };
+                            window.addEventListener("pointerup", clear);
+                            drag.startFromTray(item, e);
+                          }}
+                          vertical={vertical}
+                          extent={tileExtent}
+                          height={tileHeight}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
+                {names && (
+                  <div
+                    style={{
+                      marginTop: SLOT_LABEL_GAP,
+                      height: SLOT_LABEL_HEIGHT,
+                      lineHeight: `${SLOT_LABEL_HEIGHT}px`,
+                      maxWidth: "100%",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "clip",
+                      fontSize: 12,
+                      fontWeight: 800,
+                      letterSpacing: 0.2,
+                      fontFamily: "var(--font-body)",
+                      color: item == null ? "rgba(167,183,209,0.5)" : "#e9eef9",
+                    }}
+                  >
+                    {pieceName(l10n, levelItem.type)}
+                  </div>
+                )}
               </div>
             );
-          })
-        )}
+          })}
       </div>
     </div>
   );

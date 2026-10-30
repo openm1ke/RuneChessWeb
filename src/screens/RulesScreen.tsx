@@ -241,14 +241,16 @@ function NavButton({
         borderRadius: 14,
         padding: '0 10px',
         fontFamily: 'var(--font-display)',
-        fontSize: 12.5,
-        letterSpacing: 0.5,
+        fontSize: 13,
+        letterSpacing: 0.8,
         whiteSpace: 'nowrap',
         cursor: disabled ? 'default' : 'pointer',
-        opacity: disabled ? 0.45 : 1,
-        border: quiet ? '1px solid rgba(215,164,55,0.5)' : 'none',
-        background: quiet ? 'transparent' : lit ? '#ffd779' : 'rgba(255,215,121,0.24)',
-        color: quiet ? '#e7eeff' : lit ? '#162350' : '#e7eeff',
+        // The game's two kinds of button, as in the app's `RuneButtons`:
+        // gold filled for the thing the screen asks for, a gold frame for
+        // the rest — and a paler version of each when disabled, never grey.
+        border: lit && !quiet ? 'none' : `1.5px solid ${disabled ? 'rgba(207,162,68,0.3)' : 'rgba(207,162,68,0.86)'}`,
+        background: lit && !quiet ? '#ffd779' : disabled ? 'rgba(27,46,99,0.33)' : 'rgba(27,46,99,0.67)',
+        color: lit && !quiet ? '#162350' : disabled ? 'rgba(255,233,196,0.4)' : '#ffe9c4',
         transition: 'background 200ms, color 200ms',
       }}
     >

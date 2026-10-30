@@ -67,7 +67,7 @@ export function AchievementsScreen(props: AchievementsProps) {
     <>
       <div
         style={{
-          fontSize: 11,
+          fontSize: 12.5,
           fontWeight: 900,
           letterSpacing: 1,
           color: 'var(--gold)',
@@ -353,7 +353,7 @@ export function AchievementProgressBar({ progress }: { progress: AchievementProg
           minWidth: 34,
           textAlign: 'right',
           flexShrink: 0,
-          fontSize: 10.5,
+          fontSize: 12,
           fontFamily: 'var(--font-display)',
           color: 'var(--gold)',
           whiteSpace: 'nowrap',
@@ -423,7 +423,7 @@ function AchievementDetailDialog({
         </h2>
         <div
           style={{
-            fontSize: 11,
+            fontSize: 12.5,
             fontWeight: 900,
             letterSpacing: 0.8,
             color: unlocked ? '#3ee0a6' : 'rgba(180,190,212,0.66)',

@@ -11,10 +11,12 @@ import type { LessonScript } from '../../data/howToPlayLessons';
 /** The composition a lesson is laid out on, in design units: a board and a
  * tray, with none of the game screen's furniture around them. */
 const DESIGN_WIDTH = 430;
-const DESIGN_HEIGHT = 490;
+const DESIGN_HEIGHT = 520;
 /** How much of the set's painting is cropped off the top — the room above
  * the table is already behind this card. */
-const ART_TOP = 206;
+// 226 rather than 206: the board sits higher so the tray under it can be
+// tall enough for a full-size figure with its name.
+const ART_TOP = 226;
 
 /**
  * One rules-screen lesson, played on the real board.
@@ -144,8 +146,8 @@ export function LessonBoard({
           trayRef={trayRef}
           left={62}
           right={62}
-          bottom={16}
-          height={100}
+          bottom={14}
+          height={132}
           panelExtent={DESIGN_WIDTH - 124}
         />
       </div>

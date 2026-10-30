@@ -261,3 +261,35 @@ html.rc-ratio-capped #root {
   width: min(100vw, calc(2 * (100vh - var(--vk-inset-top, 0px) - var(--vk-inset-bottom, 0px))));
   transform: translateX(-50%);
 }
+
+/* The square a lesson asks for, lit: a breathing fill and a soft halo
+   around a bright edge. See TutorialCoachmark. */
+@keyframes rc-target-breathe {
+  from { fill-opacity: 0.22; }
+  to { fill-opacity: 0.4; }
+}
+.rc-target-cell {
+  stroke-opacity: 0.95;
+  filter: drop-shadow(0 0 6px rgba(112, 233, 243, 0.85));
+  animation: rc-target-breathe 1.15s ease-in-out infinite alternate;
+}
+
+/* A gold ring breaking outward from each rune once, when the level is
+   solved — in the beat before the result card arrives. See Board. */
+@keyframes rc-solved-flare {
+  from { transform: scale(0.35); opacity: 0.95; border-width: 7px; }
+  to { transform: scale(1); opacity: 0; border-width: 1px; }
+}
+.rc-solved-flare {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 241, 196, 0.9);
+  box-shadow: 0 0 10px rgba(255, 215, 121, 0.7);
+  animation: rc-solved-flare 650ms cubic-bezier(0.33, 1, 0.68, 1) both;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rc-target-cell { animation: none; fill-opacity: 0.32; }
+  .rc-solved-flare { display: none; }
+}

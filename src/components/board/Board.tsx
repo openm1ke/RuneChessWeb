@@ -202,11 +202,15 @@ function BeaconCoin({
   done,
   cellPx,
   exiting = false,
+  solved = false,
 }: {
   beacon: Cell & { target: number };
   done: boolean;
   cellPx: number;
   exiting?: boolean;
+  /** The whole level is solved: every rune flares once, in the moment the
+   * board is left alone before the result card comes. */
+  solved?: boolean;
 }) {
   const distance = rippleDistance(beacon.c, beacon.r, cellPx);
   const riseDelay = 90 + Math.round(180 * distance);
@@ -239,6 +243,7 @@ function BeaconCoin({
       <div className="rc-coin-rise" style={{ position: 'absolute', inset: 0, animationDelay: `${riseDelay}ms` }}>
       <span className="rc-coin-glint" style={{ animationDelay: `${riseDelay + 160}ms` }} />
       {done && <ActivatedBeaconAura />}
+      {solved && <span className="rc-solved-flare" style={{ inset: -size * 0.75 }} />}
       <div
         style={{
           position: 'relative',
@@ -451,7 +456,7 @@ function PieceOnBoard({
   );
 }
 
-function HintGhost({
+export function HintGhost({
   item,
   cell,
   cellPx,
@@ -629,6 +634,7 @@ export function Board({
             exiting={exiting}
             beacon={beacon}
             done={(snapshot.counts[cellKey(beacon.c, beacon.r)] ?? 0) === beacon.target}
+            solved={snapshot.solved}
             cellPx={snapshot.cellPx}
           />
         ))}

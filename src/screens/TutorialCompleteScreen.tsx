@@ -141,7 +141,7 @@ function AchievementRevealBlock({
   const l10n = useL10n();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-      <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: 1.3, color: '#ffd678' }}>
+      <div style={{ fontFamily: 'var(--font-display)', fontSize: 12, letterSpacing: 1.3, color: '#ffd678' }}>
         {l10n.resultAchievementUnlocked.toUpperCase()}
       </div>
       <AchievementReveal achievement={achievement} size={size} animate={animate} onRevealed={onRevealed} />

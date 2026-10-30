@@ -42,6 +42,10 @@ export interface DozorSnapshot {
    * this rather than from what is left, so they hold one size for the whole
    * level — see `Tray`. */
   levelTrayCount: number;
+  /** The figures the level started with, in the tray's order. Each keeps its
+   * own slot in the tray for the whole level, so where a figure's tile is
+   * depends on this, not on what is still left. */
+  levelTrayIds: readonly string[];
   /** See `DozorEngine.lessonPhase`. */
   lessonPhase: LessonPhase;
   /** See `DozorEngine.resetCount`. */
@@ -779,6 +783,7 @@ export class DozorEngine {
       occ,
       beaconKey,
       levelTrayCount: this.level.tray.length,
+      levelTrayIds: this.level.tray.map((item) => item.id),
       lessonPhase: this.lessonPhase,
       resetCount: this.resetCount,
       previewCell: previewPiece == null ? null : { c: previewPiece.c, r: previewPiece.r },

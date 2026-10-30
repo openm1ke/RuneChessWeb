@@ -238,11 +238,13 @@ export function BottomUtilityControls({
     // run under the reset control.
     <div style={{ position: 'absolute', left: 20, bottom: 122, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
       {showSkip && onSkip && (
-        <RoundControl onClick={onSkip} onLongPress={onResetOnboarding} size={34} label={l10n.sceneSkipDev}>
+        <RoundControl onClick={onSkip} onLongPress={onResetOnboarding} size={40} label={l10n.sceneSkipDev}>
           ⏭
         </RoundControl>
       )}
-      <RoundControl onClick={onReset} size={38} label={l10n.sceneRestartLevel}>
+      {/* 48 design units, about 44px on a phone: the 38 it was drawn at
+          came to 35px, under both platforms' minimum touch target. */}
+      <RoundControl onClick={onReset} size={48} label={l10n.sceneRestartLevel}>
         ↻
       </RoundControl>
     </div>

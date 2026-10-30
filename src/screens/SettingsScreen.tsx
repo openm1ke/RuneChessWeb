@@ -4,6 +4,7 @@ import { artForCanvas } from '../game/cosmeticSkins';
 import { RoundControl } from '../components/shared/RoundControl';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { formatHourWindow } from '../services/dailyReminderMessages';
+import { canVibrate } from '../services/musicService';
 import { BUILT_WITHOUT_SITE_SERVICES } from '../buildTarget';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 import { LANGUAGES, useL10n, type Language } from '../l10n/l10nContext';
@@ -14,7 +15,9 @@ interface SettingsProps {
   onMusicEnabledChanged: (enabled: boolean) => void;
   onVolumeChanged: (volume: number) => void;
   soundEffectsEnabled: boolean;
+  hapticsEnabled: boolean;
   onSoundEffectsEnabledChanged: (enabled: boolean) => void;
+  onHapticsEnabledChanged: (enabled: boolean) => void;
   onProgressReset: () => void;
   onBack: () => void;
   /** Reminders are an independent local consent from music/sound — see
@@ -67,7 +70,9 @@ function PortraitSettingsScene({
   onMusicEnabledChanged,
   onVolumeChanged,
   soundEffectsEnabled,
+  hapticsEnabled,
   onSoundEffectsEnabledChanged,
+  onHapticsEnabledChanged,
   onBack,
   onResetRequested,
   dailyReminderEnabled,
@@ -126,7 +131,9 @@ function PortraitSettingsScene({
             onMusicEnabledChanged={onMusicEnabledChanged}
             onVolumeChanged={onVolumeChanged}
             soundEffectsEnabled={soundEffectsEnabled}
+            hapticsEnabled={hapticsEnabled}
             onSoundEffectsEnabledChanged={onSoundEffectsEnabledChanged}
+            onHapticsEnabledChanged={onHapticsEnabledChanged}
           />
           {/* The Playgama and VK builds have no reminders (a catalogue's
               frame is no place for browser notifications) and no analytics
@@ -178,7 +185,9 @@ function LandscapeSettingsScene({
   onMusicEnabledChanged,
   onVolumeChanged,
   soundEffectsEnabled,
+  hapticsEnabled,
   onSoundEffectsEnabledChanged,
+  onHapticsEnabledChanged,
   onBack,
   onResetRequested,
   dailyReminderEnabled,
@@ -236,7 +245,9 @@ function LandscapeSettingsScene({
             onMusicEnabledChanged={onMusicEnabledChanged}
             onVolumeChanged={onVolumeChanged}
             soundEffectsEnabled={soundEffectsEnabled}
+            hapticsEnabled={hapticsEnabled}
             onSoundEffectsEnabledChanged={onSoundEffectsEnabledChanged}
+            onHapticsEnabledChanged={onHapticsEnabledChanged}
           />
           {/* The Playgama and VK builds have no reminders (a catalogue's
               frame is no place for browser notifications) and no analytics
@@ -289,10 +300,12 @@ function MusicSettingsCard({
   onMusicEnabledChanged,
   onVolumeChanged,
   soundEffectsEnabled,
+  hapticsEnabled,
   onSoundEffectsEnabledChanged,
+  onHapticsEnabledChanged,
 }: Pick<
   SettingsProps,
-  'musicEnabled' | 'musicVolume' | 'onMusicEnabledChanged' | 'onVolumeChanged' | 'soundEffectsEnabled' | 'onSoundEffectsEnabledChanged'
+  'musicEnabled' | 'musicVolume' | 'onMusicEnabledChanged' | 'onVolumeChanged' | 'soundEffectsEnabled' | 'onSoundEffectsEnabledChanged' | 'hapticsEnabled' | 'onHapticsEnabledChanged'
 >) {
   const l10n = useL10n();
   return (
@@ -382,6 +395,40 @@ function MusicSettingsCard({
         </div>
         <RuneToggle value={soundEffectsEnabled} onChange={onSoundEffectsEnabledChanged} label={l10n.settingsSoundEffectsEnable} />
       </div>
+      {/* Only where the browser can vibrate at all (Android's; Safari
+          cannot): a switch that changes nothing is a lie. */}
+      {canVibrate() && (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onHapticsEnabledChanged(!hapticsEnabled)}
+          style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', marginTop: 18 }}
+        >
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: '50%',
+              background: 'rgba(18,32,68,0.85)',
+              border: '1.7px solid rgba(216,165,55,0.85)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--gold)',
+              fontSize: 18,
+            }}
+          >
+            📳
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: 1.1, color: 'var(--gold-bright)' }}>
+              {l10n.settingsHaptics}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#c6d3ed' }}>{l10n.settingsHapticsHint}</div>
+          </div>
+          <RuneToggle value={hapticsEnabled} onChange={onHapticsEnabledChanged} label={l10n.settingsHapticsEnable} />
+        </div>
+      )}
     </div>
   );
 }

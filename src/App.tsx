@@ -2,7 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { DozorEngine, FIRST_SCORED_LEVEL_INDEX } from './game/dozorEngine';
 import { campaignLevels, MAIN_CAMPAIGN_LEVEL_COUNT } from './data/campaignLevels';
 import { ProgressRepository } from './services/progressRepository';
-import { MusicService, setSoundEffectsEnabled, playAchievementReveal } from './services/musicService';
+import {
+  MusicService,
+  setSoundEffectsEnabled,
+  setHapticsEnabled,
+  hapticPreview,
+  hapticSolved,
+  playAchievementReveal,
+} from './services/musicService';
 import { AnalyticsService, type AchievementUnlockTrigger, type LevelEntrySource } from './services/analyticsService';
 import { RewardedAdsService } from './services/rewardedAdsService';
 import type { RewardedAds } from './services/rewardedAdsService';
@@ -190,10 +197,17 @@ export default function App() {
   const [dailyDoubledDates, setDailyDoubledDates] = useState<Set<string>>(() => new Set());
   const [levelStars, setLevelStars] = useState<Map<number, number>>(new Map());
   const [tutorialComplete, setTutorialComplete] = useState(false);
+  /** Saved progress has been read. Until then the menu shows nothing locked:
+   * a returning player must not see the daily challenge flash a padlock
+   * while their save loads. */
+  const [progressLoaded, setProgressLoaded] = useState(false);
+  /** Shown when the padlocked daily challenge is tapped. */
+  const [dailyLockedNotice, setDailyLockedNotice] = useState<string | null>(null);
   const [highestLevel, setHighestLevel] = useState(0);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [musicVolume, setMusicVolume] = useState(0.6);
   const [soundEffectsEnabled, setSoundEffectsEnabledState] = useState(true);
+  const [hapticsEnabled, setHapticsEnabledState] = useState(true);
   const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(null);
   const [achievementUnlockedAt, setAchievementUnlockedAt] = useState<Map<string, string>>(new Map());
   const [achievementProgress, setAchievementProgress] = useState<AchievementProgressState>(initialAchievementProgress);
@@ -359,6 +373,7 @@ export default function App() {
       ]),
     );
     setTutorialComplete(snapshot.tutorialComplete);
+    setProgressLoaded(true);
     // Playgama: a first-time player lands on level 1 itself, not on the
     // menu. Most of them came from an ad for the game, and three in four
     // were leaving within thirty seconds of a menu, a button and then the
@@ -381,6 +396,8 @@ export default function App() {
     setMusicVolume(snapshot.musicVolume);
     setSoundEffectsEnabledState(snapshot.soundEffectsEnabled);
     setSoundEffectsEnabled(snapshot.soundEffectsEnabled);
+    setHapticsEnabledState(snapshot.hapticsEnabled);
+    setHapticsEnabled(snapshot.hapticsEnabled);
     setHintWallet(refilledHintWallet(progressRepository.loadHintWallet(Date.now()), Date.now()));
     setAnalyticsConsent(snapshot.analyticsConsent);
     if (snapshot.analyticsConsent) analyticsService.enable();
@@ -396,6 +413,7 @@ export default function App() {
     rescheduleDailyReminderWatch();
 
     engine.onDailyChallengeSolved = (result) => {
+      hapticSolved();
       const date = dailyChallengeDateRef.current;
       if (date == null) return;
       const key = dailyChallengeKey(date);
@@ -422,6 +440,7 @@ export default function App() {
     };
 
     engine.onLevelSolved = (levelIndex: number, result: LevelAttemptResult) => {
+      hapticSolved();
       analyticsService.levelCompleted(
         levelIndex,
         levelIndex < FIRST_SCORED_LEVEL_INDEX,
@@ -1077,6 +1096,14 @@ export default function App() {
     }
   };
 
+  const setHapticsEnabledAndSave = (enabled: boolean) => {
+    setHapticsEnabledState(enabled);
+    setHapticsEnabled(enabled);
+    // Felt at once, so the switch answers the way it is meant to.
+    if (enabled) hapticPreview();
+    progressRepository.saveHapticsEnabled(enabled);
+  };
+
   const setSoundEffectsEnabledAndSave = (enabled: boolean) => {
     setSoundEffectsEnabledState(enabled);
     setSoundEffectsEnabled(enabled);
@@ -1229,6 +1256,10 @@ export default function App() {
   // Everything that draws the board reads the set from here, so a change
   // repaints the board, the tray, the figures and the drag sprite at once —
   // none of the components in between have to know a set exists.
+  // The daily challenge waits for the lessons — see MenuScreen's
+  // `dailyChallengeLocked`.
+  const dailyLocked = progressLoaded && !tutorialComplete;
+
   const withConsent = (content: React.ReactNode) => (
     <L10nContext.Provider value={stringsFor(language)}>
     <CosmeticSkinContext.Provider value={skin}>
@@ -1344,6 +1375,8 @@ export default function App() {
           onVolumeChanged={setMusicVolumeAndSave}
           soundEffectsEnabled={soundEffectsEnabled}
           onSoundEffectsEnabledChanged={setSoundEffectsEnabledAndSave}
+          hapticsEnabled={hapticsEnabled}
+          onHapticsEnabledChanged={setHapticsEnabledAndSave}
           onProgressReset={resetProgress}
           onBack={goToMenu}
           dailyReminderEnabled={dailyReminderEnabled}
@@ -1442,6 +1475,7 @@ export default function App() {
     case 'menu':
     default:
       return withConsent(
+        <>
         <MenuScreen
           onPlay={() => goToGame()}
           onLevels={openLevelSelect}
@@ -1450,7 +1484,10 @@ export default function App() {
           currentLevel={highestLevel + 1}
           onRulesOpened={(proceed) => analyticsService.rulesOpened(proceed)}
           onRules={() => setScreen('rules')}
-          onDailyChallenge={openDailyChallenge}
+          onDailyChallenge={
+            dailyLocked ? () => setDailyLockedNotice(l10n.menuDailyLockedNotice) : openDailyChallenge
+          }
+          dailyChallengeLocked={dailyLocked}
           dailyChallengeSolvedToday={dailyChallengeHistory.has(dailyChallengeKey(new Date()))}
           // The purse, and what it was earned from: a purchase moves the
           // first and never the second — see `starWallet.ts`.
@@ -1462,6 +1499,10 @@ export default function App() {
           starsAvailable={starsAvailable(wallet)}
           starsEarned={wallet.earned}
         />
+        {dailyLockedNotice && (
+          <Toast message={dailyLockedNotice} onDone={() => setDailyLockedNotice(null)} />
+        )}
+        </>
       );
   }
 }

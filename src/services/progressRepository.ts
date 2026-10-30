@@ -20,6 +20,7 @@ export interface ProgressSnapshot {
   musicEnabled: boolean;
   musicVolume: number;
   soundEffectsEnabled: boolean;
+  hapticsEnabled: boolean;
   analyticsConsent: boolean | null;
   achievementUnlockedAt: Map<string, string>;
   achievementProgress: AchievementProgressState;
@@ -39,6 +40,7 @@ const KEYS = {
   musicEnabled: 'dozor.music_enabled',
   musicVolume: 'dozor.music_volume',
   soundEffectsEnabled: 'dozor.sound_effects_enabled',
+  hapticsEnabled: 'dozor.haptics_enabled',
   levelStars: 'dozor.level_stars_v1',
   analyticsConsent: 'runechess.analytics_consent_v1',
   achievementUnlockedAt: 'dozor.achievement_unlocked_at_v1',
@@ -183,6 +185,7 @@ export class ProgressRepository {
     const storedMusicVolume = readJson<number>(KEYS.musicVolume) ?? 0.6;
     const musicVolume = Math.min(1, Math.max(0, storedMusicVolume));
     const soundEffectsEnabled = readJson<boolean>(KEYS.soundEffectsEnabled) ?? true;
+    const hapticsEnabled = readJson<boolean>(KEYS.hapticsEnabled) ?? true;
     const storedAnalyticsConsent = readJson<unknown>(KEYS.analyticsConsent);
     const analyticsConsent = typeof storedAnalyticsConsent === 'boolean' ? storedAnalyticsConsent : null;
 
@@ -262,6 +265,7 @@ export class ProgressRepository {
       musicEnabled,
       musicVolume,
       soundEffectsEnabled,
+      hapticsEnabled,
       analyticsConsent,
       achievementUnlockedAt,
       achievementProgress,
@@ -393,6 +397,10 @@ export class ProgressRepository {
 
   saveSoundEffectsEnabled(enabled: boolean): void {
     writeJson(KEYS.soundEffectsEnabled, enabled);
+  }
+
+  saveHapticsEnabled(enabled: boolean): void {
+    writeJson(KEYS.hapticsEnabled, enabled);
   }
 
   /** Clears level completion and tutorial state while keeping music and privacy choices. */

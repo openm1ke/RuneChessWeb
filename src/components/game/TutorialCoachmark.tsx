@@ -10,6 +10,7 @@ import {
   trayTileCenter,
 } from '../tray/trayGeometry';
 import { BoardPerspective, BOARD_LEFT, BOARD_TOP } from '../board/boardPerspective';
+import { HintGhost } from '../board/Board';
 
 /** `ready` and `reset` used to be here too. `reset` was never returned at
  * all, and `ready` could only appear behind the level-result overlay, which
@@ -171,10 +172,9 @@ export function TutorialCoachmark({
    * once they became fixed-size and centred, the arrow started at a point
    * beside the figure instead of on it. */
   function trayPoint(trayItem: { id: string } | null): { x: number; y: number } {
-    const index = trayItem == null ? 0 : snapshot.tray.findIndex((t) => t.id === trayItem.id);
+    const slot = trayItem == null ? 0 : snapshot.levelTrayIds.indexOf(trayItem.id);
     return trayTileCenter({
-      index,
-      visibleCount: snapshot.tray.length,
+      slot,
       levelTrayCount: snapshot.levelTrayCount,
       panel: tray,
     });
@@ -205,8 +205,54 @@ export function TutorialCoachmark({
     arrow = { from, to };
   }
 
+  // The square the card calls "светящаяся" has to actually glow: the
+  // arrow's small dot was all there was, and new players looked for a lit
+  // square that was not there. On the place steps the figure itself waits
+  // on it as a ghost too — the hint's ghost, so a player who later taps the
+  // lamp sees the same picture.
+  const target =
+    (focus === 'place' || focus === 'trial') && snapshot.tray.length > 0
+      ? focus === 'trial'
+        ? snapshot.pieces.length === 0
+          ? { c: 0, r: 1 }
+          : { c: 4, r: 2 }
+        : snapshot.nextSolutionCell
+      : null;
+  const ghost = focus === 'place' && snapshot.hintItem == null ? snapshot.nextSolutionItem : null;
+
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+      {target && (
+        <div
+          style={{
+            position: 'absolute',
+            left: board.left,
+            top: board.top,
+            width: BoardPerspective.width,
+            height: BoardPerspective.height,
+            transform: `scale(${board.scaleX}, ${board.scaleY})`,
+            transformOrigin: 'top left',
+          }}
+        >
+          <svg
+            width={BoardPerspective.width}
+            height={BoardPerspective.height}
+            style={{ position: 'absolute', inset: 0, overflow: 'visible' }}
+          >
+            <polygon
+              className="rc-target-cell"
+              points={BoardPerspective.cellCorners(target.c, target.r, snapshot.boardSize)
+                .map((p) => `${p.x},${p.y}`)
+                .join(' ')}
+              fill={accent}
+              stroke={accent}
+              strokeWidth={2.6}
+              strokeLinejoin="round"
+            />
+          </svg>
+          {ghost && <HintGhost item={ghost} cell={target} cellPx={snapshot.cellPx} />}
+        </div>
+      )}
       {arrow && <TutorialArrow from={arrow.from} to={arrow.to} color={accent} />}
       <div
         style={{

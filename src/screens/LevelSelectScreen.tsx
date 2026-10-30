@@ -34,14 +34,16 @@ export function LevelSelectScreen(props: LevelSelectProps) {
         // More tiles side by side, never bigger ones: a level tile is a tap
         // target at the size it was drawn. The panel takes what width it can
         // and fits whole tiles into it at their own pitch.
-        const tilePitch = 113;
+        // A phone gets four columns: three left a narrow panel in wide
+        // margins, and every campaign twice as long to scroll through.
+        const tilePitch = 88;
         const panelPadding = 32;
         const columns = Math.min(
-          6,
-          Math.max(3, Math.floor((canvas.width - 92 - panelPadding + 16) / tilePitch)),
+          8,
+          Math.max(4, Math.floor((canvas.width - 36 - panelPadding + 16) / tilePitch)),
         );
         const panelWidth = columns * tilePitch - 16 + panelPadding;
-        const panelInset = Math.max(46, (canvas.width - panelWidth) / 2);
+        const panelInset = Math.max(18, (canvas.width - panelWidth) / 2);
         return (
       <div
         style={{

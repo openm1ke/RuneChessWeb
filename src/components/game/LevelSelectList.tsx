@@ -311,7 +311,7 @@ function LevelTile({
         color: unlocked ? 'var(--gold-bright)' : 'rgba(109,119,144,0.44)',
       }}
     >
-      <span style={{ fontSize: 27, fontWeight: 900, lineHeight: 1 }}>{level}</span>
+      <span style={{ fontSize: 25, fontWeight: 900, lineHeight: 1 }}>{level}</span>
       {scored && (
         <div style={{ marginTop: 3, height: 9 }}>
           {/* A locked level keeps the row's height so numbers stay aligned
@@ -325,9 +325,9 @@ function LevelTile({
         <span
           style={{
             position: 'absolute',
-            right: 8,
-            bottom: 8,
-            fontSize: 14,
+            right: 5,
+            bottom: 4,
+            fontSize: 12,
             color: unlocked ? 'var(--gold)' : 'rgba(109,119,144,0.44)',
           }}
         >

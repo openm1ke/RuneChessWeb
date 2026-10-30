@@ -505,12 +505,16 @@ export function GameScreen({
           vertical={false}
           panelExtent={trayWidth}
         />
-        <BottomUtilityControls
-          onReset={() => setShowResetConfirm(true)}
-          onSkip={onSkipLevel}
-          onResetOnboarding={onResetOnboarding}
-          showSkip={isDev}
-        />
+        {/* Not under the result card: it covered half the button, and the
+            card carries its own "play again". */}
+        {!snapshot.solved && (
+          <BottomUtilityControls
+            onReset={() => setShowResetConfirm(true)}
+            onSkip={onSkipLevel}
+            onResetOnboarding={onResetOnboarding}
+            showSkip={isDev}
+          />
+        )}
         {renderOverlays({
           isLandscape: true,
           canvasWidth: width,
@@ -564,12 +568,16 @@ export function GameScreen({
           left={trayPortraitInset(canvas.width)}
           right={trayPortraitInset(canvas.width)}
         />
-        <BottomUtilityControls
-          onReset={() => setShowResetConfirm(true)}
-          onSkip={onSkipLevel}
-          onResetOnboarding={onResetOnboarding}
-          showSkip={isDev}
-        />
+        {/* Not under the result card: it covered half the button, and the
+            card carries its own "play again". */}
+        {!snapshot.solved && (
+          <BottomUtilityControls
+            onReset={() => setShowResetConfirm(true)}
+            onSkip={onSkipLevel}
+            onResetOnboarding={onResetOnboarding}
+            showSkip={isDev}
+          />
+        )}
         {renderOverlays(portraitCoachmarkLayout(canvas))}
       </div>
       )}

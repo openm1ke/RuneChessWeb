@@ -359,6 +359,39 @@ export function playPieceLift(): void {
 
 export function playPieceSet(): void {
   playSound(PIECE_SET_TRACK, 0.42);
+  vibrate(12);
+}
+
+/** Vibration, independent of every sound switch: a player who silences the
+ * game on a bus may still want to feel it. Only where the browser can —
+ * Android's; Safari has no `navigator.vibrate` — see `canVibrate`. */
+let hapticsEnabled = true;
+
+export function setHapticsEnabled(enabled: boolean): void {
+  hapticsEnabled = enabled;
+}
+
+export function canVibrate(): boolean {
+  return typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+}
+
+function vibrate(pattern: number | number[]): void {
+  if (!hapticsEnabled || effectsSilenced || !canVibrate()) return;
+  try {
+    navigator.vibrate(pattern);
+  } catch {
+    // A refused vibration is not worth a word.
+  }
+}
+
+/** The strongest one, for a solved level. */
+export function hapticSolved(): void {
+  vibrate([28, 50, 18]);
+}
+
+/** Felt once, when the switch is turned on. */
+export function hapticPreview(): void {
+  vibrate(12);
 }
 
 /** Two halves of a restrained desktop-style mouse click. They are separate

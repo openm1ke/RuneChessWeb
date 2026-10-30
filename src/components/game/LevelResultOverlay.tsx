@@ -9,6 +9,9 @@ import { playChime, playResultComplete, playResultContinue } from '../../service
 
 
 /** Shown the instant every beacon first reaches its exact target. */
+/** How long the solved board is left alone before the card comes. */
+const BOARD_BEAT_MS = 550;
+
 export function LevelResultOverlay({
   result,
   onContinue,
@@ -61,9 +64,10 @@ export function LevelResultOverlay({
   const startRef = useRef<number | null>(null);
   const duration = scored ? 1300 : 550;
 
-  // Plays once, immediately on mount — i.e. the instant the level is solved.
-  useEffect(() => playResultComplete(), []);
-
+  // A beat on the solved board before the card covers it: the card used to
+  // arrive the instant the last figure landed, so the lit runes — the thing
+  // the player just did — were never seen on their own. The sound comes
+  // with the card.
   useEffect(() => {
     let raf = 0;
     const tick = (time: number) => {
@@ -72,8 +76,14 @@ export function LevelResultOverlay({
       setT(progress);
       if (progress < 1) raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const beat = window.setTimeout(() => {
+      playResultComplete();
+      raf = requestAnimationFrame(tick);
+    }, BOARD_BEAT_MS);
+    return () => {
+      window.clearTimeout(beat);
+      cancelAnimationFrame(raf);
+    };
   }, [duration]);
 
   useEffect(() => {

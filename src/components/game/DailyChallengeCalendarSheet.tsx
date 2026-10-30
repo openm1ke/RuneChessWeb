@@ -124,7 +124,7 @@ export function DailyChallengeCalendarSheet({
         <div style={{ height: 12 }} />
         <FreezeStatus available={stats.freezeAvailable} streak={stats.currentStreak} />
         <div style={{ height: 10 }} />
-        <div style={{ fontSize: 11.5, fontWeight: 700, color: MUTED }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: MUTED }}>
           {l10n.calendarNextChallengeIn(formatDurationShort(l10n, leftToday))}
         </div>
         <div style={{ height: 14 }} />
@@ -142,7 +142,7 @@ export function DailyChallengeCalendarSheet({
         <div style={{ height: 8 }} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
           {weekdayLetters(l10n).map((letter) => (
-            <div key={letter} style={{ fontSize: 10, fontWeight: 700, color: 'rgba(206,225,255,0.5)', textAlign: 'center' }}>
+            <div key={letter} style={{ fontSize: 12, fontWeight: 700, color: 'rgba(206,225,255,0.5)', textAlign: 'center' }}>
               {letter}
             </div>
           ))}
@@ -216,7 +216,7 @@ function FreezeStatus({ available, streak }: { available: boolean; streak: numbe
           {available ? l10n.calendarFreezeAvailable : l10n.calendarFreezeUsed}
         </div>
         <div style={{ height: 2 }} />
-        <div style={{ fontSize: 11, fontWeight: 600, color: MUTED }}>
+        <div style={{ fontSize: 12.5, fontWeight: 600, color: MUTED }}>
           {/* What it does, not how it is obtained: the old line ("Пройдите 7
               дней подряд, чтобы получить фриз") was shown to players who
               already had one. */}
@@ -263,7 +263,7 @@ function LegendItem({ fill, label, children }: { fill: string; label: string; ch
       >
         {children}
       </span>
-      <span style={{ fontSize: 10.5, fontWeight: 600, color: MUTED }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: MUTED }}>{label}</span>
     </span>
   );
 }
@@ -371,7 +371,7 @@ function DayCell({
         justifyContent: 'center',
       }}
     >
-      <span style={{ fontSize: 11, fontWeight: 700, color: textColor }}>{date.getDate()}</span>
+      <span style={{ fontSize: 12.5, fontWeight: 700, color: textColor }}>{date.getDate()}</span>
       {mark}
     </div>
   );

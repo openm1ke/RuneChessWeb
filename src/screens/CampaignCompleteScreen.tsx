@@ -109,7 +109,7 @@ export function CampaignCompleteScreen(props: CampaignCompleteProps) {
         <div style={{ position: 'absolute', left: 32, right: 32, top: 360, textAlign: 'center' }}>
           {props.achievement && (
             <div style={{ marginBottom: 14 }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: 1.3, color: '#ffd678', marginBottom: 6 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 12, letterSpacing: 1.3, color: '#ffd678', marginBottom: 6 }}>
                 {l10n.resultAchievementUnlocked.toUpperCase()}
               </div>
               <AchievementReveal
@@ -142,7 +142,7 @@ export function CampaignCompleteScreen(props: CampaignCompleteProps) {
             right: 0,
             bottom: 26,
             textAlign: 'center',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: 0.4,
             color: 'rgba(154,163,180,0.55)',
@@ -233,7 +233,7 @@ function LandscapeCampaignCompleteScene({
       <div style={{ position: 'absolute', top: height * 0.28, left: panelLeft, width: panelWidth, textAlign: 'center' }}>
         {achievement && (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: 1.3, color: '#ffd678', marginBottom: 6 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 12, letterSpacing: 1.3, color: '#ffd678', marginBottom: 6 }}>
               {l10n.resultAchievementUnlocked.toUpperCase()}
             </div>
             <AchievementReveal achievement={achievement} size={72} animate={animateAchievement} onRevealed={onAchievementRevealed} />

@@ -31,6 +31,7 @@ export function MenuScreen({
   onAchievements,
   onDailyChallenge,
   dailyChallengeSolvedToday = false,
+  dailyChallengeLocked = false,
   currentLevel,
   onRulesOpened,
   onRules,
@@ -55,6 +56,11 @@ export function MenuScreen({
   /** Whether today's daily challenge already has a saved result — shows a
    * small checkmark badge on the button instead of a plain empty ring. */
   dailyChallengeSolvedToday?: boolean;
+  /** Until the lessons are done the daily challenge waits, dimmed and
+   * padlocked: it was the first and brightest button on the screen, and a
+   * new player opened a puzzle with no idea of the rules yet. The tap still
+   * reaches `onDailyChallenge`, which explains instead of opening. */
+  dailyChallengeLocked?: boolean;
   /** Opens the appearance picker — where the stars are spent, and where the
    * counter's explainer offers to go. */
   onAppearance: () => void;
@@ -76,6 +82,7 @@ export function MenuScreen({
         onAchievements={onAchievements}
         onDailyChallenge={onDailyChallenge}
         dailyChallengeSolvedToday={dailyChallengeSolvedToday}
+        dailyChallengeLocked={dailyChallengeLocked}
         currentLevel={currentLevel}
         onRulesOpened={onRulesOpened}
         onRules={onRules}
@@ -148,7 +155,8 @@ export function MenuScreen({
             backgroundAsset="assets/images/menu-button-daily.webp"
             fontSize={17}
             letterSpacing={1.8}
-            badge={<DailyChallengeSolvedBadge solved={dailyChallengeSolvedToday} />}
+            {...dailyLockProps(dailyChallengeLocked, l10n.menuDailyAfterTutorial)}
+            badge={dailyChallengeLocked ? undefined : <DailyChallengeSolvedBadge solved={dailyChallengeSolvedToday} />}
           />
         </div>
         <div
@@ -218,7 +226,7 @@ export function MenuScreen({
             right: 0,
             bottom: 12,
             textAlign: 'center',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: 0.4,
             color: 'rgba(154,163,180,0.55)',
@@ -246,6 +254,7 @@ function LandscapeMenuScene({
   onAchievements,
   onDailyChallenge,
   dailyChallengeSolvedToday,
+  dailyChallengeLocked,
   currentLevel,
   onRulesOpened,
   onRules,
@@ -259,6 +268,7 @@ function LandscapeMenuScene({
   onAchievements: () => void;
   onDailyChallenge: () => void;
   dailyChallengeSolvedToday: boolean;
+  dailyChallengeLocked: boolean;
   currentLevel: number;
   onRulesOpened?: (proceed: () => void) => void;
   /** Opens the in-game rules screen. Used only in the catalogue build,
@@ -365,7 +375,8 @@ function LandscapeMenuScene({
           backgroundAsset="assets/images/menu-button-daily.webp"
           fontSize={13}
           letterSpacing={1.4}
-          badge={<DailyChallengeSolvedBadge solved={dailyChallengeSolvedToday} small />}
+          {...dailyLockProps(dailyChallengeLocked, l10n.menuDailyAfterTutorial)}
+          badge={dailyChallengeLocked ? undefined : <DailyChallengeSolvedBadge solved={dailyChallengeSolvedToday} small />}
         />
       </div>
       <div style={slot(1, 1)}>
@@ -406,7 +417,7 @@ function LandscapeMenuScene({
           position: 'absolute',
           ...brandColumn,
           bottom: 8,
-          fontSize: 9,
+          fontSize: 11,
           fontWeight: 700,
           letterSpacing: 0.4,
           color: 'rgba(154,163,180,0.55)',
@@ -509,7 +520,7 @@ function MenuFooterLinks() {
               onClick={playNavigationRelease}
               style={{
                 color: 'rgba(221, 229, 247, 0.78)',
-                fontSize: 8.5,
+                fontSize: 11,
                 fontWeight: 800,
                 letterSpacing: 0.75,
                 lineHeight: 1.2,
@@ -545,9 +556,16 @@ function MenuBrand({ orbSize }: { orbSize: number }) {
   );
 }
 
+/** What the daily challenge's button shows while it waits for the lessons. */
+function dailyLockProps(locked: boolean, afterTutorial: string) {
+  return locked ? { subtitle: afterTutorial.toUpperCase(), subtitleIcon: '🔒', dimmed: true } : {};
+}
+
 export function MenuActionButton({
   label,
   subtitle,
+  subtitleIcon,
+  dimmed = false,
   onClick,
   prominent = false,
   fontSize,
@@ -560,6 +578,12 @@ export function MenuActionButton({
    * would open — the one button the whole screen is built around was the
    * only one that did not answer "what happens next". */
   subtitle?: string;
+  /** A small glyph before `subtitle` — the daily challenge's padlock. In the
+   * button's corner, where the solved tick goes, it ran into the title on a
+   * narrow phone. */
+  subtitleIcon?: string;
+  /** Drawn faded: a button that answers but does not open yet. */
+  dimmed?: boolean;
   onClick: () => void;
   prominent?: boolean;
   /** Overrides the default size — used where the button is narrower than
@@ -599,6 +623,7 @@ export function MenuActionButton({
         border: 'none',
         padding: 0,
         cursor: 'pointer',
+        opacity: dimmed ? 0.62 : 1,
         background: 'transparent',
         transform: pressed ? 'scale(0.965)' : 'scale(1)',
         transition: 'transform 110ms cubic-bezier(0.33,1,0.68,1)',
@@ -639,6 +664,7 @@ export function MenuActionButton({
               whiteSpace: 'nowrap',
             }}
           >
+            {subtitleIcon && <span aria-hidden style={{ marginRight: 4 }}>{subtitleIcon}</span>}
             {subtitle}
           </span>
         )}
