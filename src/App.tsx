@@ -24,7 +24,13 @@ import {
   showPlaygamaInterstitial,
   watchPlaygamaPauseAndAudio,
 } from './services/playgamaPlatform';
-import { BUILT_FOR_PLAYGAMA, BUILT_FOR_VK, BUILT_FOR_YANDEX_GAMES, BUILT_WITHOUT_SITE_SERVICES } from './buildTarget';
+import {
+  BUILT_FOR_PLAYGAMA,
+  BUILT_FOR_VK,
+  BUILT_FOR_YANDEX_GAMES,
+  BUILT_WITHOUT_SITE_SERVICES,
+  MUSIC_ON_BY_DEFAULT,
+} from './buildTarget';
 import { RulesScreen } from './screens/RulesScreen';
 import {
   platformLanguage,
@@ -204,7 +210,7 @@ export default function App() {
   /** Shown when the padlocked daily challenge is tapped. */
   const [dailyLockedNotice, setDailyLockedNotice] = useState<string | null>(null);
   const [highestLevel, setHighestLevel] = useState(0);
-  const [musicEnabled, setMusicEnabled] = useState(false);
+  const [musicEnabled, setMusicEnabled] = useState(MUSIC_ON_BY_DEFAULT);
   const [musicVolume, setMusicVolume] = useState(0.1);
   const [soundEffectsEnabled, setSoundEffectsEnabledState] = useState(true);
   const [hapticsEnabled, setHapticsEnabledState] = useState(true);

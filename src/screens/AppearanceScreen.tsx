@@ -1,3 +1,4 @@
+import { LockIcon } from '../components/shared/MenuIcons';
 /**
  * Where the player changes how the game looks. Port of the Flutter app's
  * `AppearanceScreen`.
@@ -365,7 +366,7 @@ function SkinCard({
               boxShadow: '0 0 12px rgba(0,0,0,0.55)',
             }}
           >
-            🔒
+            <LockIcon size={20} />
           </span>
         </div>
       )}

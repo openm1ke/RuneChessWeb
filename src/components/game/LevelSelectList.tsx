@@ -1,3 +1,4 @@
+import { CheckCircleIcon, LockIcon, PlayCircleIcon } from '../shared/MenuIcons';
 import { useLayoutEffect, useRef } from 'react';
 import { MiniStarRow } from '../shared/StarRow';
 import { ProgressSummary } from '../shared/ProgressSummary';
@@ -284,7 +285,13 @@ function LevelTile({
   // The corner badge says what can be done here, not what already happened:
   // a finished scored level is described by its stars, so stacking a tick on
   // top only added a second status colour competing with them.
-  const badge = !unlocked ? '🔒' : completed ? (scored ? null : '✓') : '▶';
+  const badge = !unlocked ? (
+    <LockIcon size={14} />
+  ) : completed ? (
+    scored ? null : <CheckCircleIcon size={14} />
+  ) : (
+    <PlayCircleIcon size={14} />
+  );
   return (
     <button
       ref={ref}
@@ -327,7 +334,7 @@ function LevelTile({
             position: 'absolute',
             right: 5,
             bottom: 4,
-            fontSize: 12,
+            display: 'flex',
             color: unlocked ? 'var(--gold)' : 'rgba(109,119,144,0.44)',
           }}
         >

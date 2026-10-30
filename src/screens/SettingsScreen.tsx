@@ -1,3 +1,4 @@
+import { SoundWaveIcon, VibrationIcon } from '../components/shared/MenuIcons';
 import { useState } from 'react';
 import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { artForCanvas } from '../game/cosmeticSkins';
@@ -388,7 +389,7 @@ function MusicSettingsCard({
             fontSize: 18,
           }}
         >
-          🔔
+          <SoundWaveIcon />
         </div>
         <div style={{ flex: 1, fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: 1.1, color: 'var(--gold-bright)' }}>
           {l10n.settingsSoundEffects}
@@ -418,7 +419,7 @@ function MusicSettingsCard({
               fontSize: 18,
             }}
           >
-            📳
+            <VibrationIcon />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: 1.1, color: 'var(--gold-bright)' }}>

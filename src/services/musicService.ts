@@ -1,3 +1,4 @@
+import { MUSIC_ON_BY_DEFAULT } from '../buildTarget';
 import { asset } from '../lib/assetUrl';
 
 const MENU_TRACK = asset('assets/audio/dozor-moonlit-garden.m4a');
@@ -218,7 +219,7 @@ export class MusicService {
   private menuRequest = 0;
   private gameRequest = 0;
 
-  enabled = false;
+  enabled = MUSIC_ON_BY_DEFAULT;
   volume = 0.1;
 
   /** The 280 ms cross-fade the Flutter app uses between the two rooms. */

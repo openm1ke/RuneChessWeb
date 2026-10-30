@@ -1,3 +1,4 @@
+import { MUSIC_ON_BY_DEFAULT } from '../buildTarget';
 import { persistentStore } from './persistentStore';
 import { campaignLevels } from '../data/campaignLevels';
 import { FIRST_SCORED_LEVEL_INDEX } from '../game/dozorEngine';
@@ -185,7 +186,7 @@ export class ProgressRepository {
     // starts playing at once is the one a player reaches for the mute on,
     // and the speaker is in the corner of the menu and of every level for
     // whoever wants it. A choice already saved is kept.
-    const musicEnabled = readJson<boolean>(KEYS.musicEnabled) ?? false;
+    const musicEnabled = readJson<boolean>(KEYS.musicEnabled) ?? MUSIC_ON_BY_DEFAULT;
     const storedMusicVolume = readJson<number>(KEYS.musicVolume) ?? 0.1;
     const musicVolume = Math.min(1, Math.max(0, storedMusicVolume));
     const soundEffectsEnabled = readJson<boolean>(KEYS.soundEffectsEnabled) ?? true;

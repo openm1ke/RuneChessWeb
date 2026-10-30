@@ -3,7 +3,7 @@ import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { artForCanvas } from '../game/cosmeticSkins';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { asset } from '../lib/assetUrl';
-import { RulesIcon, SettingsIcon, SpeakerIcon } from '../components/shared/MenuIcons';
+import { LockIcon, RulesIcon, SettingsIcon, SpeakerIcon } from '../components/shared/MenuIcons';
 import { playNavigationPress, playNavigationRelease } from '../services/musicService';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 import { menuStoreLinks } from '../data/storeLinks';
@@ -584,7 +584,7 @@ function MenuBrand({ orbSize }: { orbSize: number }) {
 
 /** What the daily challenge's button shows while it waits for the lessons. */
 function dailyLockProps(locked: boolean, afterTutorial: string) {
-  return locked ? { subtitle: afterTutorial.toUpperCase(), subtitleIcon: '🔒', dimmed: true } : {};
+  return locked ? { subtitle: afterTutorial.toUpperCase(), subtitleIcon: <LockIcon size={12} />, dimmed: true } : {};
 }
 
 export function MenuActionButton({
@@ -607,7 +607,7 @@ export function MenuActionButton({
   /** A small glyph before `subtitle` — the daily challenge's padlock. In the
    * button's corner, where the solved tick goes, it ran into the title on a
    * narrow phone. */
-  subtitleIcon?: string;
+  subtitleIcon?: ReactNode;
   /** Drawn faded: a button that answers but does not open yet. */
   dimmed?: boolean;
   onClick: () => void;
@@ -690,7 +690,11 @@ export function MenuActionButton({
               whiteSpace: 'nowrap',
             }}
           >
-            {subtitleIcon && <span aria-hidden style={{ marginRight: 4 }}>{subtitleIcon}</span>}
+            {subtitleIcon && (
+              <span aria-hidden style={{ marginRight: 4, display: 'inline-flex', verticalAlign: '-1px' }}>
+                {subtitleIcon}
+              </span>
+            )}
             {subtitle}
           </span>
         )}

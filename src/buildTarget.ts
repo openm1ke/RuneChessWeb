@@ -38,3 +38,12 @@ export const BUILT_WITHOUT_SITE_SERVICES = BUILT_FOR_PLAYGAMA || BUILT_FOR_VK;
 /** The field stops at 2:1 on a wide screen, with the castle at its sides —
  * Playgama's checklist (§27) asks for it, and VK's desktop frame is wide. */
 export const BUILT_WITH_CAPPED_FIELD = BUILT_FOR_PLAYGAMA || BUILT_FOR_VK;
+
+/**
+ * Whether a new player hears music before touching anything. Off
+ * everywhere, at 10% once turned on — except on Playgama, whose
+ * requirements (3.3.1) say a game is never completely silent and whose QA
+ * listens for the background music: there it starts on, at the same 10%,
+ * with the speaker in the corner to turn it off (3.3.3).
+ */
+export const MUSIC_ON_BY_DEFAULT = BUILT_FOR_PLAYGAMA;
