@@ -34,6 +34,8 @@ export const en: Strings = {
   settingsTitle: "Settings",
   settingsMusic: "Music",
   settingsMusicEnable: "Turn music on",
+  musicTurnOn: "Turn the music on",
+  musicTurnOff: "Turn the music off",
   settingsVolume: "Volume",
   settingsSoundEffects: "Sound effects",
   settingsSoundEffectsHint: "Piece moves and stars",

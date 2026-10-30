@@ -3,7 +3,7 @@ import { DesignCanvas } from '../components/shared/DesignCanvas';
 import { artForCanvas } from '../game/cosmeticSkins';
 import { useViewportSize } from '../components/game/useViewportSize';
 import { asset } from '../lib/assetUrl';
-import { RulesIcon, SettingsIcon } from '../components/shared/MenuIcons';
+import { RulesIcon, SettingsIcon, SpeakerIcon } from '../components/shared/MenuIcons';
 import { playNavigationPress, playNavigationRelease } from '../services/musicService';
 import { useCosmeticSkin } from '../game/cosmeticSkinContext';
 import { menuStoreLinks } from '../data/storeLinks';
@@ -32,6 +32,8 @@ export function MenuScreen({
   onDailyChallenge,
   dailyChallengeSolvedToday = false,
   dailyChallengeLocked = false,
+  musicEnabled = false,
+  onMusicToggle,
   currentLevel,
   onRulesOpened,
   onRules,
@@ -61,6 +63,10 @@ export function MenuScreen({
    * new player opened a puzzle with no idea of the rules yet. The tap still
    * reaches `onDailyChallenge`, which explains instead of opening. */
   dailyChallengeLocked?: boolean;
+  /** The music on or off at once, without opening the settings — the
+   * speaker in the corner. */
+  musicEnabled?: boolean;
+  onMusicToggle?: () => void;
   /** Opens the appearance picker — where the stars are spent, and where the
    * counter's explainer offers to go. */
   onAppearance: () => void;
@@ -83,6 +89,8 @@ export function MenuScreen({
         onDailyChallenge={onDailyChallenge}
         dailyChallengeSolvedToday={dailyChallengeSolvedToday}
         dailyChallengeLocked={dailyChallengeLocked}
+        musicEnabled={musicEnabled}
+        onMusicToggle={onMusicToggle}
         currentLevel={currentLevel}
         onRulesOpened={onRulesOpened}
         onRules={onRules}
@@ -211,6 +219,13 @@ export function MenuScreen({
             earned={starsEarned}
             onAppearance={onAppearance}
           />
+          {onMusicToggle && (
+            <MenuIconButton
+              label={musicEnabled ? l10n.musicTurnOff : l10n.musicTurnOn}
+              onClick={onMusicToggle}
+              glyph={<SpeakerIcon on={musicEnabled} />}
+            />
+          )}
           <MenuIconButton
             label={l10n.menuRules}
             onClick={onRules}
@@ -255,6 +270,8 @@ function LandscapeMenuScene({
   onDailyChallenge,
   dailyChallengeSolvedToday,
   dailyChallengeLocked,
+  musicEnabled,
+  onMusicToggle,
   currentLevel,
   onRulesOpened,
   onRules,
@@ -269,6 +286,8 @@ function LandscapeMenuScene({
   onDailyChallenge: () => void;
   dailyChallengeSolvedToday: boolean;
   dailyChallengeLocked: boolean;
+  musicEnabled: boolean;
+  onMusicToggle?: () => void;
   currentLevel: number;
   onRulesOpened?: (proceed: () => void) => void;
   /** Opens the in-game rules screen. Used only in the catalogue build,
@@ -399,6 +418,13 @@ function LandscapeMenuScene({
           earned={starsEarned}
           onAppearance={onAppearance}
         />
+        {onMusicToggle && (
+          <MenuIconButton
+            label={musicEnabled ? l10n.musicTurnOff : l10n.musicTurnOn}
+            onClick={onMusicToggle}
+            glyph={<SpeakerIcon on={musicEnabled} />}
+          />
+        )}
         <MenuIconButton
           label={l10n.menuRules}
           onClick={onRules}

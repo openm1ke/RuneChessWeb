@@ -181,8 +181,12 @@ export class ProgressRepository {
         .filter((index) => Number.isInteger(index) && index >= 0 && index < campaignLevels.length),
     );
     const tutorialComplete = readJson<boolean>(KEYS.tutorialComplete) ?? false;
-    const musicEnabled = readJson<boolean>(KEYS.musicEnabled) ?? true;
-    const storedMusicVolume = readJson<number>(KEYS.musicVolume) ?? 0.6;
+    // Off by default, and 10% the first time it is turned on: a game that
+    // starts playing at once is the one a player reaches for the mute on,
+    // and the speaker is in the corner of the menu and of every level for
+    // whoever wants it. A choice already saved is kept.
+    const musicEnabled = readJson<boolean>(KEYS.musicEnabled) ?? false;
+    const storedMusicVolume = readJson<number>(KEYS.musicVolume) ?? 0.1;
     const musicVolume = Math.min(1, Math.max(0, storedMusicVolume));
     const soundEffectsEnabled = readJson<boolean>(KEYS.soundEffectsEnabled) ?? true;
     const hapticsEnabled = readJson<boolean>(KEYS.hapticsEnabled) ?? true;

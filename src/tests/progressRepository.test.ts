@@ -6,15 +6,15 @@ describe('ProgressRepository', () => {
     window.localStorage.clear();
   });
 
-  it('defaults to level 0 unlocked, no stars, music on at 60% when nothing is stored', () => {
+  it('defaults to level 0 unlocked, no stars, music off at 10% when nothing is stored', () => {
     const repo = new ProgressRepository();
     const snapshot = repo.load();
     expect(snapshot.unlockedLevels.has(0)).toBe(true);
     expect(snapshot.highestLevel).toBe(0);
     expect(snapshot.tutorialComplete).toBe(false);
     expect(snapshot.levelStars.size).toBe(0);
-    expect(snapshot.musicEnabled).toBe(true);
-    expect(snapshot.musicVolume).toBeCloseTo(0.6);
+    expect(snapshot.musicEnabled).toBe(false);
+    expect(snapshot.musicVolume).toBeCloseTo(0.1);
   });
 
   it('round-trips unlocked levels, stars, onboarding and tutorial completion', () => {

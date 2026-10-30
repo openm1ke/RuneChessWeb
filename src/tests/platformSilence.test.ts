@@ -17,6 +17,8 @@ function spyOnTracks(service: MusicService) {
 describe('the platform mute', () => {
   it('keeps music asked for while muted from starting, and plays it once lifted', async () => {
     const service = new MusicService();
+    // A player who has turned the music on: it starts off for a new one.
+    service.enabled = true;
     const { play, resume } = spyOnTracks(service);
 
     service.setPlatformSilenced(true);
@@ -29,6 +31,8 @@ describe('the platform mute', () => {
 
   it('is not ended early by another pause', async () => {
     const service = new MusicService();
+    // A player who has turned the music on: it starts off for a new one.
+    service.enabled = true;
     const { resume } = spyOnTracks(service);
 
     service.setPlatformSilenced(true);
@@ -42,6 +46,8 @@ describe('the platform mute', () => {
 
   it('a track stopped while muted does not come back when the mute lifts', async () => {
     const service = new MusicService();
+    // A player who has turned the music on: it starts off for a new one.
+    service.enabled = true;
     const { resume } = spyOnTracks(service);
 
     service.setPlatformSilenced(true);

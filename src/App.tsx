@@ -204,8 +204,8 @@ export default function App() {
   /** Shown when the padlocked daily challenge is tapped. */
   const [dailyLockedNotice, setDailyLockedNotice] = useState<string | null>(null);
   const [highestLevel, setHighestLevel] = useState(0);
-  const [musicEnabled, setMusicEnabled] = useState(true);
-  const [musicVolume, setMusicVolume] = useState(0.6);
+  const [musicEnabled, setMusicEnabled] = useState(false);
+  const [musicVolume, setMusicVolume] = useState(0.1);
   const [soundEffectsEnabled, setSoundEffectsEnabledState] = useState(true);
   const [hapticsEnabled, setHapticsEnabledState] = useState(true);
   const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(null);
@@ -1448,6 +1448,8 @@ export default function App() {
                 ? computeDailyChallengeStats({ history: dailyChallengeHistory, today: new Date() }).currentStreak
                 : 0
             }
+            musicEnabled={musicEnabled}
+            onMusicToggle={() => setMusicEnabledAndSave(!musicEnabled)}
             onBonusStarOffered={() => analyticsService.adOfferShown('bonus_star')}
             onDailyStarsDoubled={
               dailyChallengeDateRef.current != null &&
@@ -1488,6 +1490,8 @@ export default function App() {
             dailyLocked ? () => setDailyLockedNotice(l10n.menuDailyLockedNotice) : openDailyChallenge
           }
           dailyChallengeLocked={dailyLocked}
+          musicEnabled={musicEnabled}
+          onMusicToggle={() => setMusicEnabledAndSave(!musicEnabled)}
           dailyChallengeSolvedToday={dailyChallengeHistory.has(dailyChallengeKey(new Date()))}
           // The purse, and what it was earned from: a purchase moves the
           // first and never the second — see `starWallet.ts`.

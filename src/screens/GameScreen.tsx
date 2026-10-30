@@ -47,6 +47,8 @@ export function GameScreen({
   onAchievementRevealed,
   onOpenDailyCalendar,
   dailyStreak = 0,
+  musicEnabled = false,
+  onMusicToggle,
   hintsLeft = 0,
   freeHints = false,
   hintWaitMs: hintWait = null,
@@ -81,6 +83,9 @@ export function GameScreen({
   onOpenDailyCalendar?: () => void;
   /** See `TopControls.dailyStreak`. */
   dailyStreak?: number;
+  /** The speaker under the hint — see `TopControls`. */
+  musicEnabled?: boolean;
+  onMusicToggle?: () => void;
   /** Free hints left, and the wait for the next one — see `hintWallet.ts`. */
   hintsLeft?: number;
   /** No rewarded ads exist in this build (runechess.ru since РСЯ switched
@@ -479,6 +484,8 @@ export function GameScreen({
           hintsLeft={gated ? hintsLeft : undefined}
           onCalendar={engine.isDailyChallenge ? onOpenDailyCalendar : undefined}
           dailyStreak={dailyStreak}
+          musicEnabled={musicEnabled}
+          onMusicToggle={onMusicToggle}
         />
         <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} dailyDate={snapshot.dailyDate} />
         <Board
@@ -544,6 +551,8 @@ export function GameScreen({
           hintsLeft={gated ? hintsLeft : undefined}
           onCalendar={engine.isDailyChallenge ? onOpenDailyCalendar : undefined}
           dailyStreak={dailyStreak}
+          musicEnabled={musicEnabled}
+          onMusicToggle={onMusicToggle}
         />
         <TopStatus done={snapshot.doneCount} total={snapshot.beacons.length} level={snapshot.levelNumber} dailyDate={snapshot.dailyDate} />
         <Board

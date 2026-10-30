@@ -1,3 +1,4 @@
+import { SpeakerIcon } from '../shared/MenuIcons';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useL10n } from '../../l10n/l10nContext';
 import { dailyDateLabel } from '../../l10n/dailyDate';
@@ -49,6 +50,8 @@ export function TopControls({
   onCalendar,
   dailyStreak = 0,
   hintsLeft,
+  musicEnabled = false,
+  onMusicToggle,
 }: {
   onBack: () => void;
   onHint: () => void;
@@ -66,10 +69,14 @@ export function TopControls({
    * never showed the one number the player comes back for. Zero draws no
    * badge — a "0" advertises the thing the player has not got. */
   dailyStreak?: number;
+  /** The speaker under the hint: music on or off at once, without leaving
+   * the level. */
+  musicEnabled?: boolean;
+  onMusicToggle?: () => void;
 }) {
   const l10n = useL10n();
   return (
-    <div style={{ position: 'absolute', top: 22, left: 20, right: 20, display: 'flex', justifyContent: 'space-between' }}>
+    <div style={{ position: 'absolute', top: 22, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
       {/* 54, not 44: the canvas reaches a phone at x0.75-0.91, so 44 design
           units arrived at 33-40px — under both platforms' minimum touch
           target. Matches the app. */}
@@ -98,6 +105,15 @@ export function TopControls({
               <CalendarIcon />
             </RoundControl>
             {dailyStreak > 0 && <StreakBadge streak={dailyStreak} />}
+          </div>
+        )}
+        {/* Smaller than the two above: on the lesson levels the coach card
+            starts at 128, and a full-size button here ran into it. */}
+        {onMusicToggle && (
+          <div style={{ marginRight: (CONTROL_SIZE - 44) / 2, marginTop: -2 }}>
+            <RoundControl size={44} onClick={onMusicToggle} label={musicEnabled ? l10n.musicTurnOff : l10n.musicTurnOn}>
+              <SpeakerIcon on={musicEnabled} size={22} />
+            </RoundControl>
           </div>
         )}
       </div>

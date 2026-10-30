@@ -39,6 +39,8 @@ export const ru = {
   settingsTitle: "Настройки",
   settingsMusic: "Музыка",
   settingsMusicEnable: "Включить музыку",
+  musicTurnOn: "Включить музыку",
+  musicTurnOff: "Выключить музыку",
   settingsVolume: "Громкость",
   settingsSoundEffects: "Звуки эффектов",
   settingsSoundEffectsHint: "Ходы фигур и звёзды",

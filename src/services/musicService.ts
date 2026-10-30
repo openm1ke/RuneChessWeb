@@ -218,8 +218,8 @@ export class MusicService {
   private menuRequest = 0;
   private gameRequest = 0;
 
-  enabled = true;
-  volume = 0.6;
+  enabled = false;
+  volume = 0.1;
 
   /** The 280 ms cross-fade the Flutter app uses between the two rooms. */
   private static readonly fadeSeconds = 0.28;
