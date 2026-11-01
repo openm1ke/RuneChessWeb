@@ -12,12 +12,17 @@ export const TILE_GAP = 7;
 // Raised from 64 with the panel: the canvas reaches a phone at x0.75-0.91,
 // and a five-figure level divided the old panel into ~29px tiles.
 const MAX_TILE_EXTENT = 78;
-/** The panel's own horizontal padding, which the tile row cannot use. */
-const TRAY_PADDING = 20;
-/** Panel padding and header height, subtracted to find the row of tiles. */
-const TRAY_PADDING_TOP = 8;
-const TRAY_PADDING_BOTTOM = 10;
-const TRAY_HEADER_HEIGHT = 21;
+/** Shared with the rendered panel: the border, caption and gap all take
+ * space away from the row, not just its padding. */
+export const TRAY_METRICS = {
+  border: 2.5,
+  paddingInline: 10,
+  paddingTop: 8,
+  paddingBottom: 10,
+  headerHeight: 18,
+  headerGap: 7,
+} as const;
+const TRAY_INLINE_INSET = TRAY_METRICS.border + TRAY_METRICS.paddingInline;
 
 /** The portrait tray's box on the 430x932 design canvas. Taller than the
  * 116 it was drawn at by the name line under each figure, so the tiles keep
@@ -25,7 +30,7 @@ const TRAY_HEADER_HEIGHT = 21;
 export const TRAY_PORTRAIT = { left: 64, right: 64, bottom: 120, height: 140 };
 
 /** The figure's name under its tile, and the gap above it. */
-export const SLOT_LABEL_HEIGHT = 15;
+export const SLOT_LABEL_HEIGHT = 18;
 export const SLOT_LABEL_GAP = 3;
 
 /** The panel's own width, and where it sits on a canvas this wide: it keeps
@@ -41,7 +46,8 @@ export function trayPortraitInset(canvasWidth: number): number {
 
 /** How tall the row of tiles is inside a panel `height` tall. */
 export function trayRowHeight(height: number): number {
-  return height - TRAY_PADDING_TOP - TRAY_HEADER_HEIGHT - TRAY_PADDING_BOTTOM;
+  return Math.max(0, height - TRAY_METRICS.border * 2 - TRAY_METRICS.paddingTop
+    - TRAY_METRICS.headerHeight - TRAY_METRICS.headerGap - TRAY_METRICS.paddingBottom);
 }
 
 /** The extent one tile takes. Every figure the level hands out keeps its
@@ -54,7 +60,7 @@ export function trayTileExtent(
   withName = true,
 ): number {
   const total = Math.max(1, levelTrayCount);
-  const along = (panelExtent - TRAY_PADDING - TILE_GAP * (total - 1)) / total;
+  const along = (panelExtent - TRAY_INLINE_INSET * 2 - TILE_GAP * (total - 1)) / total;
   const across =
     rowHeight == null ? Infinity : rowHeight - (withName ? SLOT_LABEL_GAP + SLOT_LABEL_HEIGHT : 0);
   return Math.min(MAX_TILE_EXTENT, along, across);
@@ -77,15 +83,17 @@ export function trayTileCenter({
 }): { x: number; y: number } {
   const rowHeight = trayRowHeight(panel.height);
   const size = trayTileExtent(levelTrayCount, panel.width, rowHeight, withName);
+  const slotExtent = withName ? trayTileExtent(levelTrayCount, panel.width) : size;
   const count = Math.max(1, levelTrayCount);
-  const rowWidth = size * count + TILE_GAP * (count - 1);
-  const contentLeft = panel.left + TRAY_PADDING / 2;
-  const contentWidth = panel.width - TRAY_PADDING;
+  const rowWidth = slotExtent * count + TILE_GAP * (count - 1);
+  const contentLeft = panel.left + TRAY_INLINE_INSET;
+  const contentWidth = panel.width - TRAY_INLINE_INSET * 2;
   const start = contentLeft + (contentWidth - rowWidth) / 2;
-  const rowTop = panel.top + TRAY_PADDING_TOP + TRAY_HEADER_HEIGHT;
+  const rowTop = panel.top + TRAY_METRICS.border + TRAY_METRICS.paddingTop
+    + TRAY_METRICS.headerHeight + TRAY_METRICS.headerGap;
   const slotHeight = size + (withName ? SLOT_LABEL_GAP + SLOT_LABEL_HEIGHT : 0);
   return {
-    x: start + Math.max(0, slot) * (size + TILE_GAP) + size / 2,
+    x: start + Math.max(0, slot) * (slotExtent + TILE_GAP) + slotExtent / 2,
     y: rowTop + rowHeight / 2 - slotHeight / 2 + size / 2,
   };
 }

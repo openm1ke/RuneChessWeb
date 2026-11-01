@@ -13,6 +13,7 @@ import {
   SLOT_LABEL_GAP,
   SLOT_LABEL_HEIGHT,
   TILE_GAP,
+  TRAY_METRICS,
   TRAY_PORTRAIT,
   TRAY_PORTRAIT_WIDTH,
   trayRowHeight,
@@ -214,7 +215,7 @@ export function Tray({
     if (!el) return;
     // Falls back to the panel's own extent where nothing is laid out (a test
     // environment), so the tiles are still there to find.
-    const fallback = panelWidth - 25;
+    const fallback = panelWidth - (TRAY_METRICS.border + TRAY_METRICS.paddingInline) * 2;
     const measure = () =>
       setRowExtent((vertical ? el.clientHeight : el.clientWidth) || fallback);
     measure();
@@ -245,6 +246,12 @@ export function Tray({
     vertical ? undefined : rowHeight,
     names,
   );
+  // A short landscape panel can shrink the square without also forcing
+  // its name into that tiny square's width.
+  const slotExtent = names
+    ? trayTileExtent(snapshot.levelTrayCount, panelWidth)
+    : tileExtent;
+  const labelWidth = slotExtent + TILE_GAP - 2;
 
   // What the figure in hand is and how it strikes: the one line worth
   // reading while a figure is in the air. Deliberately not a long-press
@@ -265,11 +272,11 @@ export function Tray({
         right,
         bottom,
         height,
-        padding: "8px 10px 10px",
+        padding: `${TRAY_METRICS.paddingTop}px ${TRAY_METRICS.paddingInline}px ${TRAY_METRICS.paddingBottom}px`,
         borderRadius: 16,
         background:
           "linear-gradient(to bottom, rgba(30,48,104,0.94), rgba(15,26,60,0.94))",
-        border: "2.5px solid var(--gold-border)",
+        border: `${TRAY_METRICS.border}px solid var(--gold-border)`,
         boxShadow: "0 -8px 26px rgba(0,0,0,0.55)",
         display: "flex",
         flexDirection: "column",
@@ -287,6 +294,9 @@ export function Tray({
           // Was 9.5/10.5 — 8-9px on a phone. The panel is wider now (inset
           // 64), which is the room the figure's longer line needed.
           fontSize: inHand ? 12 : 13,
+          flex: "none",
+          height: TRAY_METRICS.headerHeight,
+          lineHeight: `${TRAY_METRICS.headerHeight}px`,
           fontWeight: 900,
           letterSpacing: inHand ? 0.3 : 1.8,
           color: inHand ? pieceSkins[inHand].color : "var(--gold)",
@@ -305,7 +315,7 @@ export function Tray({
               ? l10n.trayDragBack.toUpperCase()
               : l10n.trayPieces.toUpperCase()}
       </div>
-      <div style={{ height: 7 }} />
+      <div style={{ height: TRAY_METRICS.headerGap, flex: "none" }} />
       <div
         ref={row}
         style={{
@@ -328,8 +338,8 @@ export function Tray({
         {rowExtent > 0 &&
           engine.level.tray.map((levelItem, index) => {
             const count = snapshot.levelTrayCount;
-            const start = (rowExtent - (count * tileExtent + TILE_GAP * (count - 1))) / 2;
-            const offset = start + index * (tileExtent + TILE_GAP);
+            const start = (rowExtent - (count * slotExtent + TILE_GAP * (count - 1))) / 2;
+            const offset = start + index * (slotExtent + TILE_GAP);
             const item = snapshot.tray.find((t) => t.id === levelItem.id);
             const returned = returns.current.get(levelItem.id) ?? 0;
             const landedSeq = drag.landed?.id === levelItem.id ? drag.landed.seq : 0;
@@ -344,7 +354,7 @@ export function Tray({
                   position: "absolute",
                   ...(vertical
                     ? { top: offset, left: 0, right: 0, height: tileExtent }
-                    : { left: offset, top: 0, bottom: 0, width: tileExtent }),
+                    : { left: offset, top: 0, bottom: 0, width: slotExtent }),
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -353,7 +363,7 @@ export function Tray({
               >
                 <div
                   style={{
-                    width: "100%",
+                    width: vertical ? "100%" : tileExtent,
                     height: tileHeight,
                     flex: "none",
                     // Empty while its figure flies home, so the figure is not
@@ -402,13 +412,14 @@ export function Tray({
                   <div
                     style={{
                       marginTop: SLOT_LABEL_GAP,
+                      flex: "none",
                       height: SLOT_LABEL_HEIGHT,
                       lineHeight: `${SLOT_LABEL_HEIGHT}px`,
-                      maxWidth: "100%",
+                      maxWidth: labelWidth,
                       overflow: "hidden",
                       whiteSpace: "nowrap",
                       textOverflow: "clip",
-                      fontSize: 12,
+                      fontSize: Math.min(12, labelWidth / 4),
                       fontWeight: 800,
                       letterSpacing: 0.2,
                       fontFamily: "var(--font-body)",
