@@ -11,11 +11,10 @@ body,
   padding: 0;
   width: 100%;
   height: 100%;
-  /* Transparent down to <html>, which carries the castle art (index.html):
-     whatever a screen does not paint — a frame caught mid-resize, a
-     letterbox — shows the game's own room rather than black bars, which
-     Playgama's scale test reads as a layout that does not fill the
-     viewport. */
+  /* Transparent down to <html>, which is painted the room's own dark blue
+     below: whatever a screen does not paint — a frame caught mid-resize, a
+     letterbox, the menu before its painting has arrived — is that colour,
+     never the browser's blank page. */
   background: transparent;
   color: #fff;
   font-family: var(--font-body);
@@ -25,6 +24,13 @@ body,
   /* The other half of "no browser menu over the board" (§1.6): iOS answers
      a long press with its own callout, which no contextmenu handler sees. */
   -webkit-touch-callout: none;
+}
+
+/* Here and not in index.html alone: the rule above comes later and would
+   clear it. A colour, not a painting, so the first load fetches only the
+   background the screen actually shows. */
+html {
+  background: #070b1c;
 }
 
 button {
