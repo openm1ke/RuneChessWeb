@@ -47,6 +47,10 @@ export function RoundControl({
         boxShadow: '0 5px 16px rgba(0,0,0,0.5)',
         color: 'var(--gold)',
         fontSize: size * 0.5,
+        // Older iOS Safari pads a button by 1em a side, which at this font
+        // size is wider than the button: the text glyphs overflowed and
+        // showed, the drawn icons were squeezed to nothing.
+        padding: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

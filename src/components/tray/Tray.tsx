@@ -73,6 +73,8 @@ function TrayItemTile({
         justifyContent: "center",
         paddingBottom: 4,
         cursor: "pointer",
+        // See the board's pieces: a drag that starts here is not a pan.
+        touchAction: "none",
         transition: "background 160ms, border-color 160ms",
       }}
     >
@@ -396,8 +398,10 @@ export function Tray({
                             const clear = () => {
                               setDragging(null);
                               window.removeEventListener("pointerup", clear);
+                              window.removeEventListener("pointercancel", clear);
                             };
                             window.addEventListener("pointerup", clear);
+                            window.addEventListener("pointercancel", clear);
                             drag.startFromTray(item, e);
                           }}
                           vertical={vertical}

@@ -37,6 +37,20 @@ button {
   font-family: inherit;
 }
 
+/* An icon keeps the size it was drawn at. Older WebKit let a flex item SVG
+   shrink to zero when its button had less room than it asked for. */
+button > svg,
+a > svg {
+  flex-shrink: 0;
+}
+
+/* Pulling down past the top must not reload the game, and the bounce must
+   not move it: there is nothing to scroll at this level. */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 img {
   -webkit-user-drag: none;
   user-drag: none;

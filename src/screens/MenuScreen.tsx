@@ -769,6 +769,8 @@ function MenuIconButton({
     border: '1.7px solid rgba(216,165,55,0.85)',
     boxShadow: '0 4px 12px rgba(0,0,0,0.53)',
     color: 'var(--gold)',
+    // No padding of the browser's own: see RoundControl.
+    padding: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

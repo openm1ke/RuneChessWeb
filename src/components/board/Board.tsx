@@ -368,6 +368,10 @@ function PieceOnBoard({
         height: rect.height,
         ...exitStyle(exiting, distance, 10),
         opacity: exiting ? 0 : dragging ? 0.28 : 1,
+        // A drag, never a pan: without this an Android WebView (VK's
+        // among them) takes the moving finger for a scroll, cancels the
+        // pointer and the figure never follows it.
+        touchAction: 'none',
       }}
       onPointerDown={(e) => onDragStart(piece, e)}
       onClick={() => engine.tapPiece(piece.id)}

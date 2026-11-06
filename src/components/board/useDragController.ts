@@ -198,13 +198,28 @@ export function useDragController(
       updateDrag({ ...prev, x: event.clientX, y: event.clientY });
       updatePreview(prev, event.clientX, event.clientY);
     };
-    const handleUp = (event: PointerEvent) => {
+    const detach = () => {
       window.removeEventListener('pointermove', handleMove);
       window.removeEventListener('pointerup', handleUp);
+      window.removeEventListener('pointercancel', handleCancel);
+    };
+    const handleUp = (event: PointerEvent) => {
+      detach();
       finishDrag(event.clientX, event.clientY);
+    };
+    // The browser or the app around it took the gesture over. Nothing was
+    // dropped, so the figure goes home from where it was last seen instead
+    // of hanging in the air with no pointer left to put it down.
+    const handleCancel = () => {
+      detach();
+      const current = dragRef.current;
+      updateDrag(null);
+      engine.clearDragPreview();
+      if (current) flyHome(current, current.x, current.y);
     };
     window.addEventListener('pointermove', handleMove);
     window.addEventListener('pointerup', handleUp);
+    window.addEventListener('pointercancel', handleCancel);
   };
 
   const startFromBoard = (piece: Piece, event: ReactPointerEvent) => {
